@@ -1,0 +1,12 @@
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\EPR.Payment.Facade.Common.csproj.AssemblyReference.cache
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\EPR.Payment.Facade.Common.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\EPR.Payment.Facade.Common.AssemblyInfoInputs.cache
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\EPR.Payment.Facade.Common.AssemblyInfo.cs
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\EPR.Payment.Facade.Common.csproj.CoreCompileInputs.cache
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\bin\Debug\net6.0\EPR.Payment.Facade.Common.deps.json
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\bin\Debug\net6.0\EPR.Payment.Facade.Common.dll
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\bin\Debug\net6.0\EPR.Payment.Facade.Common.pdb
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\EPR.Payment.Facade.Common.dll
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\refint\EPR.Payment.Facade.Common.dll
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\EPR.Payment.Facade.Common.pdb
+C:\Users\a898127\source\repos\EPR.Payment.Facade\EPR.Payment.Facade.Common\obj\Debug\net6.0\ref\EPR.Payment.Facade.Common.dll
