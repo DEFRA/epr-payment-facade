@@ -2,15 +2,16 @@
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace EPR.Payment.Facade.Common.RESTServices
 {
     public abstract class BaseHttpService
-    {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly string _baseUrl;
-        private readonly HttpClient _httpClient;
+    {        
+        protected readonly string _baseUrl;
+        protected readonly HttpClient _httpClient;
+        protected IHttpContextAccessor _httpContextAccessor;
 
         public BaseHttpService(
             IHttpContextAccessor httpContextAccessor,
@@ -19,7 +20,8 @@ namespace EPR.Payment.Facade.Common.RESTServices
             string endPointName)
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            // do basic checks on parameters
+
+            // Initialize _baseUrl in the constructor
             _baseUrl = string.IsNullOrWhiteSpace(baseUrl) ? throw new ArgumentNullException(nameof(baseUrl)) : baseUrl;
 
             if (httpClientFactory == null)
@@ -37,6 +39,11 @@ namespace EPR.Payment.Facade.Common.RESTServices
             _baseUrl = $"{_baseUrl}/{endPointName}";
         }
 
+        protected void SetBearerToken(string token)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
         /// <summary>
         /// Performs an Http GET returning the specified object
         /// </summary>
@@ -50,7 +57,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http POST returning the speicified object
         /// </summary>
-        protected async Task<T> Post<T>(string url, object payload = null)
+        protected async Task<T> Post<T>(string url, object? payload = null)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
@@ -63,7 +70,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http POST returning the speicified object
         /// </summary>
-        protected async Task<T> Post<T>(object payload = null)
+        protected async Task<T> Post<T>(object? payload = null)
         {
             var url = $"{_baseUrl}";
 
@@ -73,7 +80,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http POST without returning any data
         /// </summary>
-        protected async Task Post(string url, object payload = null)
+        protected async Task Post(string url, object? payload = null)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
@@ -86,7 +93,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http PUT returning the speicified object
         /// </summary>
-        protected async Task<T> Put<T>(string url, object payload = null)
+        protected async Task<T> Put<T>(string url, object? payload = null)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
@@ -99,7 +106,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http PUT without returning any data
         /// </summary>
-        protected async Task Put(string url, object payload = null)
+        protected async Task Put(string url, object? payload = null)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
@@ -112,7 +119,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http DELETE returning the speicified object
         /// </summary>
-        protected async Task<T> Delete<T>(string url, object payload = null)
+        protected async Task<T> Delete<T>(string url, object? payload = null)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
@@ -125,7 +132,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http DELETE without returning any data
         /// </summary>
-        protected async Task Delete(string url, object payload = null)
+        protected async Task Delete(string url, object? payload = null)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
@@ -137,7 +144,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
 
         private HttpRequestMessage CreateMessage(
             string url,
-            object payload,
+            object? payload,
             HttpMethod httpMethod)
         {
             var msg = new HttpRequestMessage
