@@ -26,7 +26,19 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var response = await service.GetFee(true, "regulator");
 
             // Assert
-            Assert.IsNotNull(response);    
-        }        
+            Assert.IsNotNull(response);
+            Assert.AreEqual(expectedResponse, response);
+        }
+
+        [TestMethod]
+        public async Task GetFee_NullOrEmptyRegulator_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new FeesService(_httpFeeServiceMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetFee(true, null));
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetFee(true, ""));
+        }
     }
 }

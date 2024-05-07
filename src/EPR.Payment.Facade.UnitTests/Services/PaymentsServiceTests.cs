@@ -1,5 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request;
 using EPR.Payment.Facade.Common.Dtos.Response;
+using EPR.Payment.Facade.Common.Dtos.Response.Common;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using EPR.Payment.Facade.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,21 +15,104 @@ namespace EPR.Payment.Facade.UnitTests.Services
     {
         private readonly Mock<IHttpGovPayService> _httpGovPayServiceMock = new Mock<IHttpGovPayService>();
         private readonly Mock<IHttpPaymentsService> _httpPaymentServiceMock = new Mock<IHttpPaymentsService>();
-               
+
         [TestMethod]
-        public async Task InitiatePayment_ReturnsCorrectResponse()
+        public async Task InitiatePayment_ValidRequest_ReturnsResponse()
         {
             // Arrange
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
-            var request = new PaymentRequestDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax" };
-            var expectedResponse = new PaymentResponseDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax", PaymentId = "no7kr7it1vjbsvb7r402qqrv86", Email = "sherlock.holmes@example.com" };
+            var request = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "REF123",
+                Description = "Test Payment",
+                return_url = "https://example.com/callback"
+            };
+            var expectedResponse = new PaymentResponseDto
+            {
+                PaymentId = "12345",
+                Amount = request.Amount,
+                Reference = request.Reference,
+                Description = request.Description,
+                Email = "test@example.com"
+            };
             _httpGovPayServiceMock.Setup(s => s.InitiatePayment(request)).ReturnsAsync(expectedResponse);
 
             // Act
             var response = await service.InitiatePayment(request);
 
             // Assert
-            Assert.IsNotNull(response);            
+            Assert.IsNotNull(response);
+            Assert.AreEqual(expectedResponse, response);
+        }
+
+        [TestMethod]
+        public async Task InitiatePayment_MissingReference_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var request = new PaymentRequestDto
+            {
+                Amount = 100,
+                Description = "Test Payment",
+                return_url = "https://example.com/callback"
+            };
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.InitiatePayment(request));
+        }
+
+        [TestMethod]
+        public async Task InitiatePayment_NullRequest_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => service.InitiatePayment(null));
+        }
+
+        [TestMethod]
+        public async Task GetPaymentStatus_ValidPaymentId_ReturnsResponse()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var paymentId = "123456";
+            var expectedResponse = new PaymentStatusResponseDto
+            {
+                PaymentId = paymentId,
+                State = new State { Finished = true },
+                Amount = 100,
+                Description = "Test Payment"
+            };
+            _httpGovPayServiceMock.Setup(s => s.GetPaymentStatus(paymentId)).ReturnsAsync(expectedResponse);
+
+            // Act
+            var response = await service.GetPaymentStatus(paymentId);
+
+            // Assert
+            Assert.IsNotNull(response);
+            Assert.AreEqual(expectedResponse, response);
+        }
+
+        [TestMethod]
+        public async Task GetPaymentStatus_NullPaymentId_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetPaymentStatus(null));
+        }
+
+        [TestMethod]
+        public async Task GetPaymentStatus_EmptyPaymentId_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetPaymentStatus(""));
         }
 
         [TestMethod]
@@ -43,7 +127,29 @@ namespace EPR.Payment.Facade.UnitTests.Services
             await service.InsertPaymentStatus(paymentId, status);
 
             // Assert
-            // TODO - PS : add suitable asserts here when known
+            // TODO: Add suitable asserts here when known
+        }   
+
+        [TestMethod]
+        public async Task InsertPaymentStatus_NullOrEmptyPaymentId_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var status = new PaymentStatusInsertRequestDto { Status = "Inserted" };
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.InsertPaymentStatus(null, status));
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.InsertPaymentStatus("", status));
+        }
+
+        [TestMethod]
+        public async Task InsertPaymentStatus_NullRequest_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => service.InsertPaymentStatus("123", null));
         }
     }
 }
