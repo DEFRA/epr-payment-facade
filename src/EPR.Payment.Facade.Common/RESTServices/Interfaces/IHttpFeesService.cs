@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Common.RESTServices.Interfaces
 {
-    public interface IHttpFeeService
+    public interface IHttpFeesService
     {
-        Task<GetFeeResponseDto> GetFee(bool isLarge, string regulator);
-        Task InsertPaymentStatus(string paymentId, PaymentStatusInsertRequestDto paymentStatusUpdateRequest);
+        Task<GetFeesResponseDto> GetFee(bool isLarge, string regulator);        
     }
 }

@@ -7,25 +7,15 @@ using System.Drawing;
 
 namespace EPR.Payment.Facade.Services
 {
-    public class PaymentService : IPaymentService
+    public class PaymentsService : IPaymentsService
     {
         private readonly IHttpGovPayService _httpGovPayService;
-        private readonly IHttpFeeService _httpFeeService;
+        private readonly IHttpPaymentsService _httpPaymentsService;
 
-        public PaymentService(IHttpGovPayService httpGovPayService, IHttpFeeService httpFeeService)
+        public PaymentsService(IHttpGovPayService httpGovPayService, IHttpPaymentsService httpPaymentsService)
         {
             _httpGovPayService = httpGovPayService ?? throw new ArgumentNullException(nameof(httpGovPayService));
-            _httpFeeService = httpFeeService ?? throw new ArgumentNullException(nameof(httpFeeService));
-        }
-
-        public async Task<GetFeeResponseDto> GetFee(bool isLarge, string regulator)
-        {
-            return await _httpFeeService.GetFee(isLarge, regulator);
-        }
-
-        public async Task<PaymentStatusResponseDto> GetPaymentStatus(string paymentId)
-        {
-            return await _httpGovPayService.GetPaymentStatus(paymentId);
+            _httpPaymentsService = httpPaymentsService ?? throw new ArgumentNullException(nameof(httpPaymentsService));
         }
 
         public async Task<PaymentResponseDto> InitiatePayment(PaymentRequestDto request)
@@ -33,9 +23,14 @@ namespace EPR.Payment.Facade.Services
             return await _httpGovPayService.InitiatePayment(request);
         }
 
+        public async Task<PaymentStatusResponseDto> GetPaymentStatus(string paymentId)
+        {
+            return await _httpGovPayService.GetPaymentStatus(paymentId);
+        }
+
         public async Task InsertPaymentStatus(string paymentId, PaymentStatusInsertRequestDto request)
         {
-            await _httpFeeService.InsertPaymentStatus(paymentId, request);
+            await _httpPaymentsService.InsertPaymentStatus(paymentId, request);
         }
     }
 }

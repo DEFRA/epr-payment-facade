@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Common.Dtos.Response
 {
-    public class GetFeeResponseDto
+    public class GetFeesResponseDto
     {
         public bool Large { get; set; }
 

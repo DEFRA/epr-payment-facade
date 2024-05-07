@@ -13,50 +13,19 @@ using System.Threading.Tasks;
 namespace EPR.Payment.Facade.Tests
 {
     [TestClass]
-    public class PaymentControllerTests
+    public class PaymentsControllerTests
     {
-        private PaymentController? _controller;
-        private Mock<IPaymentService>? _paymentServiceMock;
-        private Mock<ILogger<PaymentController>>? _loggerMock;
+        private PaymentsController? _controller;
+        private Mock<IPaymentsService>? _paymentServiceMock;
+        private Mock<ILogger<PaymentsController>>? _loggerMock;
 
         [TestInitialize]
         public void Initialize()
         {
-            _paymentServiceMock = new Mock<IPaymentService>();
-            _loggerMock = new Mock<ILogger<PaymentController>>();
+            _paymentServiceMock = new Mock<IPaymentsService>();
+            _loggerMock = new Mock<ILogger<PaymentsController>>();
 
-            _controller = new PaymentController(_paymentServiceMock.Object, _loggerMock.Object);
-        }
-
-        [TestMethod]
-        public async Task GetFee_ValidRequest_ReturnsOk()
-        {
-            // Arrange
-            var expectedResponse = new GetFeeResponseDto { Large = true, Regulator = "regulator", Amount = 199, EffectiveFrom = DateTime.Now.AddDays(-1), EffectiveTo = DateTime.Now.AddDays(10) };
-            _paymentServiceMock.Setup(service => service.GetFee(It.IsAny<bool>(), It.IsAny<string>())).ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await _controller.GetFee(true, "regulator");
-
-            // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-            var okResult = (OkObjectResult)result.Result;
-            Assert.AreEqual(expectedResponse, okResult.Value);
-        }
-
-        [TestMethod]
-        public async Task GetFee_ServiceThrowsException_ReturnsInternalServerError()
-        {
-            // Arrange
-            _paymentServiceMock.Setup(service => service.GetFee(It.IsAny<bool>(), It.IsAny<string>())).ThrowsAsync(new Exception("Test Exception"));
-
-            // Act
-            var result = await _controller.GetFee(true, "regulator");
-
-            // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(ObjectResult)); 
-            var objectResult = (ObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode); 
+            _controller = new PaymentsController(_paymentServiceMock.Object, _loggerMock.Object);
         }
 
         [TestMethod]
