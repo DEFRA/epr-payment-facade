@@ -29,7 +29,7 @@ namespace EPR.Payment.Facade.Tests
         }
 
         [TestMethod]
-        public async Task InitiatePayment_ValidRequest_ReturnsOk()
+        public async Task InitiatePayment_ValidRequest_ReturnsCreated()
         {
             // Arrange
             var request = new PaymentRequestDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax", return_url = "https://your.service.gov.uk/completed" };
@@ -40,9 +40,11 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.InitiatePayment(request);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-            var okResult = (OkObjectResult)result.Result;
-            Assert.AreEqual(expectedResponse, okResult.Value);
+            Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
+            var createdResult = (CreatedAtActionResult)result.Result;
+            Assert.AreEqual(nameof(_controller.GetPaymentStatus), createdResult.ActionName);
+            Assert.AreEqual(expectedResponse.PaymentId, createdResult.RouteValues["paymentId"]);
+            Assert.AreEqual(expectedResponse, createdResult.Value);
         }
 
         [TestMethod]
@@ -61,6 +63,21 @@ namespace EPR.Payment.Facade.Tests
             Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode); 
         }
 
+        [TestMethod]
+        public async Task InitiatePayment_InvalidRequest_ReturnsBadRequest()
+        {
+            // Arrange
+            var request = new PaymentRequestDto(); // Invalid request with missing required fields
+            _controller.ModelState.AddModelError("Amount", "The Amount field is required.");
+
+            // Act
+            var result = await _controller.InitiatePayment(request);
+
+            // Assert
+            Assert.IsInstanceOfType(result.Result, typeof(ObjectResult));
+            var objectResult = (ObjectResult)result.Result;
+            Assert.AreEqual(StatusCodes.Status400BadRequest, objectResult.StatusCode);
+        }
 
         [TestMethod]
         public async Task GetPaymentStatus_ValidRequest_ReturnsOk()
@@ -96,6 +113,22 @@ namespace EPR.Payment.Facade.Tests
         }
 
         [TestMethod]
+        public async Task GetPaymentStatus_PaymentNotFound_ReturnsNotFound()
+        {
+            // Arrange
+            var paymentId = "invalidId";
+            _paymentServiceMock.Setup(service => service.GetPaymentStatus(paymentId)).ReturnsAsync((PaymentStatusResponseDto)null);
+
+            // Act
+            var result = await _controller.GetPaymentStatus(paymentId);
+
+            // Assert
+            Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
+            var notFoundResult = (NotFoundResult)result.Result;
+            Assert.AreEqual(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        }
+
+        [TestMethod]
         public async Task InsertPaymentStatus_ValidRequest_ReturnsOk()
         {
             // Arrange
@@ -127,6 +160,23 @@ namespace EPR.Payment.Facade.Tests
             Assert.IsInstanceOfType(result, typeof(ObjectResult));
             var objectResult = (ObjectResult)result;
             Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+        }
+
+        [TestMethod]
+        public async Task InsertPaymentStatus_InvalidRequest_ReturnsBadRequest()
+        {
+            // Arrange
+            var paymentId = "12345";
+            var request = new PaymentStatusInsertRequestDto { /* Invalid request data */ };
+            _controller.ModelState.AddModelError("PropertyName", "Error message"); // Add a model state error
+
+            // Act
+            var result = await _controller.InsertPaymentStatus(paymentId, request);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            var badRequestResult = (BadRequestObjectResult)result;
+            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using EPR.Payment.Facade.Common.Dtos.Request;
 using EPR.Payment.Facade.Common.Dtos.Response;
+using EPR.Payment.Facade.Services;
 using EPR.Payment.Facade.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,14 +24,20 @@ namespace EPR.Payment.Facade.Controllers
 
         [MapToApiVersion(1)]
         [HttpPost]
-        [ProducesResponseType(typeof(PaymentResponseDto), 200)]
+        [ProducesResponseType(typeof(PaymentResponseDto), 201)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaymentResponseDto>> InitiatePayment([FromBody] PaymentRequestDto request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var result = await _paymentsService.InitiatePayment(request);
-                return Ok(result);
+                return CreatedAtAction(nameof(GetPaymentStatus), new { paymentId = result.PaymentId }, result);
             }
             catch (Exception ex)
             {
@@ -42,12 +49,16 @@ namespace EPR.Payment.Facade.Controllers
         [MapToApiVersion(1)]
         [HttpGet("{paymentId}/status")]
         [ProducesResponseType(typeof(PaymentStatusResponseDto), 200)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaymentStatusResponseDto>> GetPaymentStatus(string paymentId)
         {
             try
             {
                 var paymentStatusResponseDto = await _paymentsService.GetPaymentStatus(paymentId);
+                if (paymentStatusResponseDto == null)
+                    return NotFound();
+
                 return Ok(paymentStatusResponseDto);
             }
             catch (Exception ex)
@@ -60,11 +71,17 @@ namespace EPR.Payment.Facade.Controllers
         [MapToApiVersion(1)]
         [HttpPost("{paymentId}/status")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> InsertPaymentStatus(string paymentId, [FromBody] PaymentStatusInsertRequestDto request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
-            {                
+            {
                 await _paymentsService.InsertPaymentStatus(paymentId, request);
                 return Ok();
             }
@@ -75,5 +92,4 @@ namespace EPR.Payment.Facade.Controllers
             }
         }
     }
-
 }
