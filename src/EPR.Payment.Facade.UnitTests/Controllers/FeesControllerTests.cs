@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace EPR.Payment.Facade.Tests
 {
@@ -57,6 +58,21 @@ namespace EPR.Payment.Facade.Tests
             Assert.IsInstanceOfType(result.Result, typeof(ObjectResult)); 
             var objectResult = (ObjectResult)result.Result;
             Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode); 
-        }        
+        }
+
+        [TestMethod]
+        public async Task GetFee_InvalidRequest_ReturnsBadRequest()
+        {
+            // Arrange: No parameters provided, which is an invalid request
+
+            // Act
+            var result = await _controller.GetFee(false, null);
+
+            // Assert
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
+            var badRequestResult = (BadRequestObjectResult)result.Result;
+            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
+
     }
 }

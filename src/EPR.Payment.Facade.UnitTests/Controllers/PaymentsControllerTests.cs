@@ -66,17 +66,22 @@ namespace EPR.Payment.Facade.Tests
         [TestMethod]
         public async Task InitiatePayment_InvalidRequest_ReturnsBadRequest()
         {
-            // Arrange
+            // Arrange: Create a request with missing required fields
             var request = new PaymentRequestDto(); // Invalid request with missing required fields
-            _controller.ModelState.AddModelError("Amount", "The Amount field is required.");
 
-            // Act
+            // Add error messages to ModelState to simulate missing required fields
+            _controller.ModelState.AddModelError(nameof(PaymentRequestDto.Amount), "The Amount field is required.");
+            _controller.ModelState.AddModelError(nameof(PaymentRequestDto.Reference), "The Reference field is required.");
+            _controller.ModelState.AddModelError(nameof(PaymentRequestDto.Description), "The Description field is required.");
+            _controller.ModelState.AddModelError(nameof(PaymentRequestDto.return_url), "The Return URL field is required.");
+
+            // Act: Call the action method
             var result = await _controller.InitiatePayment(request);
 
-            // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(ObjectResult));
-            var objectResult = (ObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status400BadRequest, objectResult.StatusCode);
+            // Assert: Check if the response is BadRequest and has the correct status code
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
+            var badRequestResult = (BadRequestObjectResult)result.Result;
+            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
         }
 
         [TestMethod]
@@ -129,6 +134,21 @@ namespace EPR.Payment.Facade.Tests
         }
 
         [TestMethod]
+        public async Task GetPaymentStatus_EmptyPaymentId_ReturnsBadRequest()
+        {
+            // Arrange: Set up the scenario with an empty paymentId
+            string emptyPaymentId = string.Empty;
+
+            // Act: Call the action method with the empty paymentId
+            var result = await _controller.GetPaymentStatus(emptyPaymentId);
+
+            // Assert: Check if the response is BadRequest and has the correct status code
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
+            var badRequestResult = (BadRequestObjectResult)result.Result;
+            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        }
+
+        [TestMethod]
         public async Task InsertPaymentStatus_ValidRequest_ReturnsOk()
         {
             // Arrange
@@ -167,6 +187,7 @@ namespace EPR.Payment.Facade.Tests
         {
             // Arrange
             var paymentId = "12345";
+            //TODO : PS - need to setup tests for exact model for invalid state
             var request = new PaymentStatusInsertRequestDto { /* Invalid request data */ };
             _controller.ModelState.AddModelError("PropertyName", "Error message"); // Add a model state error
 

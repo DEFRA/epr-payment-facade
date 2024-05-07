@@ -49,10 +49,16 @@ namespace EPR.Payment.Facade.Controllers
         [MapToApiVersion(1)]
         [HttpGet("{paymentId}/status")]
         [ProducesResponseType(typeof(PaymentStatusResponseDto), 200)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaymentStatusResponseDto>> GetPaymentStatus(string paymentId)
-        {
+        {            
+            if (string.IsNullOrEmpty(paymentId))
+            {
+                return BadRequest("PaymentId cannot be null or empty");
+            }
+
             try
             {
                 var paymentStatusResponseDto = await _paymentsService.GetPaymentStatus(paymentId);
@@ -68,6 +74,7 @@ namespace EPR.Payment.Facade.Controllers
             }
         }
 
+
         [MapToApiVersion(1)]
         [HttpPost("{paymentId}/status")]
         [ProducesResponseType(200)]
@@ -75,6 +82,7 @@ namespace EPR.Payment.Facade.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> InsertPaymentStatus(string paymentId, [FromBody] PaymentStatusInsertRequestDto request)
         {
+            // TODO : PS - need exact model to insert payment and then check valid fields etc
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

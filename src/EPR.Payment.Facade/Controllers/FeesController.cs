@@ -22,9 +22,16 @@ namespace EPR.Payment.Facade.Controllers
         [MapToApiVersion(1)]
         [HttpGet]
         [ProducesResponseType(typeof(GetFeesResponseDto), 200)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetFeesResponseDto>> GetFee(bool isLarge, string regulator)
         {
+            // Check for invalid parameters
+            if (string.IsNullOrEmpty(regulator))
+            {
+                return BadRequest("Invalid 'regulator' parameter provided");
+            }
+
             try
             {
                 var feeResponse = await _feesService.GetFee(isLarge, regulator);
@@ -36,5 +43,6 @@ namespace EPR.Payment.Facade.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
             }
         }
+
     }
 }
