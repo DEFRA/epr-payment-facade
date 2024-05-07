@@ -1,24 +1,35 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+FROM defradigital/dotnetcore-development:dotnet6.0 AS build-env
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+ARG PORT=3000
+ENV ASPNETCORE_URLS=http://*:${PORT}
+EXPOSE ${PORT}
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["EPR.Payment.Facade/EPR.Payment.Facade.csproj", "EPR.Payment.Facade/"]
-RUN dotnet restore "./EPR.Payment.Facade/EPR.Payment.Facade.csproj"
-COPY . .
-WORKDIR "/src/EPR.Payment.Facade"
-RUN dotnet build "./EPR.Payment.Facade.csproj" -c $BUILD_CONFIGURATION -o /app/build
+COPY --chown=dotnet ["EPR.Payment.Facade/EPR.Payment.Facade.csproj", "EPR.Payment.Facade/"]
+COPY --chown=dotnet  ["EPR.Payment.Facade.Common/EPR.Payment.Facade.Common.csproj", "EPR.Payment.Facade.Common/"]
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./EPR.Payment.Facade.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet restore "EPR.Payment.Facade/EPR.Payment.Facade.csproj"
 
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "EPR.Payment.Facade.dll"]
+USER root
+RUN apk update && apk add --no-cache npm
+USER dotnet
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/internal-ca.crt
+
+COPY --chown=dotnet:dotnet . .
+WORKDIR /home/dotnet/EPR.Payment.Facade
+RUN dotnet publish -c Release -o out
+
+FROM defradigital/dotnetcore:dotnet6.0
+COPY --from=build-env --chown=dotnet /home/dotnet/EPR.Payment.Facade/out .
+
+USER root
+RUN apk add icu-libs libintl
+USER dotnet
+
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
+
+ARG PORT=3000
+ENV ASPNETCORE_URLS=http://*:${PORT}
+EXPOSE ${PORT}
+
+CMD dotnet EPR.Payment.Facade.dll
+
