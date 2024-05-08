@@ -10,6 +10,7 @@ using Moq;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using FluentAssertions;
 
 namespace EPR.Payment.Facade.Tests
 {
@@ -40,9 +41,9 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.GetFee(true, "regulator");
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+            result.Result.Should().BeOfType<OkObjectResult>();
             var okResult = (OkObjectResult)result.Result;
-            Assert.AreEqual(expectedResponse, okResult.Value);
+            okResult.Value.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
@@ -55,9 +56,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.GetFee(true, "regulator");
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(ObjectResult)); 
-            var objectResult = (ObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode); 
+            result.Result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [TestMethod]
@@ -69,10 +68,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.GetFee(false, null);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
-            var badRequestResult = (BadRequestObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            result.Result.Should().BeOfType<BadRequestObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
-
     }
 }

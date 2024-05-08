@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Threading.Tasks;
+using FluentAssertions;
 
 namespace EPR.Payment.Facade.Tests
 {
@@ -40,11 +41,9 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.InitiatePayment(request);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
-            var createdResult = (CreatedAtActionResult)result.Result;
-            Assert.AreEqual(nameof(_controller.GetPaymentStatus), createdResult.ActionName);
-            Assert.AreEqual(expectedResponse.PaymentId, createdResult.RouteValues["paymentId"]);
-            Assert.AreEqual(expectedResponse, createdResult.Value);
+            result.Result.Should().BeOfType<CreatedAtActionResult>().Which.ActionName.Should().Be(nameof(_controller.GetPaymentStatus));
+            result.Result.Should().BeOfType<CreatedAtActionResult>().Which.RouteValues.Should().ContainKey("paymentId").WhoseValue.Should().Be(expectedResponse.PaymentId);
+            result.Result.Should().BeOfType<CreatedAtActionResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
@@ -58,9 +57,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.InitiatePayment(request);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(ObjectResult)); 
-            var objectResult = (ObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode); 
+            result.Result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [TestMethod]
@@ -79,9 +76,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.InitiatePayment(request);
 
             // Assert: Check if the response is BadRequest and has the correct status code
-            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
-            var badRequestResult = (BadRequestObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            result.Result.Should().BeOfType<BadRequestObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [TestMethod]
@@ -96,9 +91,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.GetPaymentStatus(paymentId);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-            var okResult = (OkObjectResult)result.Result;
-            Assert.AreEqual(expectedResponse, okResult.Value);
+            result.Result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
@@ -112,9 +105,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.GetPaymentStatus(paymentId);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(ObjectResult)); 
-            var objectResult = (ObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+            result.Result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [TestMethod]
@@ -128,9 +119,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.GetPaymentStatus(paymentId);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
-            var notFoundResult = (NotFoundResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+            result.Result.Should().BeOfType<NotFoundResult>().Which.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [TestMethod]
@@ -143,9 +132,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.GetPaymentStatus(emptyPaymentId);
 
             // Assert: Check if the response is BadRequest and has the correct status code
-            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
-            var badRequestResult = (BadRequestObjectResult)result.Result;
-            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            result.Result.Should().BeOfType<BadRequestObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [TestMethod]
@@ -159,7 +146,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.InsertPaymentStatus(paymentId, request);
 
             // Assert
-            Assert.IsInstanceOfType(result, typeof(OkResult));
+            result.Should().BeOfType<OkResult>();
         }
 
         [TestMethod]
@@ -177,9 +164,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.InsertPaymentStatus(paymentId, request);
 
             // Assert
-            Assert.IsInstanceOfType(result, typeof(ObjectResult));
-            var objectResult = (ObjectResult)result;
-            Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+            result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [TestMethod]
@@ -195,9 +180,7 @@ namespace EPR.Payment.Facade.Tests
             var result = await _controller.InsertPaymentStatus(paymentId, request);
 
             // Assert
-            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            var badRequestResult = (BadRequestObjectResult)result;
-            Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+            result.Should().BeOfType<BadRequestObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
     }
 }

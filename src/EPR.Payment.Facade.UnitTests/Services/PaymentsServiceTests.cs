@@ -3,10 +3,12 @@ using EPR.Payment.Facade.Common.Dtos.Response;
 using EPR.Payment.Facade.Common.Dtos.Response.Common;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using EPR.Payment.Facade.Services;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace EPR.Payment.Facade.UnitTests.Services
 {
@@ -42,8 +44,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var response = await service.InitiatePayment(request);
 
             // Assert
-            Assert.IsNotNull(response);
-            Assert.AreEqual(expectedResponse, response);
+            response.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
@@ -59,7 +60,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.InitiatePayment(request));
+            await service.Invoking(async x => await x.InitiatePayment(request))
+                .Should().ThrowAsync<ArgumentException>();
         }
 
         [TestMethod]
@@ -69,7 +71,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => service.InitiatePayment(null));
+            await service.Invoking(async x => await x.InitiatePayment(null))
+                .Should().ThrowAsync<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -91,8 +94,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var response = await service.GetPaymentStatus(paymentId);
 
             // Assert
-            Assert.IsNotNull(response);
-            Assert.AreEqual(expectedResponse, response);
+            response.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
@@ -102,7 +104,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetPaymentStatus(null));
+            await service.Invoking(async x => await x.GetPaymentStatus(null))
+                .Should().ThrowAsync<ArgumentException>();
         }
 
         [TestMethod]
@@ -112,7 +115,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetPaymentStatus(""));
+            await service.Invoking(async x => await x.GetPaymentStatus(""))
+                .Should().ThrowAsync<ArgumentException>();
         }
 
         [TestMethod]
@@ -124,11 +128,11 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var paymentId = "123";
 
             // Act
-            await service.InsertPaymentStatus(paymentId, status);
+            Func<Task> action = async () => await service.InsertPaymentStatus(paymentId, status);
 
             // Assert
-            // TODO: Add suitable asserts here when known
-        }   
+            await action.Should().NotThrowAsync();
+        }
 
         [TestMethod]
         public async Task InsertPaymentStatus_NullOrEmptyPaymentId_ThrowsArgumentException()
@@ -138,8 +142,11 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var status = new PaymentStatusInsertRequestDto { Status = "Inserted" };
 
             // Act & Assert
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.InsertPaymentStatus(null, status));
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.InsertPaymentStatus("", status));
+            await service.Invoking(async x => await x.InsertPaymentStatus(null, status))
+                .Should().ThrowAsync<ArgumentException>();
+
+            await service.Invoking(async x => await x.InsertPaymentStatus("", status))
+                .Should().ThrowAsync<ArgumentException>();
         }
 
         [TestMethod]
@@ -149,7 +156,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => service.InsertPaymentStatus("123", null));
+            await service.Invoking(async x => await x.InsertPaymentStatus("123", null))
+                .Should().ThrowAsync<ArgumentNullException>();
         }
     }
 }

@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Common.Dtos.Response;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using EPR.Payment.Facade.Services;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -26,8 +27,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var response = await service.GetFee(true, "regulator");
 
             // Assert
-            Assert.IsNotNull(response);
-            Assert.AreEqual(expectedResponse, response);
+            response.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
@@ -37,8 +37,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new FeesService(_httpFeeServiceMock.Object);
 
             // Act & Assert
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetFee(true, null));
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetFee(true, ""));
+            await service.Invoking(s => s.GetFee(true, null)).Should().ThrowAsync<ArgumentException>();
+            await service.Invoking(s => s.GetFee(true, "")).Should().ThrowAsync<ArgumentException>();
         }
     }
 }

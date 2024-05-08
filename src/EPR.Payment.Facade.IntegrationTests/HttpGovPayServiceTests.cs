@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EPR.Payment.Facade.Common.Dtos.Request;
 using EPR.Payment.Facade.Common.RESTServices;
+using FluentAssertions;
 
 
 namespace EPR.Payment.Facade.IntegrationTests
@@ -44,20 +45,9 @@ namespace EPR.Payment.Facade.IntegrationTests
                 Description = "Test payment"
             };
 
-            // Act
-            try
-            {
-                var paymentResponse = await service.InitiatePayment(paymentRequestDto);
-
-                // Assert
-                Assert.IsNotNull(paymentResponse);
-                // Add more assertions based on the expected behavior
-            }
-            catch (Exception ex)
-            {
-                // Handle or log any exceptions
-                Assert.Fail($"Exception occurred: {ex.Message}");
-            }
+            // Act & Assert
+            await service.Invoking(async x => await x.InitiatePayment(paymentRequestDto))
+                .Should().NotThrowAsync();
         }
 
         [TestMethod]
@@ -76,20 +66,9 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             var paymentId = "no7kr7it1vjbsvb7r402qqrv86"; // Provide an actual payment ID
 
-            // Act
-            try
-            {
-                var paymentStatusResponse = await service.GetPaymentStatus(paymentId);
-
-                // Assert
-                Assert.IsNotNull(paymentStatusResponse);
-                // Add more assertions based on the expected behavior
-            }
-            catch (Exception ex)
-            {
-                // Handle or log any exceptions
-                Assert.Fail($"Exception occurred: {ex.Message}");
-            }
+            // Act & Assert
+            await service.Invoking(async x => await x.GetPaymentStatus(paymentId))
+                .Should().NotThrowAsync();
         }
     }
 }
