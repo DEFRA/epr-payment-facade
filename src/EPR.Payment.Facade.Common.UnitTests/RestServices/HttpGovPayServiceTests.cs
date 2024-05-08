@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using EPR.Payment.Facade.Common.Dtos.Request;
+﻿using EPR.Payment.Facade.Common.Dtos.Request;
 using EPR.Payment.Facade.Common.Dtos.Response;
 using EPR.Payment.Facade.Common.RESTServices;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
