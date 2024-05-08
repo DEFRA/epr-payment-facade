@@ -70,5 +70,21 @@ namespace EPR.Payment.Facade.Tests
             // Assert
             result.Result.Should().BeOfType<BadRequestObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
+
+        [TestMethod]
+        public async Task GetFee_NoFeeFound_ReturnsNotFound()
+        {
+            // Arrange
+            var isLarge = true;
+            var regulator = "TestRegulator";
+            _feesServiceMock.Setup(service => service.GetFee(isLarge, regulator)).ReturnsAsync((GetFeesResponseDto)null);
+
+            // Act
+            var result = await _controller.GetFee(isLarge, regulator);
+
+            // Assert
+            result.Result.Should().BeOfType<NotFoundResult>();
+        }
+
     }
 }

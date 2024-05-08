@@ -20,8 +20,13 @@ namespace EPR.Payment.Facade.Controllers
         {
             _paymentsService = paymentsService ?? throw new ArgumentNullException(nameof(paymentsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(paymentsService));
-        }       
+        }
 
+        /// <summary>
+        /// Initiates a new payment.
+        /// </summary>
+        /// <param name="request">The payment request data.</param>
+        /// <returns>The created payment response.</returns>
         [MapToApiVersion(1)]
         [HttpPost]
         [ProducesResponseType(typeof(PaymentResponseDto), 201)]
@@ -46,6 +51,11 @@ namespace EPR.Payment.Facade.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves the status of a payment.
+        /// </summary>
+        /// <param name="paymentId">The ID of the payment.</param>
+        /// <returns>The payment status response.</returns>
         [MapToApiVersion(1)]
         [HttpGet("{paymentId}/status")]
         [ProducesResponseType(typeof(PaymentStatusResponseDto), 200)]
@@ -74,12 +84,17 @@ namespace EPR.Payment.Facade.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Inserts the status of a payment.
+        /// </summary>
+        /// <param name="paymentId">The ID of the payment.</param>
+        /// <param name="request">The payment status insertion request data.</param>
+        /// <returns>An action result indicating the success of the operation.</returns>
         [MapToApiVersion(1)]
         [HttpPost("{paymentId}/status")]
         [ProducesResponseType(200)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]        
         public async Task<IActionResult> InsertPaymentStatus(string paymentId, [FromBody] PaymentStatusInsertRequestDto request)
         {
             // TODO : PS - need exact model to insert payment and then check valid fields etc

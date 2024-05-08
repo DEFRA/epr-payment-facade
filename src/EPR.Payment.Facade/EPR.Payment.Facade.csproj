@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>4fa158e2-8221-4662-9320-6315ede7f154</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationFile>EPR.Payment.Facade.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -19,9 +19,19 @@ namespace EPR.Payment.Facade.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// Retrieves fee information based on the provided parameters.
+        /// </summary>
+        /// <param name="isLarge">Specifies if the fee is for a large transaction.</param>
+        /// <param name="regulator">The regulator for which the fee is being retrieved.</param>
+        /// <returns>
+        /// An ActionResult of type GetFeesResponseDto representing the fee information,
+        /// or a 404 Not Found if no fee information is found for the specified parameters.
+        /// </returns>
         [MapToApiVersion(1)]
         [HttpGet]
         [ProducesResponseType(typeof(GetFeesResponseDto), 200)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetFeesResponseDto>> GetFee(bool isLarge, string regulator)
@@ -35,6 +45,11 @@ namespace EPR.Payment.Facade.Controllers
             try
             {
                 var feeResponse = await _feesService.GetFee(isLarge, regulator);
+                if (feeResponse == null)
+                {
+                    return NotFound();
+                }
+
                 return Ok(feeResponse);
             }
             catch (Exception ex)
