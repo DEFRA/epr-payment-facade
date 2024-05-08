@@ -1,6 +1,8 @@
 using Asp.Versioning;
 using EPR.Payment.Facade.Extension;
+using EPR.Payment.Facade.HealthCheck;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDependencies();
+
+builder.Services
+    .AddHealthChecks()    
+    .AddCheck<PaymentsFacadeHealthCheck>(PaymentsFacadeHealthCheck.HealthCheckResultDescription,
+            failureStatus: HealthStatus.Unhealthy,
+            tags: new[] { "ready" }); ;
 
 builder.Services.AddApiVersioning(options =>
 {
