@@ -27,6 +27,9 @@ namespace EPR.Payment.Facade.Controllers
         /// </summary>
         /// <param name="request">The payment request data.</param>
         /// <returns>The created payment response.</returns>
+        /// <response code="201">Returns the created payment response.</response>
+        /// <response code="400">If the request is invalid.</response>
+        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpPost]
         [ProducesResponseType(typeof(PaymentResponseDto), 201)]
@@ -56,6 +59,10 @@ namespace EPR.Payment.Facade.Controllers
         /// </summary>
         /// <param name="paymentId">The ID of the payment.</param>
         /// <returns>The payment status response.</returns>
+        /// <response code="200">Returns the payment status response.</response>
+        /// <response code="400">If the request is invalid.</response>
+        /// <response code="404">If the payment is not found.</response>
+        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpGet("{paymentId}/status")]
         [ProducesResponseType(typeof(PaymentStatusResponseDto), 200)]
@@ -90,6 +97,9 @@ namespace EPR.Payment.Facade.Controllers
         /// <param name="paymentId">The ID of the payment.</param>
         /// <param name="request">The payment status insertion request data.</param>
         /// <returns>An action result indicating the success of the operation.</returns>
+        /// <response code="200">If the status is successfully inserted.</response>
+        /// <response code="400">If the request is invalid.</response>
+        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpPost("{paymentId}/status")]
         [ProducesResponseType(200)]

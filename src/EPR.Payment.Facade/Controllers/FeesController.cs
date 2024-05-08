@@ -28,6 +28,10 @@ namespace EPR.Payment.Facade.Controllers
         /// An ActionResult of type GetFeesResponseDto representing the fee information,
         /// or a 404 Not Found if no fee information is found for the specified parameters.
         /// </returns>
+        /// <response code="200">Returns the requested fee.</response>
+        /// <response code="404">If no fee information is found for the specified parameters.</response>
+        /// <response code="400">If the parameters are invalid.</response>
+        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpGet]
         [ProducesResponseType(typeof(GetFeesResponseDto), 200)]

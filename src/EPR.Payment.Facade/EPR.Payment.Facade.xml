@@ -14,6 +14,10 @@
             An ActionResult of type GetFeesResponseDto representing the fee information,
             or a 404 Not Found if no fee information is found for the specified parameters.
             </returns>
+            <response code="200">Returns the requested fee.</response>
+            <response code="404">If no fee information is found for the specified parameters.</response>
+            <response code="400">If the parameters are invalid.</response>
+            <response code="500">If an unexpected error occurs.</response>
         </member>
         <member name="M:EPR.Payment.Facade.Controllers.PaymentsController.InitiatePayment(EPR.Payment.Facade.Common.Dtos.Request.PaymentRequestDto)">
             <summary>
@@ -21,6 +25,9 @@
             </summary>
             <param name="request">The payment request data.</param>
             <returns>The created payment response.</returns>
+            <response code="201">Returns the created payment response.</response>
+            <response code="400">If the request is invalid.</response>
+            <response code="500">If an unexpected error occurs.</response>
         </member>
         <member name="M:EPR.Payment.Facade.Controllers.PaymentsController.GetPaymentStatus(System.String)">
             <summary>
@@ -28,6 +35,10 @@
             </summary>
             <param name="paymentId">The ID of the payment.</param>
             <returns>The payment status response.</returns>
+            <response code="200">Returns the payment status response.</response>
+            <response code="400">If the request is invalid.</response>
+            <response code="404">If the payment is not found.</response>
+            <response code="500">If an unexpected error occurs.</response>
         </member>
         <member name="M:EPR.Payment.Facade.Controllers.PaymentsController.InsertPaymentStatus(System.String,EPR.Payment.Facade.Common.Dtos.Request.PaymentStatusInsertRequestDto)">
             <summary>
@@ -36,6 +47,9 @@
             <param name="paymentId">The ID of the payment.</param>
             <param name="request">The payment status insertion request data.</param>
             <returns>An action result indicating the success of the operation.</returns>
+            <response code="200">If the status is successfully inserted.</response>
+            <response code="400">If the request is invalid.</response>
+            <response code="500">If an unexpected error occurs.</response>
         </member>
     </members>
 </doc>
