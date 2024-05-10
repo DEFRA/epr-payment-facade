@@ -49,7 +49,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task<T> Get<T>(string url, bool includeTrailingSlash = true)
         {
-            url = includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
+            url = string.IsNullOrEmpty(url) &&  !includeTrailingSlash ? _baseUrl : includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
 
             return await Send<T>(CreateMessage(url, null, HttpMethod.Get));
         }

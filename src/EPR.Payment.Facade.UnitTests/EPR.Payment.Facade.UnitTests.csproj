@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EPR.Payment.Facade.Common.UnitTests\EPR.Payment.Facade.Common.UnitTests.csproj" />
     <ProjectReference Include="..\EPR.Payment.Facade\EPR.Payment.Facade.csproj" />
   </ItemGroup>
 

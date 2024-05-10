@@ -1,9 +1,9 @@
 using Asp.Versioning;
+using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Extension;
-using EPR.Payment.Facade.HealthCheck;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using EPR.Payment.Facade.Helpers;
 using System.Reflection;
+using System.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,21 +12,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(setupAction => 
-{
-    var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddServiceHealthChecks();
+builder.Services
+    .AddHttpClient("HttpClient")
+    .ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        return new HttpClientHandler()
+        {
+            SslProtocols = SslProtocols.Tls12
+        };
+    });
+builder.Services.AddFacadeDependencies(builder.Configuration);
+//builder.Services.AddSwaggerGen(setupAction =>
+//{
+//    var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+//    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
 
-    setupAction.IncludeXmlComments(xmlCommentsFullPath);
-});
+//    setupAction.IncludeXmlComments(xmlCommentsFullPath);
+//});
 
 builder.Services.AddDependencies();
-
-builder.Services
-    .AddHealthChecks()    
-    .AddCheck<PaymentsFacadeHealthCheck>(PaymentsFacadeHealthCheck.HealthCheckResultDescription,
-            failureStatus: HealthStatus.Unhealthy,
-            tags: new[] { "ready" }); ;
 
 builder.Services.AddApiVersioning(options =>
 {
@@ -45,14 +52,19 @@ builder.Services.AddApiVersioning(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
+
+app.UseSwagger();
+app.UseSwaggerUI();
+//.UseSwaggerUI(c =>
+//{
+//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi");
+//    c.RoutePrefix = string.Empty;
+//});
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
+app.UseHealthChecks();
 app.UseAuthorization();
 
 app.MapControllers();

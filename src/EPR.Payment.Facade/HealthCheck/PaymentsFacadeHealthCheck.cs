@@ -1,5 +1,4 @@
-﻿using EPR.Payment.Facade.Services;
-using EPR.Payment.Facade.Services.Interfaces;
+﻿using EPR.Payment.Facade.Services.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace EPR.Payment.Facade.HealthCheck
@@ -7,20 +6,20 @@ namespace EPR.Payment.Facade.HealthCheck
     public class PaymentsFacadeHealthCheck : IHealthCheck
     {
         public const string HealthCheckResultDescription = "Payments Facade Health Check";
+        private readonly IPaymentServiceHealthService _paymentServiceHealthService;
 
-        private readonly IFeesService _feesService;
-        private readonly IPaymentsService _paymentsService;
 
-        public PaymentsFacadeHealthCheck(IFeesService feesService, IPaymentsService paymentsService)
+        public PaymentsFacadeHealthCheck(IPaymentServiceHealthService paymentServiceHealthService)
         {
-            _feesService = feesService ?? throw new ArgumentNullException(nameof(feesService));
-            _paymentsService = paymentsService ?? throw new ArgumentNullException(nameof(paymentsService));
+            _paymentServiceHealthService = paymentServiceHealthService;
         }
 
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            //TODO - PS : Add checks here when more details known
-            throw new NotImplementedException();
+            var response = await _paymentServiceHealthService.GetHealth(cancellationToken);
+            return response.IsSuccessStatusCode
+                ? HealthCheckResult.Healthy(HealthCheckResultDescription)
+                : HealthCheckResult.Unhealthy(HealthCheckResultDescription);
         }
     }
 }
