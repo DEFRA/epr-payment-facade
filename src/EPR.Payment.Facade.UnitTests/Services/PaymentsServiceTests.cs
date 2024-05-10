@@ -33,7 +33,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var expectedResponse = new PaymentResponseDto
             {
                 PaymentId = "12345",
-                Amount = request.Amount ?? 100,
+                Amount = request.Amount,
                 Reference = request.Reference,
                 Description = request.Description,
                 Email = "test@example.com"
