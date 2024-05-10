@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EPR.Payment.Facade.Controllers
 {
+    /// <summary>
+    /// Controller for managing payments.
+    /// </summary>
     [ApiVersion(1)]
     [ApiController]
     [Route("api/[controller]")]
@@ -16,6 +19,11 @@ namespace EPR.Payment.Facade.Controllers
         private readonly IPaymentsService _paymentsService;
         private readonly ILogger<PaymentsController> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaymentsController"/> class.
+        /// </summary>
+        /// <param name="paymentsService">The fees service.</param>
+        /// <param name="logger">The logger.</param>
         public PaymentsController(IPaymentsService paymentsService, ILogger<PaymentsController> logger)
         {
             _paymentsService = paymentsService ?? throw new ArgumentNullException(nameof(paymentsService));
