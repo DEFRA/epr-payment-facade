@@ -8,6 +8,7 @@ using Moq;
 
 namespace EPR.Payment.Facade.UnitTests.HealthCheck
 {
+    [TestClass]
     public class PaymentsFacadeHealthCheckTests : HealthChecksTestsBase
     {
         [TestMethod, AutoMoqData]
