@@ -1,4 +1,4 @@
-FROM defradigital/dotnetcore-development:dotnet8.0 AS build-env
+FROM defradigital/dotnetcore-development:dotnet6.0 AS build-env
 
 ARG PORT=3000
 ENV ASPNETCORE_URLS=http://*:${PORT}
@@ -18,7 +18,7 @@ COPY --chown=dotnet:dotnet . .
 WORKDIR /home/dotnet/EPR.Payment.Facade
 RUN dotnet publish -c Release -o out
 
-FROM defradigital/dotnetcore:dotnet8.0
+FROM defradigital/dotnetcore:dotnet6.0
 COPY --from=build-env --chown=dotnet /home/dotnet/EPR.Payment.Facade/out .
 
 USER root
