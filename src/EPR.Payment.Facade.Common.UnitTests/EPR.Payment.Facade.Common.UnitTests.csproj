@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="C:\Users\a898127\.nuget\packages\autоfiхture.mstеst\1.0.0\contentFiles\any\netcoreapp2.2\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll" />
+    <Content Remove="C:\Users\a898127\.nuget\packages\autоfiхture.mstеst\1.0.0\contentFiles\any\netcoreapp2.2\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll" />
+    <Content Remove="C:\Users\a898127\.nuget\packages\autоfiхture.mstеst\1.0.0\contentFiles\any\netcoreapp2.2\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.18.1" />
     <PackageReference Include="AutoFixture.AutoMoq" Version="4.18.1" />
     <PackageReference Include="AutоFiхture.MSTеst" Version="1.0.0" />
@@ -32,6 +38,14 @@
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\a898127\.nuget\packages\mstest.testadapter\3.3.1\build\net8.0\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\a898127\.nuget\packages\mstest.testadapter\3.3.1\build\net8.0\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll" />
   </ItemGroup>
 
 </Project>
