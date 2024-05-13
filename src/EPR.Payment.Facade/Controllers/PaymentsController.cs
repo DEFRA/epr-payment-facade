@@ -5,6 +5,7 @@ using EPR.Payment.Facade.Services;
 using EPR.Payment.Facade.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EPR.Payment.Facade.Controllers
 {
@@ -22,19 +23,17 @@ namespace EPR.Payment.Facade.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(paymentsService));
         }
 
-        /// <summary>
-        /// Initiates a new payment.
-        /// </summary>
-        /// <param name="request">The payment request data.</param>
-        /// <returns>The created payment response.</returns>
-        /// <response code="201">Returns the created payment response.</response>
-        /// <response code="400">If the request is invalid.</response>
-        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpPost]
         [ProducesResponseType(typeof(PaymentResponseDto), 201)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data. <br>" +
+            "Return_url input paramater is the url that Gov Pay will return back to when the payment journey is complete. <br>" +
+            "The reutnurl parameter in the response object is the initial page in the Gov Pay journeny.")]
+        [SwaggerResponse(StatusCodes.Status201Created, "Returns the created payment response.", typeof(PaymentResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
         public async Task<ActionResult<PaymentResponseDto>> InitiatePayment([FromBody] PaymentRequestDto request)
         {
             if (!ModelState.IsValid)
@@ -54,22 +53,19 @@ namespace EPR.Payment.Facade.Controllers
             }
         }
 
-        /// <summary>
-        /// Retrieves the status of a payment.
-        /// </summary>
-        /// <param name="paymentId">The ID of the payment.</param>
-        /// <returns>The payment status response.</returns>
-        /// <response code="200">Returns the payment status response.</response>
-        /// <response code="400">If the request is invalid.</response>
-        /// <response code="404">If the payment is not found.</response>
-        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpGet("{paymentId}/status")]
         [ProducesResponseType(typeof(PaymentStatusResponseDto), 200)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<PaymentStatusResponseDto>> GetPaymentStatus(string paymentId)
+        [SwaggerOperation(Summary = "Retrieves the status of a payment", Description = "Retrieves the status of a payment for the paymentId requested.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returns the payment status response.", typeof(PaymentStatusResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "If the payment is not found.")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
+        public async Task<ActionResult<PaymentStatusResponseDto>> GetPaymentStatus(
+            [SwaggerParameter("The ID of the payment.")] string paymentId)
         {            
             if (string.IsNullOrEmpty(paymentId))
             {
@@ -91,21 +87,18 @@ namespace EPR.Payment.Facade.Controllers
             }
         }
 
-        /// <summary>
-        /// Inserts the status of a payment.
-        /// </summary>
-        /// <param name="paymentId">The ID of the payment.</param>
-        /// <param name="request">The payment status insertion request data.</param>
-        /// <returns>An action result indicating the success of the operation.</returns>
-        /// <response code="200">If the status is successfully inserted.</response>
-        /// <response code="400">If the request is invalid.</response>
-        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpPost("{paymentId}/status")]
         [ProducesResponseType(200)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]        
-        public async Task<IActionResult> InsertPaymentStatus(string paymentId, [FromBody] PaymentStatusInsertRequestDto request)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Inserts the status of a payment", Description = "Inserts the status of a payment for the paymentId specified.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "If the status is successfully inserted.")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
+        public async Task<IActionResult> InsertPaymentStatus(
+            [SwaggerParameter("The ID of the payment.")] string paymentId,
+            [FromBody] PaymentStatusInsertRequestDto request)
         {
             // TODO : PS - need exact model to insert payment and then check valid fields etc
             if (!ModelState.IsValid)

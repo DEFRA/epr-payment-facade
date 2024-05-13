@@ -10,21 +10,30 @@ namespace EPR.Payment.Facade.Common.RESTServices
 {
     public class HttpGovPayService : BaseHttpService, IHttpGovPayService
     {
-        private readonly string _bearerToken;
+        private readonly string? _bearerToken;
 
         public HttpGovPayService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration)
-            : base(httpContextAccessor, httpClientFactory, configuration["GovPay:BaseUrl"], configuration["GovPay:EndPointName"])
+            : base(httpContextAccessor, httpClientFactory,
+                configuration?["GovPay:BaseUrl"] ?? throw new ArgumentNullException(nameof(configuration), "BaseUrl configuration is missing"),
+                configuration?["GovPay:EndPointName"] ?? throw new ArgumentNullException(nameof(configuration), "EndPointName configuration is missing"))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _bearerToken = configuration["GovPay:BearerToken"];
+            _bearerToken = configuration["GovPay:BearerToken"] ?? throw new ArgumentNullException(nameof(configuration), "Bearer token configuration is missing");
         }
 
         public async Task<PaymentResponseDto> InitiatePayment(PaymentRequestDto paymentRequestDto)
         {
-            SetBearerToken(_bearerToken); // Set the bearer token
+            if (_bearerToken != null)
+            {
+                SetBearerToken(_bearerToken); // Set the bearer token
+            }
+            else
+            {        
+                throw new InvalidOperationException("Bearer token is null. Unable to initiate payment.");
+            }
 
             var url = "payments";
             try
@@ -39,7 +48,14 @@ namespace EPR.Payment.Facade.Common.RESTServices
 
         public async Task<PaymentStatusResponseDto> GetPaymentStatus(string paymentId)
         {
-            SetBearerToken(_bearerToken); // Set the bearer token
+            if (_bearerToken != null)
+            {
+                SetBearerToken(_bearerToken); // Set the bearer token
+            }
+            else
+            {            
+                throw new InvalidOperationException("Bearer token is null. Unable to retrieve payment status.");
+            }
 
             var url = $"payments/{paymentId}";
             try

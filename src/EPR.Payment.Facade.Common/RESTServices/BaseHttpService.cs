@@ -189,7 +189,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
                 }
 
                 // set the response status code and throw the exception for the middleware to handle
-                throw new ResponseCodeException(response.StatusCode, content);
+                throw new ResponseCodeException(response.StatusCode, content!);
             }
         }
 
@@ -230,7 +230,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         {
             var properties = dto.GetType().GetProperties()
                 .Where(p => p.GetValue(dto, null) != null)
-                .Select(p => p.Name + "=" + Uri.EscapeDataString(p.GetValue(dto, null).ToString()));
+                .Select(p => p.Name + "=" + Uri.EscapeDataString(p.GetValue(dto, null)?.ToString() ?? ""));
             return "?" + string.Join("&", properties);
         }
     }

@@ -28,6 +28,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             var configuration = new Mock<IConfiguration>();
             configuration.SetupGet(x => x["GovPay:BaseUrl"]).Returns("https://example.com");
             configuration.SetupGet(x => x["GovPay:EndPointName"]).Returns("payments");
+            configuration.SetupGet(x => x["GovPay:BearerToken"]).Returns("dummyBearerToken");
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             _configurationMock = configuration.Object;

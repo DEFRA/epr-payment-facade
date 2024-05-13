@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Common.Dtos.Response;
 using EPR.Payment.Facade.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EPR.Payment.Facade.Controllers
 {
@@ -19,26 +20,20 @@ namespace EPR.Payment.Facade.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// Retrieves fee information based on the provided parameters.
-        /// </summary>
-        /// <param name="isLarge">Specifies if the fee is for a large transaction.</param>
-        /// <param name="regulator">The regulator for which the fee is being retrieved.</param>
-        /// <returns>
-        /// An ActionResult of type GetFeesResponseDto representing the fee information,
-        /// or a 404 Not Found if no fee information is found for the specified parameters.
-        /// </returns>
-        /// <response code="200">Returns the requested fee.</response>
-        /// <response code="404">If no fee information is found for the specified parameters.</response>
-        /// <response code="400">If the parameters are invalid.</response>
-        /// <response code="500">If an unexpected error occurs.</response>
         [MapToApiVersion(1)]
         [HttpGet]
         [ProducesResponseType(typeof(GetFeesResponseDto), 200)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<GetFeesResponseDto>> GetFee(bool isLarge, string regulator)
+        [SwaggerOperation(Summary = "Get fees", Description = "Retrieves fee information based on the provided parameters.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returns the requested fees.", typeof(GetFeesResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid 'regulator' parameter provided.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "No fee found for the provided parameters.")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error.")]
+        public async Task<ActionResult<GetFeesResponseDto>> GetFee(
+            [SwaggerParameter("Determines whether to retrieve large fees.")]  bool isLarge,
+            [SwaggerParameter("The regulator for which fee information is requested.")] string regulator)
         {
             // Check for invalid parameters
             if (string.IsNullOrEmpty(regulator))
