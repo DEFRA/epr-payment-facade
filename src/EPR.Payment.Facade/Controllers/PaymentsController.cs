@@ -25,7 +25,7 @@ namespace EPR.Payment.Facade.Controllers
 
         [MapToApiVersion(1)]
         [HttpPost]
-        [ProducesResponseType(typeof(PaymentResponseDto), 201)]
+        [ProducesResponseType(typeof(PaymentResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data. <br>" +
@@ -49,13 +49,18 @@ namespace EPR.Payment.Facade.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while processing InitiatePayment request");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Internal Server Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
             }
         }
 
         [MapToApiVersion(1)]
         [HttpGet("{paymentId}/status")]
-        [ProducesResponseType(typeof(PaymentStatusResponseDto), 200)]
+        [ProducesResponseType(typeof(PaymentStatusResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -64,9 +69,8 @@ namespace EPR.Payment.Facade.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "If the payment is not found.")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
-        public async Task<ActionResult<PaymentStatusResponseDto>> GetPaymentStatus(
-            [SwaggerParameter("The ID of the payment.")] string paymentId)
-        {            
+        public async Task<ActionResult<PaymentStatusResponseDto>> GetPaymentStatus(string paymentId)
+        {
             if (string.IsNullOrEmpty(paymentId))
             {
                 return BadRequest("PaymentId cannot be null or empty");
@@ -83,7 +87,12 @@ namespace EPR.Payment.Facade.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while processing GetPaymentStatus request");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Internal Server Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
             }
         }
 

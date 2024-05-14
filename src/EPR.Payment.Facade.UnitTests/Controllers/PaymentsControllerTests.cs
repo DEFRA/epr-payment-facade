@@ -10,6 +10,7 @@ using Moq;
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using EPR.Payment.Facade.Common.Dtos.Response.Common;
 
 namespace EPR.Payment.Facade.Tests
 {
@@ -84,7 +85,8 @@ namespace EPR.Payment.Facade.Tests
         {
             // Arrange
             var paymentId = "12345";
-            var expectedResponse = new PaymentStatusResponseDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax", PaymentId = "no7kr7it1vjbsvb7r402qqrv86", Email = "sherlock.holmes@example.com" };
+            var expectedResponse = SetupPaymentStatusResponseDto();
+
             _paymentServiceMock.Setup(service => service.GetPaymentStatus(paymentId)).ReturnsAsync(expectedResponse);
 
             // Act
@@ -182,5 +184,47 @@ namespace EPR.Payment.Facade.Tests
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
+
+        private PaymentStatusResponseDto SetupPaymentStatusResponseDto()
+        {
+            return new PaymentStatusResponseDto
+            {
+                Amount = 14500,
+                Reference = "12345",
+                Description = "Pay your council tax",
+                PaymentId = "no7kr7it1vjbsvb7r402qqrv86",
+                Email = "sherlock.holmes@example.com",
+                State = new State { Status = "Success", Finished = true },
+                Metadata = new Metadata { LedgerCode = "1234", InternalReferenceNumber = 5678 },
+                RefundSummary = new RefundSummary { Status = "Refunded", AmountAvailable = 1000, AmountSubmitted = 500 },
+                SettlementSummary = new SettlementSummary(), // Ensure correct namespace here
+                CardDetails = new CardDetails
+                {
+                    LastDigitsCardNumber = "1234",
+                    FirstDigitsCardNumber = "456",
+                    CardholderName = "John Doe",
+                    ExpiryDate = "12/23",
+                    BillingAddress = new BillingAddress { Line1 = "123 Street", City = "City", Postcode = "12345", Country = "Country" },
+                    CardBrand = "Visa",
+                    CardType = "Debit",
+                    WalletType = "Apple Pay"
+                },
+                DelayedCapture = true,
+                Moto = false,
+                ReturnUrl = "https://your.service.gov.uk/completed",
+                AuthorisationMode = "3D Secure",
+                Links = new Links
+                {
+                    Self = new Self { Href = "https://example.com/self", Method = "GET" },
+                    NextUrl = new NextUrl { Href = "https://example.com/next", Method = "POST" },
+                    NextUrlPost = new NextUrlPost { Href = "https://example.com/nextpost", Method = "POST" },
+                    Events = new Events { Href = "https://example.com/events", Method = "GET" },
+                    Refunds = new Refunds { Href = "https://example.com/refunds", Method = "POST" },
+                    Cancel = new Cancel { Href = "https://example.com/cancel", Method = "DELETE" }
+                }
+            };
+        }
+
+
     }
 }

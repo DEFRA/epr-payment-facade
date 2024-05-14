@@ -15,5 +15,4 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Common
         [JsonProperty("internal_reference_number")]
         public int InternalReferenceNumber { get; set; }
     }
-
 }

@@ -1,5 +1,8 @@
-﻿namespace EPR.Payment.Facade.Configuration
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace EPR.Payment.Facade.Configuration
 {
+    [ExcludeFromCodeCoverage]
     public class ServicesConfiguration
     {
         public static string SectionName => "Services";

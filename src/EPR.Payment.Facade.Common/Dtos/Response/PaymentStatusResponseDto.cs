@@ -79,17 +79,4 @@ namespace EPR.Payment.Facade.Common.Dtos.Response
         [JsonProperty("method")]
         public string? Method { get; set; }
     }
-
-    public class Self
-    {
-        [JsonProperty("href")]
-        public string? Href { get; set; }
-
-        [JsonProperty("method")]
-        public string? Method { get; set; }
-    }
-
-    public class SettlementSummary
-    {
-    }
 }

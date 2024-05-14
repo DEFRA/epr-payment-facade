@@ -65,6 +65,116 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [TestMethod]
+        public async Task InitiatePayment_NegativeAmount_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var request = new PaymentRequestDto
+            {
+                Amount = -100,
+                Reference = "REF123",
+                Description = "Test Payment",
+                return_url = "https://example.com/callback"
+            };
+
+            // Act & Assert
+            await service.Invoking(x => x.InitiatePayment(request))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Amount must be greater than zero.*");
+        }
+
+        [TestMethod]
+        public async Task InitiatePayment_ZeroAmount_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var request = new PaymentRequestDto
+            {
+                Amount = 0,
+                Reference = "REF123",
+                Description = "Test Payment",
+                return_url = "https://example.com/callback"
+            };
+
+            // Act & Assert
+            await service.Invoking(x => x.InitiatePayment(request))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Amount must be greater than zero.*");
+        }
+
+
+        [TestMethod]
+        public async Task InitiatePayment_NullDescription_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var request = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "REF123",
+                Description = null,
+                return_url = "https://example.com/callback"
+            };
+
+            // Act & Assert
+            await service.Invoking(x => x.InitiatePayment(request))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Description cannot be null or empty.*");
+        }
+
+        [TestMethod]
+        public async Task InitiatePayment_EmptyDescription_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var request = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "REF123",
+                Description = "",
+                return_url = "https://example.com/callback"
+            };
+
+            // Act & Assert
+            await service.Invoking(x => x.InitiatePayment(request))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Description cannot be null or empty.*");
+        }
+
+        [TestMethod]
+        public async Task InitiatePayment_NullReturnUrl_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var request = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "REF123",
+                Description = "Test Payment",
+                return_url = null
+            };
+
+            // Act & Assert
+            await service.Invoking(x => x.InitiatePayment(request))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Return URL cannot be null or empty.*");
+        }
+
+
+        [TestMethod]
+        public async Task InitiatePayment_EmptyReturnUrl_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var request = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "REF123",
+                Description = "Test Payment",
+                return_url = ""
+            };
+
+            // Act & Assert
+            await service.Invoking(x => x.InitiatePayment(request))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Return URL cannot be null or empty.*");
+        }
+
+        [TestMethod]
         public async Task InitiatePayment_NullRequest_ThrowsArgumentNullException()
         {
             // Arrange
@@ -127,7 +237,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var status = new PaymentStatusInsertRequestDto { Status = "Inserted" };
             var paymentId = "123";
 
-            // Act
+            // Act & Assert
             Func<Task> action = async () => await service.InsertPaymentStatus(paymentId, status);
 
             // Assert
@@ -143,10 +253,26 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Act & Assert
             await service.Invoking(async x => await x.InsertPaymentStatus(null, status))
-                .Should().ThrowAsync<ArgumentException>();
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*PaymentId cannot be null or empty.*");
 
             await service.Invoking(async x => await x.InsertPaymentStatus("", status))
-                .Should().ThrowAsync<ArgumentException>();
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*PaymentId cannot be null or empty.*");
+        }
+
+        [TestMethod]
+        public async Task InsertPaymentStatus_NullOrEmptyStatus_ThrowsArgumentException()
+        {
+            // Arrange
+            var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
+            var status = new PaymentStatusInsertRequestDto { Status = null };
+
+            // Act & Assert
+            await service.Invoking(async x => await x.InsertPaymentStatus("123", status))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Status cannot be null or empty.*");
+
+            status.Status = ""; // Empty Status
+            await service.Invoking(async x => await x.InsertPaymentStatus("123", status))
+                .Should().ThrowAsync<ArgumentException>().WithMessage("*Status cannot be null or empty.*");
         }
 
         [TestMethod]
@@ -157,7 +283,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Act & Assert
             await service.Invoking(async x => await x.InsertPaymentStatus("123", null))
-                .Should().ThrowAsync<ArgumentNullException>();
+                .Should().ThrowAsync<ArgumentNullException>().WithMessage("*request*");
         }
+
     }
 }
