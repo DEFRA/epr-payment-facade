@@ -35,7 +35,7 @@ namespace EPR.Payment.Facade.Tests
         {
             // Arrange
             var expectedResponse = new GetFeesResponseDto { Large = true, Regulator = "regulator", Amount = 199, EffectiveFrom = DateTime.Now.AddDays(-1), EffectiveTo = DateTime.Now.AddDays(10) };
-            _feesServiceMock.Setup(service => service.GetFee(It.IsAny<bool>(), It.IsAny<string>())).ReturnsAsync(expectedResponse);
+            _feesServiceMock.Setup(service => service.GetFeeAsync(It.IsAny<bool>(), It.IsAny<string>())).ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _controller.GetFee(true, "regulator");
@@ -50,7 +50,7 @@ namespace EPR.Payment.Facade.Tests
         public async Task GetFee_ServiceThrowsException_ReturnsInternalServerError()
         {
             // Arrange
-            _feesServiceMock.Setup(service => service.GetFee(It.IsAny<bool>(), It.IsAny<string>())).ThrowsAsync(new Exception("Test Exception"));
+            _feesServiceMock.Setup(service => service.GetFeeAsync(It.IsAny<bool>(), It.IsAny<string>())).ThrowsAsync(new Exception("Test Exception"));
 
             // Act
             var result = await _controller.GetFee(true, "regulator");
@@ -77,7 +77,7 @@ namespace EPR.Payment.Facade.Tests
             // Arrange
             var isLarge = true;
             var regulator = "TestRegulator";
-            _feesServiceMock.Setup(service => service.GetFee(isLarge, regulator)).ReturnsAsync((GetFeesResponseDto)null);
+            _feesServiceMock.Setup(service => service.GetFeeAsync(isLarge, regulator)).ReturnsAsync((GetFeesResponseDto)null);
 
             // Act
             var result = await _controller.GetFee(isLarge, regulator);

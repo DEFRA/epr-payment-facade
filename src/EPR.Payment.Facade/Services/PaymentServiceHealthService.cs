@@ -13,9 +13,9 @@ namespace EPR.Payment.Facade.Services
             _httpPaymentServiceHealthCheckService = httpPaymentServiceHealthCheckService ?? throw new ArgumentNullException(nameof(httpPaymentServiceHealthCheckService));
         }
 
-        public async Task<HttpResponseMessage> GetHealth(CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> GetHealthAsync(CancellationToken cancellationToken)
         {
-            return await _httpPaymentServiceHealthCheckService.GetHealth(cancellationToken);
+            return await _httpPaymentServiceHealthCheckService.GetHealthAsync(cancellationToken);
         }
     }
 }

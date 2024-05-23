@@ -43,7 +43,7 @@ namespace EPR.Payment.Facade.Controllers
 
             try
             {
-                var feeResponse = await _feesService.GetFee(isLarge, regulator);
+                var feeResponse = await _feesService.GetFeeAsync(isLarge, regulator);
                 if (feeResponse == null)
                 {
                     return NotFound();

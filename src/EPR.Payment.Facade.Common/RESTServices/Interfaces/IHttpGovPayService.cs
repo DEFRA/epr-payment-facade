@@ -10,7 +10,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Interfaces
 {
     public interface IHttpGovPayService
     {
-        Task<PaymentResponseDto> InitiatePayment(PaymentRequestDto requestDto);
-        Task<PaymentStatusResponseDto> GetPaymentStatus(string paymentId);
+        Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto requestDto);
+        Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId);
     }
 }

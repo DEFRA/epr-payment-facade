@@ -2,6 +2,6 @@
 {
     public interface IPaymentServiceHealthService
     {
-        Task<HttpResponseMessage> GetHealth(CancellationToken cancellationToken);
+        Task<HttpResponseMessage> GetHealthAsync(CancellationToken cancellationToken);
     }
 }

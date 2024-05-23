@@ -38,10 +38,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Description = request.Description,
                 Email = "test@example.com"
             };
-            _httpGovPayServiceMock.Setup(s => s.InitiatePayment(request)).ReturnsAsync(expectedResponse);
+            _httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(request)).ReturnsAsync(expectedResponse);
 
             // Act
-            var response = await service.InitiatePayment(request);
+            var response = await service.InitiatePaymentAsync(request);
 
             // Assert
             response.Should().BeEquivalentTo(expectedResponse);
@@ -60,7 +60,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await service.Invoking(async x => await x.InitiatePayment(request))
+            await service.Invoking(async x => await x.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ArgumentException>();
         }
 
@@ -78,7 +78,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await service.Invoking(x => x.InitiatePayment(request))
+            await service.Invoking(x => x.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Amount must be greater than zero.*");
         }
 
@@ -96,7 +96,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await service.Invoking(x => x.InitiatePayment(request))
+            await service.Invoking(x => x.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Amount must be greater than zero.*");
         }
 
@@ -115,7 +115,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await service.Invoking(x => x.InitiatePayment(request))
+            await service.Invoking(x => x.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Description cannot be null or empty.*");
         }
 
@@ -133,7 +133,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await service.Invoking(x => x.InitiatePayment(request))
+            await service.Invoking(x => x.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Description cannot be null or empty.*");
         }
 
@@ -151,7 +151,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await service.Invoking(x => x.InitiatePayment(request))
+            await service.Invoking(x => x.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Return URL cannot be null or empty.*");
         }
 
@@ -170,7 +170,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            await service.Invoking(x => x.InitiatePayment(request))
+            await service.Invoking(x => x.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Return URL cannot be null or empty.*");
         }
 
@@ -181,7 +181,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await service.Invoking(async x => await x.InitiatePayment(null))
+            await service.Invoking(async x => await x.InitiatePaymentAsync(null))
                 .Should().ThrowAsync<ArgumentNullException>();
         }
 
@@ -198,10 +198,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Amount = 100,
                 Description = "Test Payment"
             };
-            _httpGovPayServiceMock.Setup(s => s.GetPaymentStatus(paymentId)).ReturnsAsync(expectedResponse);
+            _httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(paymentId)).ReturnsAsync(expectedResponse);
 
             // Act
-            var response = await service.GetPaymentStatus(paymentId);
+            var response = await service.GetPaymentStatusAsync(paymentId);
 
             // Assert
             response.Should().BeEquivalentTo(expectedResponse);
@@ -214,7 +214,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await service.Invoking(async x => await x.GetPaymentStatus(null))
+            await service.Invoking(async x => await x.GetPaymentStatusAsync(null))
                 .Should().ThrowAsync<ArgumentException>();
         }
 
@@ -225,7 +225,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await service.Invoking(async x => await x.GetPaymentStatus(""))
+            await service.Invoking(async x => await x.GetPaymentStatusAsync(""))
                 .Should().ThrowAsync<ArgumentException>();
         }
 
@@ -238,7 +238,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var paymentId = "123";
 
             // Act & Assert
-            Func<Task> action = async () => await service.InsertPaymentStatus(paymentId, status);
+            Func<Task> action = async () => await service.InsertPaymentStatusAsync(paymentId, status);
 
             // Assert
             await action.Should().NotThrowAsync();
@@ -252,10 +252,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var status = new PaymentStatusInsertRequestDto { Status = "Inserted" };
 
             // Act & Assert
-            await service.Invoking(async x => await x.InsertPaymentStatus(null, status))
+            await service.Invoking(async x => await x.InsertPaymentStatusAsync(null, status))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*PaymentId cannot be null or empty.*");
 
-            await service.Invoking(async x => await x.InsertPaymentStatus("", status))
+            await service.Invoking(async x => await x.InsertPaymentStatusAsync("", status))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*PaymentId cannot be null or empty.*");
         }
 
@@ -267,11 +267,11 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var status = new PaymentStatusInsertRequestDto { Status = null };
 
             // Act & Assert
-            await service.Invoking(async x => await x.InsertPaymentStatus("123", status))
+            await service.Invoking(async x => await x.InsertPaymentStatusAsync("123", status))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Status cannot be null or empty.*");
 
             status.Status = ""; // Empty Status
-            await service.Invoking(async x => await x.InsertPaymentStatus("123", status))
+            await service.Invoking(async x => await x.InsertPaymentStatusAsync("123", status))
                 .Should().ThrowAsync<ArgumentException>().WithMessage("*Status cannot be null or empty.*");
         }
 
@@ -282,7 +282,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new PaymentsService(_httpGovPayServiceMock.Object, _httpPaymentServiceMock.Object);
 
             // Act & Assert
-            await service.Invoking(async x => await x.InsertPaymentStatus("123", null))
+            await service.Invoking(async x => await x.InsertPaymentStatusAsync("123", null))
                 .Should().ThrowAsync<ArgumentNullException>().WithMessage("*request*");
         }
 

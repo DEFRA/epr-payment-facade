@@ -16,7 +16,7 @@ namespace EPR.Payment.Facade.HealthCheck
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            var response = await _paymentServiceHealthService.GetHealth(cancellationToken);
+            var response = await _paymentServiceHealthService.GetHealthAsync(cancellationToken);
             return response.IsSuccessStatusCode
                 ? HealthCheckResult.Healthy(HealthCheckResultDescription)
                 : HealthCheckResult.Unhealthy(HealthCheckResultDescription);

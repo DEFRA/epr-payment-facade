@@ -43,7 +43,7 @@ namespace EPR.Payment.Facade.Controllers
 
             try
             {
-                var result = await _paymentsService.InitiatePayment(request);
+                var result = await _paymentsService.InitiatePaymentAsync(request);
                 return CreatedAtAction(nameof(GetPaymentStatus), new { paymentId = result.PaymentId }, result);
             }
             catch (Exception ex)
@@ -78,7 +78,7 @@ namespace EPR.Payment.Facade.Controllers
 
             try
             {
-                var paymentStatusResponseDto = await _paymentsService.GetPaymentStatus(paymentId);
+                var paymentStatusResponseDto = await _paymentsService.GetPaymentStatusAsync(paymentId);
                 if (paymentStatusResponseDto == null)
                     return NotFound();
 
@@ -117,7 +117,7 @@ namespace EPR.Payment.Facade.Controllers
 
             try
             {
-                await _paymentsService.InsertPaymentStatus(paymentId, request);
+                await _paymentsService.InsertPaymentStatusAsync(paymentId, request);
                 return Ok();
             }
             catch (Exception ex)

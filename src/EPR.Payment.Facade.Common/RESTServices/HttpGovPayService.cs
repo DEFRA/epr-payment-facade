@@ -24,7 +24,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
             _bearerToken = configuration["GovPay:BearerToken"] ?? throw new ArgumentNullException(nameof(configuration), "Bearer token configuration is missing");
         }
 
-        public async Task<PaymentResponseDto> InitiatePayment(PaymentRequestDto paymentRequestDto)
+        public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto paymentRequestDto)
         {
             if (_bearerToken != null)
             {
@@ -46,7 +46,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
             }
         }
 
-        public async Task<PaymentStatusResponseDto> GetPaymentStatus(string paymentId)
+        public async Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId)
         {
             if (_bearerToken != null)
             {

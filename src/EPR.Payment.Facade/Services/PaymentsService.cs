@@ -18,26 +18,26 @@ namespace EPR.Payment.Facade.Services
             _httpPaymentsService = httpPaymentsService ?? throw new ArgumentNullException(nameof(httpPaymentsService));
         }
 
-        public async Task<PaymentResponseDto> InitiatePayment(PaymentRequestDto request)
+        public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request)
         {
             ValidatePaymentRequest(request);
 
-            return await _httpGovPayService.InitiatePayment(request);
+            return await _httpGovPayService.InitiatePaymentAsync(request);
         }
 
-        public async Task<PaymentStatusResponseDto> GetPaymentStatus(string paymentId)
+        public async Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId)
         {
             ValidatePaymentId(paymentId);
 
-            return await _httpGovPayService.GetPaymentStatus(paymentId);
+            return await _httpGovPayService.GetPaymentStatusAsync(paymentId);
         }
 
-        public async Task InsertPaymentStatus(string paymentId, PaymentStatusInsertRequestDto request)
+        public async Task InsertPaymentStatusAsync(string paymentId, PaymentStatusInsertRequestDto request)
         {
             ValidatePaymentId(paymentId);
             ValidatePaymentStatusInsertRequest(request);
 
-            await _httpPaymentsService.InsertPaymentStatus(paymentId, request);
+            await _httpPaymentsService.InsertPaymentStatusAsync(paymentId, request);
         }
 
         private static void ValidatePaymentRequest(PaymentRequestDto request)

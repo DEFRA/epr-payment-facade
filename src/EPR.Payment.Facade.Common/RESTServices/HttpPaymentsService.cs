@@ -11,7 +11,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
     public class HttpPaymentsService : IHttpPaymentsService
     {
         // TODO - PS : Need to call the apis within the Payment controller within the EPR.Payment.Service here
-        public Task InsertPaymentStatus(string paymentId, PaymentStatusInsertRequestDto paymentStatusUpdateRequest)
+        public Task InsertPaymentStatusAsync(string paymentId, PaymentStatusInsertRequestDto paymentStatusUpdateRequest)
         {
             throw new NotImplementedException();
         }

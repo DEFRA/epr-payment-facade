@@ -17,7 +17,7 @@ namespace EPR.Payment.Facade.UnitTests.HealthCheck
         HealthCheckContext healthCheckContext,
         PaymentsFacadeHealthCheck paymentsFacadeHealthCheck)
         {
-            paymentServiceHealthService.Setup(x => x.GetHealth(It.IsAny<CancellationToken>())).ReturnsAsync(ResponseMessageOk);
+            paymentServiceHealthService.Setup(x => x.GetHealthAsync(It.IsAny<CancellationToken>())).ReturnsAsync(ResponseMessageOk);
 
             var actual = await paymentsFacadeHealthCheck.CheckHealthAsync(healthCheckContext, CancellationToken.None);
 
@@ -30,7 +30,7 @@ namespace EPR.Payment.Facade.UnitTests.HealthCheck
             HealthCheckContext healthCheckContext,
             PaymentsFacadeHealthCheck paymentsFacadeHealthCheck)
         {
-            paymentServiceHealthService.Setup(x => x.GetHealth(It.IsAny<CancellationToken>())).ReturnsAsync(ResponseMessageBadRequest);
+            paymentServiceHealthService.Setup(x => x.GetHealthAsync(It.IsAny<CancellationToken>())).ReturnsAsync(ResponseMessageBadRequest);
 
             var actual = await paymentsFacadeHealthCheck.CheckHealthAsync(healthCheckContext, CancellationToken.None);
 

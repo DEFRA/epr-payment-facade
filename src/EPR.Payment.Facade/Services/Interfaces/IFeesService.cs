@@ -5,6 +5,6 @@ namespace EPR.Payment.Facade.Services.Interfaces
 {
     public interface IFeesService
     {
-        Task<GetFeesResponseDto> GetFee(bool isLarge, string regulator);
+        Task<GetFeesResponseDto> GetFeeAsync(bool isLarge, string regulator);
     }
 }

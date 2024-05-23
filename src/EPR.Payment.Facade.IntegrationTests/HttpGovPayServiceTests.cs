@@ -47,7 +47,7 @@ namespace EPR.Payment.Facade.IntegrationTests
             };
 
             // Act & Assert
-            await service.Invoking(async x => await x.InitiatePayment(paymentRequestDto))
+            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
                 .Should().NotThrowAsync();
         }
 
@@ -68,7 +68,7 @@ namespace EPR.Payment.Facade.IntegrationTests
             var paymentId = "no7kr7it1vjbsvb7r402qqrv86"; // Provide an actual payment ID
 
             // Act & Assert
-            await service.Invoking(async x => await x.GetPaymentStatus(paymentId))
+            await service.Invoking(async x => await x.GetPaymentStatusAsync(paymentId))
                 .Should().NotThrowAsync();
         }
     }

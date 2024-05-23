@@ -9,6 +9,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Interfaces
 {
     public interface IHttpPaymentsService
     {
-        Task InsertPaymentStatus(string paymentId, PaymentStatusInsertRequestDto paymentStatusUpdateRequest);
+        Task InsertPaymentStatusAsync(string paymentId, PaymentStatusInsertRequestDto paymentStatusUpdateRequest);
     }
 }

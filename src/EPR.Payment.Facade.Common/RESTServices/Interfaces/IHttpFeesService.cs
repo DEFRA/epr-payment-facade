@@ -10,6 +10,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Interfaces
 {
     public interface IHttpFeesService
     {
-        Task<GetFeesResponseDto> GetFee(bool isLarge, string regulator);        
+        Task<GetFeesResponseDto> GetFeeAsync(bool isLarge, string regulator);        
     }
 }

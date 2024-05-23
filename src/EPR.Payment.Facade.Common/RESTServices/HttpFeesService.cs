@@ -12,7 +12,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
     public class HttpFeesService : IHttpFeesService
     {
         // TODO - PS : Need to call the apis within the Fee controller within the EPR.Payment.Service here
-        public Task<GetFeesResponseDto> GetFee(bool isLarge, string regulator)
+        public Task<GetFeesResponseDto> GetFeeAsync(bool isLarge, string regulator)
         {
             throw new NotImplementedException();
         }        

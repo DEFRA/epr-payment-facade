@@ -15,14 +15,14 @@ namespace EPR.Payment.Facade.Services
             _httpFeeService = httpFeeService ?? throw new ArgumentNullException(nameof(httpFeeService));
        }
 
-        public async Task<GetFeesResponseDto> GetFee(bool isLarge, string regulator)
+        public async Task<GetFeesResponseDto> GetFeeAsync(bool isLarge, string regulator)
         {
             if (string.IsNullOrEmpty(regulator))
             {
                 throw new ArgumentException("Regulator cannot be null or empty.", nameof(regulator));
             }
 
-            return await _httpFeeService.GetFee(isLarge, regulator);
+            return await _httpFeeService.GetFeeAsync(isLarge, regulator);
         }
     }
 }

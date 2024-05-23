@@ -36,7 +36,7 @@ namespace EPR.Payment.Facade.Tests
             // Arrange
             var request = new PaymentRequestDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax", return_url = "https://your.service.gov.uk/completed" };
             var expectedResponse = new PaymentResponseDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax", PaymentId = "no7kr7it1vjbsvb7r402qqrv86", Email = "sherlock.holmes@example.com" };
-            _paymentServiceMock.Setup(service => service.InitiatePayment(request)).ReturnsAsync(expectedResponse);
+            _paymentServiceMock.Setup(service => service.InitiatePaymentAsync(request)).ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _controller.InitiatePayment(request);
@@ -52,7 +52,7 @@ namespace EPR.Payment.Facade.Tests
         {
             // Arrange
             var request = new PaymentRequestDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax", return_url = "https://your.service.gov.uk/completed" };
-            _paymentServiceMock.Setup(service => service.InitiatePayment(request)).ThrowsAsync(new Exception("Test Exception"));
+            _paymentServiceMock.Setup(service => service.InitiatePaymentAsync(request)).ThrowsAsync(new Exception("Test Exception"));
 
             // Act
             var result = await _controller.InitiatePayment(request);
@@ -87,7 +87,7 @@ namespace EPR.Payment.Facade.Tests
             var paymentId = "12345";
             var expectedResponse = SetupPaymentStatusResponseDto();
 
-            _paymentServiceMock.Setup(service => service.GetPaymentStatus(paymentId)).ReturnsAsync(expectedResponse);
+            _paymentServiceMock.Setup(service => service.GetPaymentStatusAsync(paymentId)).ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _controller.GetPaymentStatus(paymentId);
@@ -101,7 +101,7 @@ namespace EPR.Payment.Facade.Tests
         {
             // Arrange
             var paymentId = "12345";
-            _paymentServiceMock.Setup(service => service.GetPaymentStatus(paymentId)).ThrowsAsync(new Exception("Test Exception"));
+            _paymentServiceMock.Setup(service => service.GetPaymentStatusAsync(paymentId)).ThrowsAsync(new Exception("Test Exception"));
 
             // Act
             var result = await _controller.GetPaymentStatus(paymentId);
@@ -115,7 +115,7 @@ namespace EPR.Payment.Facade.Tests
         {
             // Arrange
             var paymentId = "invalidId";
-            _paymentServiceMock.Setup(service => service.GetPaymentStatus(paymentId)).ReturnsAsync((PaymentStatusResponseDto)null);
+            _paymentServiceMock.Setup(service => service.GetPaymentStatusAsync(paymentId)).ReturnsAsync((PaymentStatusResponseDto)null);
 
             // Act
             var result = await _controller.GetPaymentStatus(paymentId);
@@ -159,7 +159,7 @@ namespace EPR.Payment.Facade.Tests
             var request = new PaymentStatusInsertRequestDto { };
 
             // Setup the mock to expect a call to InsertPaymentStatus with paymentId and request
-            _paymentServiceMock.Setup(service => service.InsertPaymentStatus(paymentId, request))
+            _paymentServiceMock.Setup(service => service.InsertPaymentStatusAsync(paymentId, request))
                                .ThrowsAsync(new Exception("Test Exception"));
 
             // Act

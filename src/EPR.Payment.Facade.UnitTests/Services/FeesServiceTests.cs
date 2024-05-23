@@ -21,10 +21,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
             // Arrange
             var service = new FeesService(_httpFeeServiceMock.Object);
             var expectedResponse = new GetFeesResponseDto { Large = true, Regulator = "regulator", Amount = 199, EffectiveFrom = DateTime.Now.AddDays(-1), EffectiveTo = DateTime.Now.AddDays(10) };
-            _httpFeeServiceMock.Setup(s => s.GetFee(It.IsAny<bool>(), It.IsAny<string>())).ReturnsAsync(expectedResponse);
+            _httpFeeServiceMock.Setup(s => s.GetFeeAsync(It.IsAny<bool>(), It.IsAny<string>())).ReturnsAsync(expectedResponse);
 
             // Act
-            var response = await service.GetFee(true, "regulator");
+            var response = await service.GetFeeAsync(true, "regulator");
 
             // Assert
             response.Should().BeEquivalentTo(expectedResponse);
@@ -37,8 +37,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var service = new FeesService(_httpFeeServiceMock.Object);
 
             // Act & Assert
-            await service.Invoking(s => s.GetFee(true, null)).Should().ThrowAsync<ArgumentException>();
-            await service.Invoking(s => s.GetFee(true, "")).Should().ThrowAsync<ArgumentException>();
+            await service.Invoking(s => s.GetFeeAsync(true, null)).Should().ThrowAsync<ArgumentException>();
+            await service.Invoking(s => s.GetFeeAsync(true, "")).Should().ThrowAsync<ArgumentException>();
         }
     }
 }

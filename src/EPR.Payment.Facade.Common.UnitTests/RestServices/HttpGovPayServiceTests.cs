@@ -83,7 +83,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                 _configurationMock);
 
             // Act
-            var result = await httpGovPayService.InitiatePayment(paymentRequestDto);
+            var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto);
 
             // Assert
             result.Should().NotBeNull();
@@ -111,7 +111,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                 _configurationMock);
 
             // Act & Assert
-            Func<Task> act = async () => await httpGovPayService.InitiatePayment(new PaymentRequestDto());
+            Func<Task> act = async () => await httpGovPayService.InitiatePaymentAsync(new PaymentRequestDto());
             await act.Should().ThrowAsync<Exception>().WithMessage("Error occurred while initiating payment.");
         }
 
@@ -140,7 +140,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                 _configurationMock);
 
             // Act
-            var result = await httpGovPayService.GetPaymentStatus(paymentId);
+            var result = await httpGovPayService.GetPaymentStatusAsync(paymentId);
 
             // Assert
             result.Should().NotBeNull();
@@ -169,7 +169,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                 _configurationMock);
 
             // Act & Assert
-            Func<Task> act = async () => await httpGovPayService.GetPaymentStatus(paymentId);
+            Func<Task> act = async () => await httpGovPayService.GetPaymentStatusAsync(paymentId);
             await act.Should().ThrowAsync<Exception>().WithMessage("Error occurred while retrieving payment status.");
         }
     }

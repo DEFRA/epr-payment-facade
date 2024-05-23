@@ -5,8 +5,8 @@ namespace EPR.Payment.Facade.Services.Interfaces
 {
     public interface IPaymentsService
     {        
-        Task<PaymentResponseDto> InitiatePayment(PaymentRequestDto request);
-        Task<PaymentStatusResponseDto> GetPaymentStatus(string paymentId);
-        Task InsertPaymentStatus(string paymentId, PaymentStatusInsertRequestDto paymentStatusInsertRequest);
+        Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request);
+        Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId);
+        Task InsertPaymentStatusAsync(string paymentId, PaymentStatusInsertRequestDto paymentStatusInsertRequest);
     }
 }
