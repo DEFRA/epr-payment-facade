@@ -14,7 +14,14 @@ namespace EPR.Payment.Facade.Extension
         private static readonly string Ready = "ready";
         public static IServiceCollection AddDependencies(this IServiceCollection services)
         {
-            services.AddScoped<IFeesService, FeesService>();
+            services.AddScoped<SmallAndLargeProducersService>();
+            services.AddScoped<SubsidariesService>();
+            //services.AddScoped<ResubmissionAndAdditionalFeesService>();
+            //services.AddScoped<ComplianceSchemesService>();
+            //services.AddScoped<ComplianceSchemePlusService>();
+            //services.AddScoped<ComplianceSchemeResubmissionAndAdditionalFeesService>();
+            //services.AddScoped<AccreditationFeesService>();
+            services.AddScoped<IFeesServiceFactory, FeesServiceFactory>();
             services.AddScoped<IPaymentsService, PaymentsService>();
             services.AddScoped<IHttpFeesService, HttpFeesService>();
             services.AddScoped<IHttpGovPayService, HttpGovPayService>();
