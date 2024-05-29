@@ -1,12 +1,12 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Common.RESTServices.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
 
-namespace EPR.Payment.Facade.Common.RESTServices
+namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
     public class HttpGovPayService : BaseHttpService, IHttpGovPayService
     {
@@ -31,7 +31,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
                 SetBearerToken(_bearerToken); // Set the bearer token
             }
             else
-            {        
+            {
                 throw new InvalidOperationException("Bearer token is null. Unable to initiate payment.");
             }
 
@@ -40,8 +40,9 @@ namespace EPR.Payment.Facade.Common.RESTServices
             {
                 return await Post<PaymentResponseDto>(url, paymentRequestDto);
             }
-            catch (Exception ex)            {
-          
+            catch (Exception ex)
+            {
+
                 throw new Exception("Error occurred while initiating payment.", ex);
             }
         }
@@ -53,7 +54,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
                 SetBearerToken(_bearerToken); // Set the bearer token
             }
             else
-            {            
+            {
                 throw new InvalidOperationException("Bearer token is null. Unable to retrieve payment status.");
             }
 
@@ -63,7 +64,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
                 return await Get<PaymentStatusResponseDto>(url);
             }
             catch (Exception ex)
-            {         
+            {
                 throw new Exception("Error occurred while retrieving payment status.", ex);
             }
         }

@@ -1,4 +1,4 @@
-﻿using EPR.Payment.Facade.Common.RESTServices.Interfaces;
+﻿using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 
 namespace EPR.Payment.Facade.Services.Payments

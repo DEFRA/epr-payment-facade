@@ -1,5 +1,4 @@
 ﻿using EPR.Payment.Facade.Common.RESTServices;
-using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using EPR.Payment.Facade.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +6,8 @@ using Microsoft.Extensions.Options;
 using System;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.Payments;
 
 namespace EPR.Payment.Facade.Helpers
 {

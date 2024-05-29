@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EPR.Payment.Facade.Common.RESTServices.Interfaces
+namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
 {
     public interface IHttpFeesService
     {
-        Task<GetFeesResponseDto> GetFeeAsync(bool isLarge, string regulator);        
+        Task<GetFeesResponseDto> GetFeeAsync(bool isLarge, string regulator);
     }
 }

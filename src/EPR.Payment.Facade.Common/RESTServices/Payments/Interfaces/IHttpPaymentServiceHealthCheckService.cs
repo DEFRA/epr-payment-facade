@@ -1,4 +1,4 @@
-﻿namespace EPR.Payment.Facade.Common.RESTServices.Interfaces
+﻿namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
 {
     public interface IHttpPaymentServiceHealthCheckService
     {

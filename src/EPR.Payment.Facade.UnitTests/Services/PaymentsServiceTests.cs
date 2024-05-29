@@ -1,7 +1,7 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
-using EPR.Payment.Facade.Common.RESTServices.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using EPR.Payment.Facade.Services.Fees.Registration.Interfaces;
 using EPR.Payment.Facade.Common.Dtos.Response.Fees;
+using EPR.Payment.Facade.Controllers.Fees;
 
 namespace EPR.Payment.Facade.UnitTests.Controllers.Registration
 {

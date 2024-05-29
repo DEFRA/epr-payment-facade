@@ -1,7 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request;
 using EPR.Payment.Facade.Common.Dtos.Response;
-using EPR.Payment.Facade.Common.RESTServices;
-using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -11,6 +9,8 @@ using System.Net;
 using FluentAssertions;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.Payments;
 
 namespace EPR.Payment.Facade.UnitTests.RESTServices
 {
