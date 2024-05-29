@@ -9,6 +9,8 @@ using Newtonsoft.Json;
 using Moq.Protected;
 using System.Net;
 using FluentAssertions;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 
 namespace EPR.Payment.Facade.UnitTests.RESTServices
 {

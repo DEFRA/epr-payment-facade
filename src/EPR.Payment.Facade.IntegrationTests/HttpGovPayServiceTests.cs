@@ -5,6 +5,7 @@ using EPR.Payment.Facade.Common.Dtos.Request;
 using EPR.Payment.Facade.Common.RESTServices;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 
 
 namespace EPR.Payment.Facade.IntegrationTests

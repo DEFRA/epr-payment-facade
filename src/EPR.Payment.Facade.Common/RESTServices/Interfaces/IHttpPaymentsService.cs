@@ -1,4 +1,4 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request;
+﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,7 +1,7 @@
 ﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.HealthCheck;
-using EPR.Payment.Facade.Services.Interfaces;
+using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Moq;
