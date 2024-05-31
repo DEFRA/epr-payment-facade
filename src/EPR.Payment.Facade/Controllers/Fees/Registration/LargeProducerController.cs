@@ -22,7 +22,7 @@ namespace EPR.Payment.Facade.Controllers.Fees
             _logger = logger;
         }
 
-        [HttpPost("calculate")]
+        [HttpGet("calculate")]
         [MapToApiVersion(1)]
         [SwaggerOperation(
             Summary = "Calculate large producer fee.",
