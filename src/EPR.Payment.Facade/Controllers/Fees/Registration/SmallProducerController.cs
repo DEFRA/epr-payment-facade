@@ -34,7 +34,7 @@ namespace EPR.Payment.Facade.Controllers.Fees
         [ProducesResponseType(typeof(FeeResponse), 200)]
         [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
         [ProducesResponseType(typeof(ProblemDetails), 500)]
-        public async Task<ActionResult<FeeResponse>> CalculateFee([FromBody] RegistrationFeeRequest request)
+        public async Task<ActionResult<FeeResponse>> CalculateFee([FromQuery] RegistrationFeeRequest request)
         {
             try
             {
