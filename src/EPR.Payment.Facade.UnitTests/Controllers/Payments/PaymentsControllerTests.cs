@@ -1,11 +1,9 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request;
+﻿
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using FluentAssertions;
-using EPR.Payment.Facade.Controllers.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
