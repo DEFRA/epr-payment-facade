@@ -64,7 +64,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
         public async Task InitiatePayment_Success_ReturnsPaymentResponseDto()
         {
             // Arrange            
-            var paymentRequestDto = new PaymentRequestDto { Amount = 14500, Reference = "12345", Description = "Pay your council tax", return_url = "https://your.service.gov.uk/completed" };
+            var paymentRequestDto = new PaymentRequestDto { Amount = 14500, ReferenceNumber = "12345", ReasonForPayment = "Pay your council tax", return_url = "https://your.service.gov.uk/completed" };
 
             // Create a mock HttpMessageHandler to handle the SendAsync method
             var handlerMock = new Mock<HttpMessageHandler>();

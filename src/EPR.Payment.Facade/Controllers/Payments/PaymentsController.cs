@@ -5,6 +5,7 @@ using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
 
 [ApiVersion(1)]
 [ApiController]
@@ -26,8 +27,8 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data. <br>" +
-        "Return_url input paramater is the url that Gov Pay will return back to when the payment journey is complete. <br>" +
-        "The returnurl parameter in the response object is the initial page in the Gov Pay journey.")]
+    "Return_url input parameter is the URL that Gov Pay will return back to when the payment journey is complete. <br>" +
+    "The return_url parameter in the response object is the initial page in the Gov Pay journey.")]
     [SwaggerResponse(StatusCodes.Status201Created, "Returns the created payment response.", typeof(PaymentResponseDto))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
@@ -42,7 +43,17 @@ public class PaymentsController : ControllerBase
         try
         {
             var result = await _paymentsService.InitiatePaymentAsync(request);
-            return CreatedAtAction(nameof(GetPaymentStatus), new { paymentId = result.PaymentId }, result);
+            return CreatedAtAction(nameof(CompletePayment), new { govPayPaymentId = result.PaymentId }, result);
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogError(ex, "Validation error occurred while processing InitiatePayment request");
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Validation Error",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
         }
         catch (Exception ex)
         {
@@ -56,55 +67,22 @@ public class PaymentsController : ControllerBase
         }
     }
 
-    [HttpGet("{paymentId}/status")]
-    [ProducesResponseType(typeof(PaymentStatusResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [SwaggerOperation(Summary = "Retrieves the status of a payment", Description = "Retrieves the status of a payment for the paymentId requested.")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Returns the payment status response.", typeof(PaymentStatusResponseDto))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "If the payment is not found.")]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
-    [FeatureGate("EnablePaymentStatus")]
-    public async Task<ActionResult<PaymentStatusResponseDto>> GetPaymentStatus(string paymentId)
-    {
-        if (string.IsNullOrEmpty(paymentId))
-        {
-            return BadRequest("PaymentId cannot be null or empty");
-        }
-
-        try
-        {
-            var paymentStatusResponseDto = await _paymentsService.GetPaymentStatusAsync(paymentId);
-            if (paymentStatusResponseDto == null)
-                return NotFound();
-
-            return Ok(paymentStatusResponseDto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while processing GetPaymentStatus request");
-            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-            {
-                Title = "Internal Server Error",
-                Detail = ex.Message,
-                Status = StatusCodes.Status500InternalServerError
-            });
-        }
-    }
-
-    [HttpPost("{paymentId}/status")]
-    [ProducesResponseType(200)]
+    [HttpPost("{govPayPaymentId}/complete")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [SwaggerOperation(Summary = "Inserts the status of a payment", Description = "Inserts the status of a payment for the paymentId specified.")]
-    [SwaggerResponse(StatusCodes.Status200OK, "If the status is successfully inserted.")]
+    [SwaggerOperation(Summary = "Completes the payment process", Description = "Completes the payment process for the govPayPaymentId requested.")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
-    [FeatureGate("EnablePaymentStatusInsert")]
-    public async Task<IActionResult> InsertPaymentStatus(string paymentId, [FromBody] PaymentStatusInsertRequestDto request)
+    [FeatureGate("EnablePaymentCompletion")]
+    public async Task<IActionResult> CompletePayment(string govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest)
     {
+        if (string.IsNullOrEmpty(govPayPaymentId))
+        {
+            return BadRequest("GovPayPaymentId cannot be null or empty");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -112,13 +90,28 @@ public class PaymentsController : ControllerBase
 
         try
         {
-            await _paymentsService.InsertPaymentStatusAsync(paymentId, request);
+            await _paymentsService.CompletePaymentAsync(govPayPaymentId, completeRequest);
             return Ok();
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogError(ex, "Validation error occurred while processing CompletePayment request");
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Validation Error",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while processing InsertPaymentStatus request");
-            return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
+            _logger.LogError(ex, "An error occurred while processing CompletePayment request");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Title = "Internal Server Error",
+                Detail = ex.Message,
+                Status = StatusCodes.Status500InternalServerError
+            });
         }
     }
 }

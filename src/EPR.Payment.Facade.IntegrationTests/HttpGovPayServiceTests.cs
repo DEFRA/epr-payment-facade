@@ -43,9 +43,9 @@ namespace EPR.Payment.Facade.IntegrationTests
             {
                 // Provide necessary data for payment request
                 Amount = 100,
-                Reference = "123456",
+                ReferenceNumber = "123456",
                 return_url = "https://example.com/return",
-                Description = "Test payment"
+                ReasonForPayment = "Test payment"
             };
 
             // Act & Assert

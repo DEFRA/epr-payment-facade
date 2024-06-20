@@ -27,4 +27,8 @@
     <ProjectReference Include="..\EPR.Payment.Facade.Common\EPR.Payment.Facade.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
 </Project>

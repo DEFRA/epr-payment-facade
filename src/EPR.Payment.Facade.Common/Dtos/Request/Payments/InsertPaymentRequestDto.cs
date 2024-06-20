@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using EPR.Payment.Facade.Common.Enums;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
-    public class PaymentRequestDto
+    public class InsertPaymentRequestDto
     {
         [Required(ErrorMessage = "User ID is required")]
         public string? UserId { get; set; }
@@ -22,7 +25,8 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         [Required(ErrorMessage = "Reason For Payment is required")]
         public string? ReasonForPayment { get; set; }
 
-        [Required(ErrorMessage = "Return URL is required")]
-        public string? return_url { get; set; }
+        [Required(ErrorMessage = "Status is required")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public PaymentStatus Status { get; set; }
     }
 }

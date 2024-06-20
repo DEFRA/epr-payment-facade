@@ -14,6 +14,12 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Payments.Common
 
         [JsonProperty("finished")]
         public bool Finished { get; set; }
+
+        [JsonProperty("message")]
+        public string? Message { get; set; }
+
+        [JsonProperty("code")]
+        public string? Code { get; set; }
     }
 
 }
