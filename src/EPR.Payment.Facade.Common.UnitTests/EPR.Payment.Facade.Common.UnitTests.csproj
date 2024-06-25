@@ -48,4 +48,8 @@
     <None Remove="C:\Users\a898127\.nuget\packages\mstest.testadapter\3.3.1\build\net8.0\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="RestServices\" />
+  </ItemGroup>
+
 </Project>

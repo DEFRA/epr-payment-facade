@@ -22,10 +22,7 @@ namespace EPR.Payment.Facade.Extension
             //services.AddScoped<ComplianceSchemeResubmissionAndAdditionalFeesService>();
             //services.AddScoped<AccreditationFeesService>();
             services.AddScoped<IFeesServiceFactory, FeesServiceFactory>();
-            services.AddScoped<IPaymentsService, PaymentsService>();
             services.AddScoped<IHttpFeesService, HttpFeesService>();
-            services.AddScoped<IHttpGovPayService, HttpGovPayService>();
-            services.AddScoped<IHttpPaymentsService, HttpPaymentsService>();
             services.AddHttpContextAccessor();
             services.AddHttpClient();
 

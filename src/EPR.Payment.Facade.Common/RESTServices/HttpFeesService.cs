@@ -1,5 +1,4 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request;
-using EPR.Payment.Facade.Common.Dtos.Response;
+﻿using EPR.Payment.Facade.Common.Dtos.Response;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using System;
 using System.Collections.Generic;
