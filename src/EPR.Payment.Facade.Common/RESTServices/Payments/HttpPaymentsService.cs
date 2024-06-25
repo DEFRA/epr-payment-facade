@@ -42,7 +42,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                 throw new InvalidOperationException("Bearer token is null. Unable to insert payment.");
             }
 
-            var url = $"payments/status";
+            var url = "payments/status";
             try
             {
                 var response = await PostWithResponse<InsertPaymentResponseDto>(url, paymentStatusInsertRequest);

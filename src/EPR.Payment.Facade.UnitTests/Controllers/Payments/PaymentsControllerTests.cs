@@ -58,7 +58,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var createdAtActionResult = result.Result as CreatedAtActionResult;
             createdAtActionResult.Value.Should().BeEquivalentTo(expectedResponse);
             createdAtActionResult.ActionName.Should().Be(nameof(_controller.CompletePayment));
-            createdAtActionResult.RouteValues["govPayPaymentId"].Should().Be(expectedResponse.PaymentId);
+            createdAtActionResult.RouteValues["paymentId"].Should().Be(expectedResponse.PaymentId);
 
             // Verify that the ReturnUrl in the response is correctly set
             var responseDto = createdAtActionResult.Value as PaymentResponseDto;
@@ -83,24 +83,30 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task InitiatePayment_ThrowsValidationException_ReturnsBadRequest()
         {
             // Arrange
-            var request = new PaymentRequestDto
+            var invalidRequest = new PaymentRequestDto
             {
-                Amount = 100,
-                ReferenceNumber = "REF123",
-                ReasonForPayment = "Test Payment",
+                // Missing required fields to make the model invalid
+                // Amount is missing
+                // ReferenceNumber is missing
+                // ReasonForPayment is missing
                 return_url = "https://example.com/callback",
-                OrganisationId = "Org123",
-                UserId = "User123",
-                Regulator = "Reg123"
+                // OrganisationId is missing
+                // UserId is missing
+                // Regulator is missing
             };
+
+            // Simulate a validation exception from the service layer
             var validationException = new ValidationException("Validation error");
-            _paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request)).ThrowsAsync(validationException);
+            _paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(invalidRequest)).ThrowsAsync(validationException);
 
             // Act
-            var result = await _controller.InitiatePayment(request);
+            var result = await _controller.InitiatePayment(invalidRequest);
 
             // Assert
+            // Check if the result is a BadRequestObjectResult
             result.Result.Should().BeOfType<BadRequestObjectResult>();
+
+            // Check if the BadRequestObjectResult contains the expected validation error message
             var badRequestResult = result.Result as BadRequestObjectResult;
             badRequestResult.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
         }
@@ -131,6 +137,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
             objectResult.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(exception.Message);
         }
+
         [TestMethod]
         public async Task CompletePayment_ValidGovPayPaymentId_ReturnsOk()
         {

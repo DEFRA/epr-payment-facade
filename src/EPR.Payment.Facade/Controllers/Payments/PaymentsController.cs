@@ -27,11 +27,11 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data. <br>" +
-    "Return_url input parameter is the URL that Gov Pay will return back to when the payment journey is complete. <br>" +
-    "The return_url parameter in the response object is the initial page in the Gov Pay journey.")]
+        "Return_url input parameter is the URL that Gov Pay will return back to when the payment journey is complete. <br>" +
+        "The return_url parameter in the response object is the initial page in the Gov Pay journey.")]
     [SwaggerResponse(StatusCodes.Status201Created, "Returns the created payment response.", typeof(PaymentResponseDto))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
     [FeatureGate("EnablePaymentInitiation")]
     public async Task<ActionResult<PaymentResponseDto>> InitiatePayment([FromBody] PaymentRequestDto request)
     {
@@ -43,7 +43,7 @@ public class PaymentsController : ControllerBase
         try
         {
             var result = await _paymentsService.InitiatePaymentAsync(request);
-            return CreatedAtAction(nameof(CompletePayment), new { govPayPaymentId = result.PaymentId }, result);
+            return CreatedAtAction(nameof(CompletePayment), new { paymentId = result.PaymentId }, result);
         }
         catch (ValidationException ex)
         {
@@ -71,7 +71,7 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [SwaggerOperation(Summary = "Completes the payment process", Description = "Completes the payment process for the govPayPaymentId requested.")]
+    [SwaggerOperation(Summary = "Completes the payment process", Description = "Completes the payment process for the paymentId requested.")]
     [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
@@ -81,11 +81,6 @@ public class PaymentsController : ControllerBase
         if (string.IsNullOrEmpty(govPayPaymentId))
         {
             return BadRequest("GovPayPaymentId cannot be null or empty");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
         }
 
         try
