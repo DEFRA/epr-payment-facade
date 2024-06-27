@@ -13,7 +13,6 @@ namespace EPR.Payment.Facade.Controllers
     [ApiController]
     [Route("api/v{version:apiVersion}/payments")]
     [FeatureGate("EnableRegistrationFeesFeature")]
-
     public class RegistrationFeesController : ControllerBase
     {
         private readonly IFeesService _feesService;
@@ -52,10 +51,6 @@ namespace EPR.Payment.Facade.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (NotImplementedException ex)
-            {
-                return StatusCode(StatusCodes.Status501NotImplemented, ex.Message);
-            }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -90,10 +85,6 @@ namespace EPR.Payment.Facade.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }
-            catch (NotImplementedException ex)
-            {
-                return StatusCode(StatusCodes.Status501NotImplemented, ex.Message);
             }
             catch (Exception ex)
             {
