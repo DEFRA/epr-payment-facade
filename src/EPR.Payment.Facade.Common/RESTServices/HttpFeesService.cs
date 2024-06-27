@@ -1,19 +1,48 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Response;
+﻿using EPR.Payment.Facade.Common.Dtos;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
+using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Common.RESTServices
 {
-    public class HttpFeesService : IHttpFeesService
+    public class HttpFeesService : BaseHttpService, IHttpFeesService
     {
-        // TODO - PS : Need to call the apis within the Fee controller within the EPR.Payment.Service here
-        public Task<GetFeesResponseDto> GetFeeAsync(bool isLarge, string regulator)
+        public HttpFeesService(
+            IHttpContextAccessor httpContextAccessor,
+            IHttpClientFactory httpClientFactory,
+            string baseUrl)
+            : base(httpContextAccessor, httpClientFactory, baseUrl, "fees")
         {
-            throw new NotImplementedException();
-        }        
+        }
+
+        public async Task<RegistrationFeeResponseDto> CalculateProducerFeesAsync(ProducerRegistrationRequestDto request)
+        {
+            // Here you can check if request.PayBaseFeeAlone is true and handle it accordingly.
+            if (request.PayBaseFeeAlone)
+            {
+                // Implement logic to handle paying base fee alone
+                // This may involve calling a specific endpoint or modifying request handling
+                throw new NotImplementedException("Paying base fee alone is not implemented yet.");
+            }
+
+            // Implement the logic to call the external service for producer fees
+            throw new NotImplementedException("CalculateProducerFeesAsync is not implemented yet.");
+        }
+
+        public async Task<RegistrationFeeResponseDto> CalculateComplianceSchemeFeesAsync(ComplianceSchemeRegistrationRequestDto request)
+        {
+            // Here you can check if request.PayBaseFeeAlone is true and handle it accordingly.
+            if (request.PayBaseFeeAlone)
+            {
+                // Implement logic to handle paying base fee alone
+                // This may involve calling a specific endpoint or modifying request handling
+                throw new NotImplementedException("Paying base fee alone is not implemented yet.");
+            }
+
+            // Implement the logic to call the external service for compliance scheme fees
+            throw new NotImplementedException("CalculateComplianceSchemeFeesAsync is not implemented yet.");
+        }
     }
 }

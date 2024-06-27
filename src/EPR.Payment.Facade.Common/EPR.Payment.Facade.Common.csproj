@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\Request\" />
     <Folder Include="Dtos\Response\Common\" />
     <Folder Include="Enums\" />
   </ItemGroup>

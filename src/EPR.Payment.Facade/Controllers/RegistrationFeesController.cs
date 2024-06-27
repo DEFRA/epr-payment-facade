@@ -1,99 +1,99 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Response;
-using EPR.Payment.Facade.Common.Enums;
+﻿using Asp.Versioning;
+using EPR.Payment.Facade.Common.Dtos;
 using EPR.Payment.Facade.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
+using System.Threading.Tasks;
 
-[Route("api/[controller]")]
-[ApiController]
-public class RegistrationFeesController : ControllerBase
+namespace EPR.Payment.Facade.Controllers
 {
-    private readonly IFeesServiceFactory _feesServiceFactory;
-    private readonly ILogger<RegistrationFeesController> _logger;
-
-    public RegistrationFeesController(IFeesServiceFactory feesServiceFactory, ILogger<RegistrationFeesController> logger)
+    [ApiController]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
+    public class RegistrationFeesController : ControllerBase
     {
-        _feesServiceFactory = feesServiceFactory;
-        _logger = logger;
-    }
+        private readonly IFeesService _feesService;
 
-    [HttpGet("small-and-large-producers")]
-    [SwaggerOperation(Summary = "Get fees for small and large producers", Description = "Retrieves the fee details for small and large producers.")]
-    [SwaggerResponse(200, "Successfully retrieved the fee details.", typeof(GetFeesResponseDto))]
-    [SwaggerResponse(404, "No fees found for the specified subtype.")]
-    [SwaggerResponse(500, "An error occurred while processing the request.")]
-    public async Task<IActionResult> GetSmallAndLargeProducersFees()
-    {
-        return await GetRegistrationFees(RegistrationFeeSubType.SmallAndLargeProducers);
-    }
-
-    [HttpGet("subsidaries")]
-    [SwaggerOperation(Summary = "Get fees for subsidaries", Description = "Retrieves the fee details for subsidaries.")]
-    [SwaggerResponse(200, "Successfully retrieved the fee details.", typeof(GetFeesResponseDto))]
-    [SwaggerResponse(404, "No fees found for the specified subtype.")]
-    [SwaggerResponse(500, "An error occurred while processing the request.")]
-    public async Task<IActionResult> GetSubsidariesFees()
-    {
-        return await GetRegistrationFees(RegistrationFeeSubType.Subsidaries);
-    }
-
-    [HttpGet("resubmission-and-additional-fees")]
-    [SwaggerOperation(Summary = "Get resubmission and additional fees", Description = "Retrieves the fee details for resubmission and additional fees.")]
-    [SwaggerResponse(200, "Successfully retrieved the fee details.", typeof(GetFeesResponseDto))]
-    [SwaggerResponse(404, "No fees found for the specified subtype.")]
-    [SwaggerResponse(500, "An error occurred while processing the request.")]
-    public async Task<IActionResult> GetResubmissionAndAdditionalFees()
-    {
-        return await GetRegistrationFees(RegistrationFeeSubType.ResubmissionAndAdditionalFees);
-    }
-
-    [HttpGet("compliance-schemes")]
-    [SwaggerOperation(Summary = "Get fees for compliance schemes", Description = "Retrieves the fee details for compliance schemes.")]
-    [SwaggerResponse(200, "Successfully retrieved the fee details.", typeof(GetFeesResponseDto))]
-    [SwaggerResponse(404, "No fees found for the specified subtype.")]
-    [SwaggerResponse(500, "An error occurred while processing the request.")]
-    public async Task<IActionResult> GetComplianceSchemesFees()
-    {
-        return await GetRegistrationFees(RegistrationFeeSubType.ComplianceSchemes);
-    }
-
-    [HttpGet("compliance-scheme-plus")]
-    [SwaggerOperation(Summary = "Get fees for compliance scheme plus", Description = "Retrieves the fee details for compliance scheme plus.")]
-    [SwaggerResponse(200, "Successfully retrieved the fee details.", typeof(GetFeesResponseDto))]
-    [SwaggerResponse(404, "No fees found for the specified subtype.")]
-    [SwaggerResponse(500, "An error occurred while processing the request.")]
-    public async Task<IActionResult> GetComplianceSchemePlusFees()
-    {
-        return await GetRegistrationFees(RegistrationFeeSubType.ComplianceSchemePlus);
-    }
-
-    [HttpGet("compliance-scheme-resubmission-additional-fees")]
-    [SwaggerOperation(Summary = "Get fees for compliance scheme resubmission and additional fees", Description = "Retrieves the fee details for compliance scheme resubmission and additional fees.")]
-    [SwaggerResponse(200, "Successfully retrieved the fee details.", typeof(GetFeesResponseDto))]
-    [SwaggerResponse(404, "No fees found for the specified subtype.")]
-    [SwaggerResponse(500, "An error occurred while processing the request.")]
-    public async Task<IActionResult> GetComplianceSchemeResubmissionAndAdditionalFees()
-    {
-        return await GetRegistrationFees(RegistrationFeeSubType.ComplianceSchemeResubmissionAndAdditionalFees);
-    }
-
-    private async Task<IActionResult> GetRegistrationFees(RegistrationFeeSubType subType)
-    {
-        try
+        public RegistrationFeesController(IFeesService feesService)
         {
-            var feesService = _feesServiceFactory.CreateFeesService(subType);
-            var feeResponse = await feesService.GetFeesAsync();
-            if (feeResponse == null)
-            {
-                _logger.LogWarning("No registration fees found for subtype: {SubType}", subType);
-                return NotFound($"No registration fees found for subtype: {subType}");
-            }
-            return Ok(feeResponse);
+            _feesService = feesService;
         }
-        catch (Exception ex)
+
+        [HttpPost("calculate-producer-fees")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(typeof(RegistrationFeeResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Calculate fees for producer registration", Description = "Calculates the registration fees for a producer based on whether they are a large producer and the number of subsidiaries.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Successfully calculated fees", typeof(RegistrationFeeResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "No fee found for the provided parameters.")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
+        public async Task<ActionResult<RegistrationFeeResponseDto>> CalculateProducerFeesAsync(
+            [FromBody, SwaggerParameter(Description = "Details of the producer registration request", Required = true)] ProducerRegistrationRequestDto request)
         {
-            _logger.LogError(ex, "An error occurred while processing the request for subtype: {SubType}", subType);
-            return StatusCode(500, "An error occurred while processing your request.");
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var response = await _feesService.CalculateProducerFeesAsync(request);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (NotImplementedException ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("calculate-compliance-scheme-fees")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(typeof(RegistrationFeeResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Calculate fees for compliance scheme registration", Description = "Calculates the registration fees for a compliance scheme based on the number of large producers, small producers, online marketplaces, and subsidiaries.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Successfully calculated fees", typeof(RegistrationFeeResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "No fee found for the provided parameters.")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
+        public async Task<ActionResult<RegistrationFeeResponseDto>> CalculateComplianceSchemeFeesAsync(
+            [FromBody, SwaggerParameter(Description = "Details of the compliance scheme registration request", Required = true)] ComplianceSchemeRegistrationRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var response = await _feesService.CalculateComplianceSchemeFeesAsync(request);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (NotImplementedException ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

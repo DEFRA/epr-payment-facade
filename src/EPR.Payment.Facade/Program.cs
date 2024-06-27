@@ -8,14 +8,13 @@ using System.Security.Authentication;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(setupAction => 
+builder.Services.AddSwaggerGen(setupAction =>
 {
     setupAction.EnableAnnotations();
-} );
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddServiceHealthChecks();
 builder.Services
@@ -27,9 +26,9 @@ builder.Services
             SslProtocols = SslProtocols.Tls12
         };
     });
-builder.Services.AddFacadeDependencies(builder.Configuration);
 
-builder.Services.AddDependencies();
+// Add dependencies and pass the configuration
+builder.Services.AddDependencies(builder.Configuration);
 
 builder.Services.AddApiVersioning(options =>
 {
