@@ -2,15 +2,18 @@
 using EPR.Payment.Facade.Common.Dtos;
 using EPR.Payment.Facade.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Controllers
 {
+    [ApiVersion(1)]
     [ApiController]
-    [Route("api/v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/payments")]
+    [FeatureGate("EnableRegistrationFeesFeature")]
+
     public class RegistrationFeesController : ControllerBase
     {
         private readonly IFeesService _feesService;
@@ -31,6 +34,7 @@ namespace EPR.Payment.Facade.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "No fee found for the provided parameters.")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
+        [FeatureGate("EnableProducerFees")]
         public async Task<ActionResult<RegistrationFeeResponseDto>> CalculateProducerFeesAsync(
             [FromBody, SwaggerParameter(Description = "Details of the producer registration request", Required = true)] ProducerRegistrationRequestDto request)
         {
@@ -69,6 +73,7 @@ namespace EPR.Payment.Facade.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "No fee found for the provided parameters.")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
+        [FeatureGate("EnableComplianceSchemeFees")]
         public async Task<ActionResult<RegistrationFeeResponseDto>> CalculateComplianceSchemeFeesAsync(
             [FromBody, SwaggerParameter(Description = "Details of the compliance scheme registration request", Required = true)] ComplianceSchemeRegistrationRequestDto request)
         {

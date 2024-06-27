@@ -2,6 +2,8 @@ using Asp.Versioning;
 using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
+using Microsoft.OpenApi.Models;
+using Microsoft.FeatureManagement;
 using System.Reflection;
 using System.Security.Authentication;
 
@@ -9,12 +11,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+// Add Swagger and Feature Management
 builder.Services.AddSwaggerGen(setupAction =>
 {
     setupAction.EnableAnnotations();
+    setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v1" });
+    setupAction.DocumentFilter<FeatureEnabledDocumentFilter>();
+    setupAction.OperationFilter<FeatureGateOperationFilter>();
 });
+
+builder.Services.AddFeatureManagement();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddServiceHealthChecks();
 builder.Services
@@ -51,11 +60,6 @@ if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-//.UseSwaggerUI(c =>
-//{
-//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi");
-//    c.RoutePrefix = string.Empty;
-//});
 
 app.UseHttpsRedirection();
 app.UseRouting();
