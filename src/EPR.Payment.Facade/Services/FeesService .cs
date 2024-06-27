@@ -19,7 +19,7 @@ namespace EPR.Payment.Facade.Services
         {
             if (request.NumberOfSubsidiaries > 100)
             {
-                throw new ArgumentException("The number of subsidiaries cannot exceed 100.");
+                throw new ArgumentException("Number of subsidiaries cannot exceed 100.");
             }
 
             return await _httpFeesService.CalculateProducerFeesAsync(request);
@@ -29,7 +29,7 @@ namespace EPR.Payment.Facade.Services
         {
             if (request.NumberOfSubsidiaries > 100)
             {
-                throw new ArgumentException("The number of subsidiaries cannot exceed 100.");
+                throw new ArgumentException("Number of subsidiaries cannot exceed 100.");
             }
 
             return await _httpFeesService.CalculateComplianceSchemeFeesAsync(request);
