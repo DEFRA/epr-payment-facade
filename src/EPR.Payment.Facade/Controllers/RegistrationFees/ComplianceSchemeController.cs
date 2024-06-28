@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
-namespace EPR.Payment.Facade.Controllers.RegistrationFees
+namespace EPR.Payment.Facade.Controllers
 {
     [ApiVersion(1)]
     [ApiController]
@@ -19,7 +19,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
 
         public ComplianceSchemeController(IFeesService feesService)
         {
-            _feesService = feesService ?? throw new ArgumentNullException(nameof(feesService));
+            _feesService = feesService;
         }
 
         [HttpPost("calculate-fees")]
@@ -28,7 +28,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(Summary = "Calculate fees for compliance scheme registration", Description = "Calculates the registration fees for a compliance scheme based on the number of large producers, small producers, online marketplaces, and subsidiaries.")]
+        [SwaggerOperation(Summary = "Calculate fees for compliance scheme registration", Description = "Calculates the registration fees for a compliance scheme based on the number of large producers, small producers, and subsidiaries.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Successfully calculated fees", typeof(RegistrationFeeResponseDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "No fee found for the provided parameters.")]
@@ -41,17 +41,18 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
                 return BadRequest(ModelState);
             }
 
-            // Validate that the request has at least one producer or subsidiary specified
-            if (request.NumberOfLargeProducers == null && request.NumberOfSmallProducers == null &&
-                request.NumberOfOnlineMarketplaces == null && request.NumberOfSubsidiaries == null && !request.PayBaseFeeAlone)
+            // Validate the number of subsidiaries per producer
+            foreach (var producer in request.Producers)
             {
-                return BadRequest("At least one producer type or subsidiary count must be specified.");
-            }
+                if (producer.NumberOfSubsidiaries < 0 || producer.NumberOfSubsidiaries > 100)
+                {
+                    return BadRequest("Number of subsidiaries per producer must be between 0 and 100.");
+                }
 
-            // Validate the number of subsidiaries if provided
-            if (request.NumberOfSubsidiaries != null && (request.NumberOfSubsidiaries < 0 || request.NumberOfSubsidiaries > 100))
-            {
-                return BadRequest("Number of subsidiaries must be between 0 and 100.");
+                if (producer.ProducerType != "L" && producer.ProducerType != "S")
+                {
+                    return BadRequest("ProducerType must be 'L' for Large or 'S' for Small.");
+                }
             }
 
             try

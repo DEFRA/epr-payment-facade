@@ -1,7 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Dtos;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using EPR.Payment.Facade.Services;
-using EPR.Payment.Facade.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -13,94 +12,123 @@ namespace EPR.Payment.Facade.Tests.Services
     [TestClass]
     public class FeesServiceTests
     {
+        private Mock<IHttpFeesService> _mockHttpFeesService;
         private FeesService _feesService;
-        private Mock<IHttpFeesService> _httpFeesServiceMock;
 
         [TestInitialize]
         public void Setup()
         {
-            _httpFeesServiceMock = new Mock<IHttpFeesService>();
-            _feesService = new FeesService(_httpFeesServiceMock.Object);
+            _mockHttpFeesService = new Mock<IHttpFeesService>();
+            _feesService = new FeesService(_mockHttpFeesService.Object);
         }
 
         [TestMethod]
-        public async Task CalculateProducerFeesAsync_ShouldReturnFee_WhenValidRequest()
+        public async Task CalculateProducerFeesAsync_ShouldReturnFee_WhenRequestIsValid()
         {
             // Arrange
             var request = new ProducerRegistrationRequestDto
             {
-                IsLargeProducer = true,
-                NumberOfSubsidiaries = 5,
-                PayBaseFeeAlone = false
+                ProducerType = "L",
+                NumberOfSubsidiaries = 10,
+                PayBaseFee = true
             };
+
             var expectedResponse = new RegistrationFeeResponseDto { TotalFee = 1000 };
-            _httpFeesServiceMock.Setup(service => service.CalculateProducerFeesAsync(request)).ReturnsAsync(expectedResponse);
+            _mockHttpFeesService.Setup(s => s.CalculateProducerFeesAsync(request))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _feesService.CalculateProducerFeesAsync(request);
 
             // Assert
-            result.Should().Be(expectedResponse);
+            result.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
-        public async Task CalculateProducerFeesAsync_ShouldThrowArgumentException_WhenSubsidiariesExceedLimit()
+        public async Task CalculateProducerFeesAsync_ShouldThrowArgumentException_WhenNumberOfSubsidiariesExceeds100()
         {
             // Arrange
             var request = new ProducerRegistrationRequestDto
             {
-                IsLargeProducer = true,
+                ProducerType = "L",
                 NumberOfSubsidiaries = 101,
-                PayBaseFeeAlone = false
+                PayBaseFee = true
             };
 
             // Act
             Func<Task> act = async () => await _feesService.CalculateProducerFeesAsync(request);
 
             // Assert
-            await act.Should().ThrowAsync<ArgumentException>().WithMessage("Number of subsidiaries cannot exceed 100.");
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("Number of subsidiaries cannot exceed 100.");
         }
 
         [TestMethod]
-        public async Task CalculateComplianceSchemeFeesAsync_ShouldReturnFee_WhenValidRequest()
+        public async Task CalculateComplianceSchemeFeesAsync_ShouldReturnFee_WhenRequestIsValid()
         {
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                NumberOfLargeProducers = 10,
-                NumberOfSmallProducers = 5,
-                NumberOfOnlineMarketplaces = 3,
-                NumberOfSubsidiaries = 20,
-                PayBaseFeeAlone = false
+                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true },
+                    new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 5, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
             };
-            var expectedResponse = new RegistrationFeeResponseDto { TotalFee = 5000 };
-            _httpFeesServiceMock.Setup(service => service.CalculateComplianceSchemeFeesAsync(request)).ReturnsAsync(expectedResponse);
+
+            var expectedResponse = new RegistrationFeeResponseDto { TotalFee = 3000 };
+            _mockHttpFeesService.Setup(s => s.CalculateComplianceSchemeFeesAsync(request))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _feesService.CalculateComplianceSchemeFeesAsync(request);
 
             // Assert
-            result.Should().Be(expectedResponse);
+            result.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
-        public async Task CalculateComplianceSchemeFeesAsync_ShouldThrowArgumentException_WhenSubsidiariesExceedLimit()
+        public async Task CalculateComplianceSchemeFeesAsync_ShouldThrowArgumentException_WhenNumberOfSubsidiariesExceeds100()
         {
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                NumberOfLargeProducers = 10,
-                NumberOfSmallProducers = 5,
-                NumberOfOnlineMarketplaces = 3,
-                NumberOfSubsidiaries = 101,
-                PayBaseFeeAlone = false
+                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 101, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
             };
 
             // Act
             Func<Task> act = async () => await _feesService.CalculateComplianceSchemeFeesAsync(request);
 
             // Assert
-            await act.Should().ThrowAsync<ArgumentException>().WithMessage("Number of subsidiaries cannot exceed 100.");
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("Number of subsidiaries cannot exceed 100.");
+        }
+
+        [TestMethod]
+        public async Task CalculateComplianceSchemeFeesAsync_ShouldThrowArgumentException_WhenAnyProducerHasInvalidNumberOfSubsidiaries()
+        {
+            // Arrange
+            var request = new ComplianceSchemeRegistrationRequestDto
+            {
+                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 50, PayBaseFee = true },
+                    new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 101, PayBaseFee = true } // Invalid
+                },
+                PayComplianceSchemeBaseFee = true
+            };
+
+            // Act
+            Func<Task> act = async () => await _feesService.CalculateComplianceSchemeFeesAsync(request);
+
+            // Assert
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("Number of subsidiaries cannot exceed 100.");
         }
     }
 }

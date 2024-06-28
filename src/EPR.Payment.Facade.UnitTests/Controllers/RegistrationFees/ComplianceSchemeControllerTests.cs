@@ -1,12 +1,13 @@
 ﻿using EPR.Payment.Facade.Common.Dtos;
 using EPR.Payment.Facade.Controllers;
-using EPR.Payment.Facade.Controllers.RegistrationFees;
 using EPR.Payment.Facade.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Tests.Controllers
@@ -14,94 +15,174 @@ namespace EPR.Payment.Facade.Tests.Controllers
     [TestClass]
     public class ComplianceSchemeControllerTests
     {
+        private Mock<IFeesService> _mockFeesService;
         private ComplianceSchemeController _controller;
-        private Mock<IFeesService> _feesServiceMock;
 
         [TestInitialize]
         public void Setup()
         {
-            _feesServiceMock = new Mock<IFeesService>();
-            _controller = new ComplianceSchemeController(_feesServiceMock.Object);
+            _mockFeesService = new Mock<IFeesService>();
+            _controller = new ComplianceSchemeController(_mockFeesService.Object);
+        }
+
+        [TestMethod]
+        public async Task CalculateFeesAsync_ShouldReturnOk_WhenRequestIsValid()
+        {
+            // Arrange
+            var request = new ComplianceSchemeRegistrationRequestDto
+            {
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true },
+                    new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 5, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
+            };
+
+            var expectedResponse = new RegistrationFeeResponseDto { TotalFee = 1000 };
+            _mockFeesService.Setup(s => s.CalculateComplianceSchemeFeesAsync(request))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await _controller.CalculateFeesAsync(request);
+
+            // Assert
+            result.Result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(expectedResponse);
+        }
+
+        [TestMethod]
+        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenNumberOfSubsidiariesIsNegative()
+        {
+            // Arrange
+            var request = new ComplianceSchemeRegistrationRequestDto
+            {
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = -1, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
+            };
+
+            // Act
+            var result = await _controller.CalculateFeesAsync(request);
+
+            // Assert
+            result.Result.Should().BeOfType<BadRequestObjectResult>()
+                .Which.Value.Should().Be("Number of subsidiaries per producer must be between 0 and 100.");
+        }
+
+        [TestMethod]
+        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenNumberOfSubsidiariesExceeds100()
+        {
+            // Arrange
+            var request = new ComplianceSchemeRegistrationRequestDto
+            {
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 101, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
+            };
+
+            // Act
+            var result = await _controller.CalculateFeesAsync(request);
+
+            // Assert
+            result.Result.Should().BeOfType<BadRequestObjectResult>()
+                .Which.Value.Should().Be("Number of subsidiaries per producer must be between 0 and 100.");
+        }
+
+        [TestMethod]
+        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenProducerTypeIsInvalid()
+        {
+            // Arrange
+            var request = new ComplianceSchemeRegistrationRequestDto
+            {
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "X", NumberOfSubsidiaries = 10, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
+            };
+
+            // Act
+            var result = await _controller.CalculateFeesAsync(request);
+
+            // Assert
+            result.Result.Should().BeOfType<BadRequestObjectResult>()
+                .Which.Value.Should().Be("ProducerType must be 'L' for Large or 'S' for Small.");
         }
 
         [TestMethod]
         public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
-            _controller.ModelState.AddModelError("error", "some error");
+            _controller.ModelState.AddModelError("Error", "Invalid model state");
 
-            // Act
-            var result = await _controller.CalculateFeesAsync(new ComplianceSchemeRegistrationRequestDto());
-
-            // Assert
-            result.Result.Should().BeOfType<BadRequestObjectResult>();
-        }
-
-        [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnOk_WhenValidRequest()
-        {
-            // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                NumberOfLargeProducers = 10,
-                NumberOfSmallProducers = 5,
-                NumberOfOnlineMarketplaces = 3,
-                NumberOfSubsidiaries = 20,
-                PayBaseFeeAlone = false
-            };
-            var expectedResponse = new RegistrationFeeResponseDto { TotalFee = 5000 };
-            _feesServiceMock.Setup(service => service.CalculateComplianceSchemeFeesAsync(request)).ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await _controller.CalculateFeesAsync(request);
-
-            // Assert
-            var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().Be(expectedResponse);
-        }
-
-        [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenArgumentExceptionThrown()
-        {
-            // Arrange
-            var request = new ComplianceSchemeRegistrationRequestDto
-            {
-                NumberOfLargeProducers = 10,
-                NumberOfSmallProducers = 5,
-                NumberOfOnlineMarketplaces = 3,
-                NumberOfSubsidiaries = 101,  // Invalid number of subsidiaries
-                PayBaseFeeAlone = false
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
             };
 
             // Act
             var result = await _controller.CalculateFeesAsync(request);
 
             // Assert
-            var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            badRequestResult.Value.Should().Be("Number of subsidiaries must be between 0 and 100.");
+            result.Result.Should().BeOfType<BadRequestObjectResult>()
+                .Which.Value.Should().BeOfType<SerializableError>();
         }
 
         [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenGeneralExceptionThrown()
+        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenArgumentExceptionIsThrown()
         {
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                NumberOfLargeProducers = 10,
-                NumberOfSmallProducers = 5,
-                NumberOfOnlineMarketplaces = 3,
-                NumberOfSubsidiaries = 20,
-                PayBaseFeeAlone = false
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
             };
-            _feesServiceMock.Setup(service => service.CalculateComplianceSchemeFeesAsync(request))
-                .ThrowsAsync(new Exception("General error"));
+
+            _mockFeesService.Setup(s => s.CalculateComplianceSchemeFeesAsync(request))
+                .ThrowsAsync(new ArgumentException("Invalid number of subsidiaries"));
 
             // Act
             var result = await _controller.CalculateFeesAsync(request);
 
             // Assert
-            var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            badRequestResult.Value.Should().Be("General error");
+            result.Result.Should().BeOfType<BadRequestObjectResult>()
+                .Which.Value.Should().Be("Invalid number of subsidiaries");
+        }
+
+        [TestMethod]
+        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenExceptionIsThrown()
+        {
+            // Arrange
+            var request = new ComplianceSchemeRegistrationRequestDto
+            {
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
+            };
+
+            _mockFeesService.Setup(s => s.CalculateComplianceSchemeFeesAsync(request))
+                .ThrowsAsync(new Exception("Internal server error"));
+
+            // Act
+            var result = await _controller.CalculateFeesAsync(request);
+
+            // Assert
+            result.Result.Should().BeOfType<BadRequestObjectResult>()
+                .Which.Value.Should().Be("Internal server error");
         }
     }
 }

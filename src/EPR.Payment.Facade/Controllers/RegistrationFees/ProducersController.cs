@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
-namespace EPR.Payment.Facade.Controllers.RegistrationFees
+namespace EPR.Payment.Facade.Controllers
 {
     [ApiVersion(1)]
     [ApiController]
@@ -39,6 +39,16 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            if (request.NumberOfSubsidiaries < 0 || request.NumberOfSubsidiaries > 100)
+            {
+                return BadRequest("Number of subsidiaries must be between 0 and 100.");
+            }
+
+            if (request.ProducerType != "L" && request.ProducerType != "S")
+            {
+                return BadRequest("ProducerType must be 'L' for Large or 'S' for Small.");
             }
 
             try

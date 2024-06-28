@@ -27,9 +27,12 @@ namespace EPR.Payment.Facade.Services
 
         public async Task<RegistrationFeeResponseDto> CalculateComplianceSchemeFeesAsync(ComplianceSchemeRegistrationRequestDto request)
         {
-            if (request.NumberOfSubsidiaries > 100)
+            foreach (var producer in request.Producers)
             {
-                throw new ArgumentException("Number of subsidiaries cannot exceed 100.");
+                if (producer.NumberOfSubsidiaries > 100)
+                {
+                    throw new ArgumentException("Number of subsidiaries cannot exceed 100.");
+                }
             }
 
             return await _httpFeesService.CalculateComplianceSchemeFeesAsync(request);

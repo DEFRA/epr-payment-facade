@@ -1,6 +1,6 @@
 ﻿namespace EPR.Payment.Facade.Common.Dtos
 {
-    public class ProducerRegistrationRequestDto
+    public class ProducerSubsidiaryInfo
     {
         public string ProducerType { get; set; } // "L" for Large, "S" for Small
         public int NumberOfSubsidiaries { get; set; }
