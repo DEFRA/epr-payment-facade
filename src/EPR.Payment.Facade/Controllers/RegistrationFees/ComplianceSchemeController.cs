@@ -7,11 +7,11 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
-namespace EPR.Payment.Facade.Controllers
+namespace EPR.Payment.Facade.Controllers.RegistrationFees
 {
     [ApiVersion(1)]
     [ApiController]
-    [Route("api/v{version:apiVersion}/complianceschemes")]
+    [Route("api/v{version:apiVersion}/compliancescheme")]
     [FeatureGate("EnableComplianceSchemeFeature")]
     public class ComplianceSchemeController : ControllerBase
     {
@@ -19,7 +19,7 @@ namespace EPR.Payment.Facade.Controllers
 
         public ComplianceSchemeController(IFeesService feesService)
         {
-            _feesService = feesService;
+            _feesService = feesService ?? throw new ArgumentNullException(nameof(feesService));
         }
 
         [HttpPost("calculate-fees")]
@@ -28,7 +28,7 @@ namespace EPR.Payment.Facade.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [SwaggerOperation(Summary = "Calculate fees for compliance scheme registration", Description = "Calculates the registration fees for a compliance scheme based on the number of large producers, small producers, and subsidiaries.")]
+        [SwaggerOperation(Summary = "Calculate fees for compliance scheme registration", Description = "Calculates the registration fees for a compliance scheme based on the number of large producers, small producers, online marketplaces, and subsidiaries.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Successfully calculated fees", typeof(RegistrationFeeResponseDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "No fee found for the provided parameters.")]
@@ -41,18 +41,10 @@ namespace EPR.Payment.Facade.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Validate the number of subsidiaries per producer
-            foreach (var producer in request.Producers)
+            var validationResult = ValidateComplianceSchemeRequest(request);
+            if (validationResult != null)
             {
-                if (producer.NumberOfSubsidiaries < 0 || producer.NumberOfSubsidiaries > 100)
-                {
-                    return BadRequest("Number of subsidiaries per producer must be between 0 and 100.");
-                }
-
-                if (producer.ProducerType != "L" && producer.ProducerType != "S")
-                {
-                    return BadRequest("ProducerType must be 'L' for Large or 'S' for Small.");
-                }
+                return validationResult;
             }
 
             try
@@ -68,6 +60,24 @@ namespace EPR.Payment.Facade.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        private ActionResult<RegistrationFeeResponseDto> ValidateComplianceSchemeRequest(ComplianceSchemeRegistrationRequestDto request)
+        {
+            foreach (var producer in request.Producers)
+            {
+                if (producer.NumberOfSubsidiaries < 0 || producer.NumberOfSubsidiaries > 100)
+                {
+                    return BadRequest("Number of subsidiaries per producer must be between 0 and 100.");
+                }
+
+                if (producer.ProducerType != "L" && producer.ProducerType != "S")
+                {
+                    return BadRequest("ProducerType must be 'L' for Large or 'S' for Small.");
+                }
+            }
+
+            return null;
         }
     }
 }

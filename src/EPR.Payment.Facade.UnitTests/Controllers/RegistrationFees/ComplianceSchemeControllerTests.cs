@@ -1,5 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Dtos;
 using EPR.Payment.Facade.Controllers;
+using EPR.Payment.Facade.Controllers.RegistrationFees;
 using EPR.Payment.Facade.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;

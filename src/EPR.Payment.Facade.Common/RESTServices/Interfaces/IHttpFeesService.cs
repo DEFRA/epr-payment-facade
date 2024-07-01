@@ -8,4 +8,5 @@ namespace EPR.Payment.Facade.Common.RESTServices.Interfaces
         Task<RegistrationFeeResponseDto> CalculateProducerFeesAsync(ProducerRegistrationRequestDto request);
         Task<RegistrationFeeResponseDto> CalculateComplianceSchemeFeesAsync(ComplianceSchemeRegistrationRequestDto request);
     }
+
 }

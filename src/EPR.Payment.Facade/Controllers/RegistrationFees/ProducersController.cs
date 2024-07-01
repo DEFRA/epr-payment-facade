@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
-namespace EPR.Payment.Facade.Controllers
+namespace EPR.Payment.Facade.Controllers.RegistrationFees
 {
     [ApiVersion(1)]
     [ApiController]
