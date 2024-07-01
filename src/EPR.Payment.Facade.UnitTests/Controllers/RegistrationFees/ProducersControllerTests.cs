@@ -1,13 +1,12 @@
 ﻿using EPR.Payment.Facade.Common.Dtos;
-using EPR.Payment.Facade.Controllers;
 using EPR.Payment.Facade.Controllers.RegistrationFees;
 using EPR.Payment.Facade.Services.Interfaces;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Tests.Controllers
@@ -168,6 +167,42 @@ namespace EPR.Payment.Facade.Tests.Controllers
             // Assert
             result.Result.Should().BeOfType<BadRequestObjectResult>()
                 .Which.Value.Should().Be("Internal server error");
+        }
+
+        [TestMethod]
+        public async Task CalculateFeesAsync_ShouldReturnOk_WithCorrectFees_ForLargeProducerWith25Subsidiaries()
+        {
+            // Arrange
+            var request = new ProducerRegistrationRequestDto
+            {
+                ProducerType = "L",
+                NumberOfSubsidiaries = 25
+            };
+
+            var expectedResponse = new RegistrationFeeResponseDto
+            {
+                BaseFee = 1658.00m,
+                SubsidiariesFee = 12040.00m,
+                ProducersFee = 0.00m,
+                TotalFee = 13698.00m,
+                FeeBreakdowns = new List<FeeBreakdown>
+                {
+                    new FeeBreakdown { Description = "Base Fee for Large Producer", Amount = 1658.00m },
+                    new FeeBreakdown { Description = "Fee for first 20 subsidiaries", Amount = 11160.00m },
+                    new FeeBreakdown { Description = "Fee for additional 5 subsidiaries", Amount = 700.00m }
+                }
+            };
+
+            _mockFeesService.Setup(s => s.CalculateProducerFeesAsync(request))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await _controller.CalculateFeesAsync(request);
+
+            // Assert
+            var okResult = result.Result as OkObjectResult;
+            okResult.Should().NotBeNull();
+            okResult.Value.Should().BeEquivalentTo(expectedResponse);
         }
     }
 }

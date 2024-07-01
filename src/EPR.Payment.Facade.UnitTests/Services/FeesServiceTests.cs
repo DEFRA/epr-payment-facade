@@ -5,6 +5,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Tests.Services
@@ -69,7 +70,7 @@ namespace EPR.Payment.Facade.Tests.Services
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
+                Producers = new List<ProducerSubsidiaryInfo>
                 {
                     new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true },
                     new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 5, PayBaseFee = true }
@@ -94,7 +95,7 @@ namespace EPR.Payment.Facade.Tests.Services
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
+                Producers = new List<ProducerSubsidiaryInfo>
                 {
                     new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 101, PayBaseFee = true }
                 },
@@ -115,7 +116,7 @@ namespace EPR.Payment.Facade.Tests.Services
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
+                Producers = new List<ProducerSubsidiaryInfo>
                 {
                     new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 50, PayBaseFee = true },
                     new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 101, PayBaseFee = true } // Invalid
@@ -129,6 +130,40 @@ namespace EPR.Payment.Facade.Tests.Services
             // Assert
             await act.Should().ThrowAsync<ArgumentException>()
                 .WithMessage("Number of subsidiaries cannot exceed 100.");
+        }
+
+        [TestMethod]
+        public async Task CalculateProducerFeesAsync_ShouldReturnCorrectFees_ForLargeProducerWith25Subsidiaries()
+        {
+            // Arrange
+            var request = new ProducerRegistrationRequestDto
+            {
+                ProducerType = "L",
+                NumberOfSubsidiaries = 25
+            };
+
+            var expectedResponse = new RegistrationFeeResponseDto
+            {
+                BaseFee = 1658.00m,
+                SubsidiariesFee = 12040.00m,
+                ProducersFee = 0.00m,
+                TotalFee = 13698.00m,
+                FeeBreakdowns = new List<FeeBreakdown>
+                {
+                    new FeeBreakdown { Description = "Base Fee for Large Producer", Amount = 1658.00m },
+                    new FeeBreakdown { Description = "Fee for first 20 subsidiaries", Amount = 11160.00m },
+                    new FeeBreakdown { Description = "Fee for additional 5 subsidiaries", Amount = 700.00m }
+                }
+            };
+
+            _mockHttpFeesService.Setup(s => s.CalculateProducerFeesAsync(request))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await _feesService.CalculateProducerFeesAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedResponse);
         }
     }
 }
