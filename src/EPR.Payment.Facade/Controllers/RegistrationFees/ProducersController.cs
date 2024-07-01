@@ -62,7 +62,8 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                // Log the exception if necessary
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

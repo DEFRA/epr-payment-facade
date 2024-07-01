@@ -1,11 +1,12 @@
 ﻿using EPR.Payment.Facade.Common.Dtos;
 using EPR.Payment.Facade.Common.RESTServices.Interfaces;
 using EPR.Payment.Facade.Services;
+using EPR.Payment.Facade.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Tests.Services
@@ -14,13 +15,15 @@ namespace EPR.Payment.Facade.Tests.Services
     public class FeesServiceTests
     {
         private Mock<IHttpFeesService> _mockHttpFeesService;
+        private Mock<ILogger<FeesService>> _mockLogger;
         private FeesService _feesService;
 
         [TestInitialize]
         public void Setup()
         {
             _mockHttpFeesService = new Mock<IHttpFeesService>();
-            _feesService = new FeesService(_mockHttpFeesService.Object);
+            _mockLogger = new Mock<ILogger<FeesService>>();
+            _feesService = new FeesService(_mockHttpFeesService.Object, _mockLogger.Object);
         }
 
         [TestMethod]
@@ -65,12 +68,43 @@ namespace EPR.Payment.Facade.Tests.Services
         }
 
         [TestMethod]
+        public async Task CalculateProducerFeesAsync_ShouldLogErrorAndThrowException_WhenExceptionIsThrown()
+        {
+            // Arrange
+            var request = new ProducerRegistrationRequestDto
+            {
+                ProducerType = "L",
+                NumberOfSubsidiaries = 10,
+                PayBaseFee = true
+            };
+
+            var exceptionMessage = "Error calculating producer fees";
+            _mockHttpFeesService.Setup(s => s.CalculateProducerFeesAsync(request))
+                .ThrowsAsync(new Exception(exceptionMessage));
+
+            // Act
+            Func<Task> act = async () => await _feesService.CalculateProducerFeesAsync(request);
+
+            // Assert
+            await act.Should().ThrowAsync<Exception>()
+                .WithMessage(exceptionMessage);
+            _mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Error calculating producer fees")),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
+                Times.Once);
+        }
+
+        [TestMethod]
         public async Task CalculateComplianceSchemeFeesAsync_ShouldReturnFee_WhenRequestIsValid()
         {
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                Producers = new List<ProducerSubsidiaryInfo>
+                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
                 {
                     new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true },
                     new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 5, PayBaseFee = true }
@@ -95,7 +129,7 @@ namespace EPR.Payment.Facade.Tests.Services
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                Producers = new List<ProducerSubsidiaryInfo>
+                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
                 {
                     new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 101, PayBaseFee = true }
                 },
@@ -107,7 +141,7 @@ namespace EPR.Payment.Facade.Tests.Services
 
             // Assert
             await act.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("Number of subsidiaries cannot exceed 100.");
+                .WithMessage("Number of subsidiaries per producer must be between 0 and 100.");
         }
 
         [TestMethod]
@@ -116,7 +150,7 @@ namespace EPR.Payment.Facade.Tests.Services
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
-                Producers = new List<ProducerSubsidiaryInfo>
+                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
                 {
                     new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 50, PayBaseFee = true },
                     new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 101, PayBaseFee = true } // Invalid
@@ -129,41 +163,41 @@ namespace EPR.Payment.Facade.Tests.Services
 
             // Assert
             await act.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("Number of subsidiaries cannot exceed 100.");
+                .WithMessage("Number of subsidiaries per producer must be between 0 and 100.");
         }
 
         [TestMethod]
-        public async Task CalculateProducerFeesAsync_ShouldReturnCorrectFees_ForLargeProducerWith25Subsidiaries()
+        public async Task CalculateComplianceSchemeFeesAsync_ShouldLogErrorAndThrowException_WhenExceptionIsThrown()
         {
             // Arrange
-            var request = new ProducerRegistrationRequestDto
+            var request = new ComplianceSchemeRegistrationRequestDto
             {
-                ProducerType = "L",
-                NumberOfSubsidiaries = 25
-            };
-
-            var expectedResponse = new RegistrationFeeResponseDto
-            {
-                BaseFee = 1658.00m,
-                SubsidiariesFee = 12040.00m,
-                ProducersFee = 0.00m,
-                TotalFee = 13698.00m,
-                FeeBreakdowns = new List<FeeBreakdown>
+                Producers = new System.Collections.Generic.List<ProducerSubsidiaryInfo>
                 {
-                    new FeeBreakdown { Description = "Base Fee for Large Producer", Amount = 1658.00m },
-                    new FeeBreakdown { Description = "Fee for first 20 subsidiaries", Amount = 11160.00m },
-                    new FeeBreakdown { Description = "Fee for additional 5 subsidiaries", Amount = 700.00m }
-                }
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true },
+                    new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 5, PayBaseFee = true }
+                },
+                PayComplianceSchemeBaseFee = true
             };
 
-            _mockHttpFeesService.Setup(s => s.CalculateProducerFeesAsync(request))
-                .ReturnsAsync(expectedResponse);
+            var exceptionMessage = "Error calculating compliance scheme fees";
+            _mockHttpFeesService.Setup(s => s.CalculateComplianceSchemeFeesAsync(request))
+                .ThrowsAsync(new Exception(exceptionMessage));
 
             // Act
-            var result = await _feesService.CalculateProducerFeesAsync(request);
+            Func<Task> act = async () => await _feesService.CalculateComplianceSchemeFeesAsync(request);
 
             // Assert
-            result.Should().BeEquivalentTo(expectedResponse);
+            await act.Should().ThrowAsync<Exception>()
+                .WithMessage(exceptionMessage);
+            _mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Error calculating compliance scheme fees")),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
+                Times.Once);
         }
     }
 }

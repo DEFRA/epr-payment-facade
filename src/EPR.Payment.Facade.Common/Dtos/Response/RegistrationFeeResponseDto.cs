@@ -38,6 +38,6 @@
         /// <summary>
         /// Amount for this component of the fee.
         /// </summary>
-        public decimal Amount { get; set; }
+        public decimal? Amount { get; set; }
     }
 }

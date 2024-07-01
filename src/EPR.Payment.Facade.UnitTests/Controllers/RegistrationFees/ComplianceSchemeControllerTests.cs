@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Controllers.RegistrationFees;
 using EPR.Payment.Facade.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -48,44 +49,6 @@ namespace EPR.Payment.Facade.Tests.Controllers
             // Assert
             result.Result.Should().BeOfType<OkObjectResult>()
                 .Which.Value.Should().BeEquivalentTo(expectedResponse);
-        }
-
-        [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnOk_WithCorrectFees_ForLargeProducerWith25Subsidiaries()
-        {
-            // Arrange
-            var request = new ComplianceSchemeRegistrationRequestDto
-            {
-                Producers = new List<ProducerSubsidiaryInfo>
-                {
-                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 25, PayBaseFee = true }
-                }
-            };
-
-            var expectedResponse = new RegistrationFeeResponseDto
-            {
-                BaseFee = 1658.00m,
-                SubsidiariesFee = 12040.00m,
-                ProducersFee = 0.00m,
-                TotalFee = 13698.00m,
-                FeeBreakdowns = new List<FeeBreakdown>
-                {
-                    new FeeBreakdown { Description = "Base Fee for Large Producer", Amount = 1658.00m },
-                    new FeeBreakdown { Description = "Fee for first 20 subsidiaries", Amount = 11160.00m },
-                    new FeeBreakdown { Description = "Fee for additional 5 subsidiaries", Amount = 700.00m }
-                }
-            };
-
-            _mockFeesService.Setup(s => s.CalculateComplianceSchemeFeesAsync(request))
-                .ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await _controller.CalculateFeesAsync(request);
-
-            // Assert
-            var okResult = result.Result as OkObjectResult;
-            okResult.Should().NotBeNull();
-            okResult.Value.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod]
@@ -152,6 +115,27 @@ namespace EPR.Payment.Facade.Tests.Controllers
         }
 
         [TestMethod]
+        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenNoValidFeesRequested()
+        {
+            // Arrange
+            var request = new ComplianceSchemeRegistrationRequestDto
+            {
+                PayComplianceSchemeBaseFee = false,
+                Producers = new List<ProducerSubsidiaryInfo>
+                {
+                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 0, PayBaseFee = false }
+                }
+            };
+
+            // Act
+            var result = await _controller.CalculateFeesAsync(request);
+
+            // Assert
+            result.Result.Should().BeOfType<BadRequestObjectResult>()
+                .Which.Value.Should().Be("No valid fees requested.");
+        }
+
+        [TestMethod]
         public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
@@ -199,15 +183,15 @@ namespace EPR.Payment.Facade.Tests.Controllers
         }
 
         [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenExceptionIsThrown()
+        public async Task CalculateFeesAsync_ShouldReturnInternalServerError_WhenExceptionIsThrown()
         {
             // Arrange
             var request = new ComplianceSchemeRegistrationRequestDto
             {
                 Producers = new List<ProducerSubsidiaryInfo>
-                {
-                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true }
-                },
+        {
+            new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 10, PayBaseFee = true }
+        },
                 PayComplianceSchemeBaseFee = true
             };
 
@@ -218,53 +202,10 @@ namespace EPR.Payment.Facade.Tests.Controllers
             var result = await _controller.CalculateFeesAsync(request);
 
             // Assert
-            result.Result.Should().BeOfType<BadRequestObjectResult>()
+            result.Result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+            result.Result.Should().BeOfType<ObjectResult>()
                 .Which.Value.Should().Be("Internal server error");
-        }
-
-        [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnOk_WithCorrectFees_ForMultipleProducers()
-        {
-            // Arrange
-            var request = new ComplianceSchemeRegistrationRequestDto
-            {
-                Producers = new List<ProducerSubsidiaryInfo>
-                {
-                    new ProducerSubsidiaryInfo { ProducerType = "L", NumberOfSubsidiaries = 50, PayBaseFee = true },
-                    new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 50, PayBaseFee = true },
-                    new ProducerSubsidiaryInfo { ProducerType = "S", NumberOfSubsidiaries = 10, PayBaseFee = true }
-                }
-            };
-
-            var expectedResponse = new RegistrationFeeResponseDto
-            {
-                BaseFee = 0.00m,
-                SubsidiariesFee = 38120.00m,
-                ProducersFee = 0.00m,
-                TotalFee = 38120.00m,
-                FeeBreakdowns = new List<FeeBreakdown>
-                {
-                    new FeeBreakdown { Description = "Base Fee for Large Producer", Amount = 1658.00m },
-                    new FeeBreakdown { Description = "Fee for first 20 subsidiaries of Large Producer", Amount = 11160.00m },
-                    new FeeBreakdown { Description = "Fee for additional 30 subsidiaries of Large Producer", Amount = 4200.00m },
-                    new FeeBreakdown { Description = "Base Fee for Small Producer 1", Amount = 631.00m },
-                    new FeeBreakdown { Description = "Fee for first 20 subsidiaries of Small Producer 1", Amount = 11160.00m },
-                    new FeeBreakdown { Description = "Fee for additional 30 subsidiaries of Small Producer 1", Amount = 4200.00m },
-                    new FeeBreakdown { Description = "Base Fee for Small Producer 2", Amount = 631.00m },
-                    new FeeBreakdown { Description = "Fee for 10 subsidiaries of Small Producer 2", Amount = 5580.00m }
-                }
-            };
-
-            _mockFeesService.Setup(s => s.CalculateComplianceSchemeFeesAsync(request))
-                .ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await _controller.CalculateFeesAsync(request);
-
-            // Assert
-            var okResult = result.Result as OkObjectResult;
-            okResult.Should().NotBeNull();
-            okResult.Value.Should().BeEquivalentTo(expectedResponse);
         }
     }
 }

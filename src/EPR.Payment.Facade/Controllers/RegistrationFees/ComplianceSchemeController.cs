@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Controllers.RegistrationFees
@@ -41,10 +42,10 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
                 return BadRequest(ModelState);
             }
 
-            var validationResult = ValidateComplianceSchemeRequest(request);
-            if (validationResult != null)
+            var validationError = ValidateComplianceSchemeRequest(request);
+            if (validationError != null)
             {
-                return validationResult;
+                return BadRequest(validationError);
             }
 
             try
@@ -58,23 +59,29 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                // Log the exception if necessary
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
-        private ActionResult<RegistrationFeeResponseDto> ValidateComplianceSchemeRequest(ComplianceSchemeRegistrationRequestDto request)
+        private string ValidateComplianceSchemeRequest(ComplianceSchemeRegistrationRequestDto request)
         {
             foreach (var producer in request.Producers)
             {
                 if (producer.NumberOfSubsidiaries < 0 || producer.NumberOfSubsidiaries > 100)
                 {
-                    return BadRequest("Number of subsidiaries per producer must be between 0 and 100.");
+                    return "Number of subsidiaries per producer must be between 0 and 100.";
                 }
 
                 if (producer.ProducerType != "L" && producer.ProducerType != "S")
                 {
-                    return BadRequest("ProducerType must be 'L' for Large or 'S' for Small.");
+                    return "ProducerType must be 'L' for Large or 'S' for Small.";
                 }
+            }
+
+            if (!request.PayComplianceSchemeBaseFee && !request.Producers.Any(p => p.PayBaseFee) && !request.Producers.Any(p => p.NumberOfSubsidiaries > 0))
+            {
+                return "No valid fees requested.";
             }
 
             return null;

@@ -2,11 +2,11 @@
 using EPR.Payment.Facade.Controllers.RegistrationFees;
 using EPR.Payment.Facade.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Tests.Controllers
@@ -126,7 +126,7 @@ namespace EPR.Payment.Facade.Tests.Controllers
         }
 
         [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenArgumentExceptionIsThrown()
+        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenServiceThrowsArgumentException()
         {
             // Arrange
             var request = new ProducerRegistrationRequestDto
@@ -136,6 +136,7 @@ namespace EPR.Payment.Facade.Tests.Controllers
                 PayBaseFee = true
             };
 
+            // Simulate the service throwing an ArgumentException with a specific message
             _mockFeesService.Setup(s => s.CalculateProducerFeesAsync(request))
                 .ThrowsAsync(new ArgumentException("Invalid number of subsidiaries"));
 
@@ -148,7 +149,7 @@ namespace EPR.Payment.Facade.Tests.Controllers
         }
 
         [TestMethod]
-        public async Task CalculateFeesAsync_ShouldReturnBadRequest_WhenExceptionIsThrown()
+        public async Task CalculateFeesAsync_ShouldReturnInternalServerError_WhenServiceThrowsException()
         {
             // Arrange
             var request = new ProducerRegistrationRequestDto
@@ -158,6 +159,7 @@ namespace EPR.Payment.Facade.Tests.Controllers
                 PayBaseFee = true
             };
 
+            // Simulate the service throwing a general exception
             _mockFeesService.Setup(s => s.CalculateProducerFeesAsync(request))
                 .ThrowsAsync(new Exception("Internal server error"));
 
@@ -165,8 +167,10 @@ namespace EPR.Payment.Facade.Tests.Controllers
             var result = await _controller.CalculateFeesAsync(request);
 
             // Assert
-            result.Result.Should().BeOfType<BadRequestObjectResult>()
-                .Which.Value.Should().Be("Internal server error");
+            var objectResult = result.Result as ObjectResult;
+            objectResult.Should().NotBeNull();
+            objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+            objectResult.Value.Should().Be("Internal server error");
         }
 
         [TestMethod]
@@ -176,7 +180,8 @@ namespace EPR.Payment.Facade.Tests.Controllers
             var request = new ProducerRegistrationRequestDto
             {
                 ProducerType = "L",
-                NumberOfSubsidiaries = 25
+                NumberOfSubsidiaries = 25,
+                PayBaseFee = true
             };
 
             var expectedResponse = new RegistrationFeeResponseDto
