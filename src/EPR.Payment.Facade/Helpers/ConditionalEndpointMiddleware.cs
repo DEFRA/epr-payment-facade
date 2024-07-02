@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Helpers
 {

@@ -8,7 +8,7 @@ using System.Net.Http.Json;
 namespace EPR.Payment.Facade.Common.RESTServices
 {
     public abstract class BaseHttpService
-    {        
+    {
         protected readonly string _baseUrl;
         protected readonly HttpClient _httpClient;
         protected IHttpContextAccessor _httpContextAccessor;
@@ -49,7 +49,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task<T> Get<T>(string url, bool includeTrailingSlash = true)
         {
-            url = string.IsNullOrEmpty(url) &&  !includeTrailingSlash ? _baseUrl : includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
+            url = string.IsNullOrEmpty(url) && !includeTrailingSlash ? _baseUrl : includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
 
             return await Send<T>(CreateMessage(url, null, HttpMethod.Get));
         }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 
 namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
 {

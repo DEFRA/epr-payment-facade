@@ -1,13 +1,7 @@
 ﻿using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Any;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.FeatureManagement.Mvc;
 
 namespace EPR.Payment.Facade.Helpers
 {

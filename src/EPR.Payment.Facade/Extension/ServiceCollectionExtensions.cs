@@ -1,10 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using EPR.Payment.Facade.Common.RESTServices.Payments;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.HealthCheck;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
-using EPR.Payment.Facade.Services.Payments;
-using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
-using EPR.Payment.Facade.Common.RESTServices.Payments;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Extension
 {
@@ -18,10 +17,10 @@ namespace EPR.Payment.Facade.Extension
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // Register HTTP client factory
-            services.AddHttpClient();  
+            services.AddHttpClient();
 
             // Register payments
-            services.AddScoped<IPaymentsService, PaymentsService>();            
+            services.AddScoped<IPaymentsService, PaymentsService>();
             services.AddScoped<IHttpGovPayService, HttpGovPayService>();
             services.AddScoped<IHttpPaymentsService, HttpPaymentsService>();
             services.AddHttpContextAccessor();
@@ -31,7 +30,7 @@ namespace EPR.Payment.Facade.Extension
 
         }
 
-        public static IServiceCollection AddServiceHealthChecks(this IServiceCollection services) 
+        public static IServiceCollection AddServiceHealthChecks(this IServiceCollection services)
         {
             services.AddHealthChecks()
                 .AddCheck<PaymentsFacadeHealthCheck>(PaymentsFacadeHealthCheck.HealthCheckResultDescription,

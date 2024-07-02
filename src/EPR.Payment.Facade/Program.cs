@@ -3,11 +3,8 @@ using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
 using Microsoft.FeatureManagement;
-using Microsoft.FeatureManagement.Mvc;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
 using System.Security.Authentication;
-using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 

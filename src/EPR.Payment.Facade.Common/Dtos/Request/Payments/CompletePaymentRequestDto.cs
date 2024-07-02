@@ -1,8 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
-using EPR.Payment.Facade.Common.Enums;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
