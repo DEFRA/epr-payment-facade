@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Configuration\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 
