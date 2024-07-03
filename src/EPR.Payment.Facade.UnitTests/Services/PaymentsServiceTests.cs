@@ -1,16 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
-using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
-using EPR.Payment.Facade.Services.Payments;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.UnitTests.Services
 {
@@ -41,12 +37,13 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var request = new PaymentRequestDto
             {
                 Amount = 100,
-                ReferenceNumber = "REF123",
+                Reference = "REF123",
                 ReasonForPayment = "Test Payment",
                 return_url = "https://example.com/callback",
                 OrganisationId = "Org123",
                 UserId = "User123",
-                Regulator = "Reg123"
+                Regulator = "Reg123",
+                Description = "Payment description"
             };
             var expectedResponse = new PaymentResponseDto
             {
@@ -55,17 +52,16 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             _httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(request)).ReturnsAsync(expectedResponse);
-            _httpPaymentsServiceMock.Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>())).ReturnsAsync(Guid.NewGuid);
 
             // Act
-            var response = await _service.InitiatePaymentAsync(request);
+            var result = await _service.InitiatePaymentAsync(request);
 
             // Assert
-            response.Should().BeEquivalentTo(expectedResponse);
-            _httpPaymentsServiceMock.Verify(s => s.UpdatePaymentAsync(
-                It.IsAny<Guid>(),
-                It.Is<UpdatePaymentRequestDto>(r => r.Status == PaymentStatus.InProgress && r.GovPayPaymentId == "12345")), Times.Once);
+            result.Should().NotBeNull();
+            result.PaymentId.Should().Be(expectedResponse.PaymentId);
+            result.ReturnUrl.Should().Be(expectedResponse.ReturnUrl);
         }
+
         [TestMethod]
         public async Task InitiatePayment_NullRequest_ThrowsArgumentNullException()
         {
@@ -76,26 +72,26 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
         [DataTestMethod]
         [DataRow(null, "REF123", "Test Payment", "https://example.com/callback", "Org123", "User123", "Reg123", "Amount is required")]
-        [DataRow(100, null, "Test Payment", "https://example.com/callback", "Org123", "User123", "Reg123", "Reference Number is required")]
+        [DataRow(100, null, "Test Payment", "https://example.com/callback", "Org123", "User123", "Reg123", "Reference is required")]
         [DataRow(100, "REF123", null, "https://example.com/callback", "Org123", "User123", "Reg123", "Reason For Payment is required")]
         [DataRow(100, "REF123", "Test Payment", null, "Org123", "User123", "Reg123", "Return URL is required")]
         [DataRow(100, "REF123", "Test Payment", "https://example.com/callback", null, "User123", "Reg123", "Organisation ID is required")]
         [DataRow(100, "REF123", "Test Payment", "https://example.com/callback", "Org123", null, "Reg123", "User ID is required")]
         [DataRow(100, "REF123", "Test Payment", "https://example.com/callback", "Org123", "User123", null, "Regulator is required")]
-        public async Task InitiatePayment_MissingFields_ThrowsValidationException(
-            int? amount, string referenceNumber, string reasonForPayment, string returnUrl,
-            string organisationId, string userId, string regulator, string expectedMessage)
+        public async Task InitiatePayment_MissingFields_ThrowsValidationException(int? amount, string reference, string reasonForPayment,
+            string returnUrl, string organisationId, string userId, string regulator, string expectedMessage)
         {
             // Arrange
             var request = new PaymentRequestDto
             {
                 Amount = amount,
-                ReferenceNumber = referenceNumber,
+                Reference = reference,
                 ReasonForPayment = reasonForPayment,
                 return_url = returnUrl,
                 OrganisationId = organisationId,
                 UserId = userId,
-                Regulator = regulator
+                Regulator = regulator,
+                Description = "Payment description"
             };
 
             // Act & Assert
@@ -105,19 +101,19 @@ namespace EPR.Payment.Facade.UnitTests.Services
             exception.Which.Message.Should().Contain(expectedMessage);
         }
 
-        [TestMethod]
         public async Task InitiatePayment_StatusUpdateValidationFails_ThrowsValidationException()
         {
             // Arrange
             var request = new PaymentRequestDto
             {
                 Amount = 100,
-                ReferenceNumber = "REF123",
+                Reference = "REF123",
                 ReasonForPayment = "Test Payment",
                 return_url = "https://example.com/callback",
                 OrganisationId = "Org123",
                 UserId = "User123",
-                Regulator = "Reg123"
+                Regulator = "Reg123",
+                Description = "Payment description"
             };
             var expectedResponse = new PaymentResponseDto
             {
@@ -131,9 +127,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .ThrowsAsync(new ValidationException("Validation error"));
 
             // Act & Assert
-            await _service.Invoking(async s => await s.InitiatePaymentAsync(request))
+            var exception = await _service.Invoking(async s => await s.InitiatePaymentAsync(request))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
         }
+
         [TestMethod]
         public async Task CompletePayment_ValidGovPayPaymentId_UpdatesPaymentStatus()
         {

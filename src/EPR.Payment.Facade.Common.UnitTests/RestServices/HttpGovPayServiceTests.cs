@@ -1,16 +1,14 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request;
-using EPR.Payment.Facade.Common.Dtos.Response;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Moq;
-using Newtonsoft.Json;
-using Moq.Protected;
-using System.Net;
-using FluentAssertions;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using Moq;
+using Moq.Protected;
+using Newtonsoft.Json;
+using System.Net;
 
 namespace EPR.Payment.Facade.UnitTests.RESTServices
 {
@@ -18,8 +16,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
     public class HttpGovPayServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock;
-        private IConfiguration _configurationMock;
-        private IHttpGovPayClient _httpGovPayClientMock;
+        private Mock<IOptions<Service>> _configMock;
         private HttpGovPayService _httpGovPayService;
         private PaymentResponseDto _expectedResponse;
 
@@ -27,44 +24,35 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
         public void Initialize()
         {
             // Mock configuration
-            var configuration = new Mock<IConfiguration>();
-            configuration.SetupGet(x => x["GovPay:BaseUrl"]).Returns("https://example.com");
-            configuration.SetupGet(x => x["GovPay:EndPointName"]).Returns("payments");
-            configuration.SetupGet(x => x["GovPay:BearerToken"]).Returns("dummyBearerToken");
+            var config = new Service
+            {
+                Url = "https://example.com",
+                EndPointName = "payments",
+                BearerToken = "dummyBearerToken"
+            };
+
+            _configMock = new Mock<IOptions<Service>>();
+            _configMock.Setup(x => x.Value).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            _configurationMock = configuration.Object;
             _expectedResponse = new PaymentResponseDto { /* Populate with expected response data */ };
-
-            // Mock IHttpGovPayClient and configure its behavior
-            var httpGovPayClientMock = new Mock<IHttpGovPayClient>();
-            httpGovPayClientMock
-                .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>(), default))
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent(JsonConvert.SerializeObject(_expectedResponse)),
-                })
-                .Verifiable();
 
             var httpClientFactoryMock = new Mock<IHttpClientFactory>();
             httpClientFactoryMock
                 .Setup(x => x.CreateClient(It.IsAny<string>()))
                 .Returns(new HttpClient(new Mock<HttpMessageHandler>().Object));
 
-            _httpGovPayClientMock = httpGovPayClientMock.Object;
-
             _httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock.Object,
                 httpClientFactoryMock.Object, // Pass the mocked HttpClientFactory
-                _configurationMock);
+                _configMock.Object);
         }
 
         [TestMethod]
         public async Task InitiatePayment_Success_ReturnsPaymentResponseDto()
         {
             // Arrange            
-            var paymentRequestDto = new PaymentRequestDto { Amount = 14500, ReferenceNumber = "12345", ReasonForPayment = "Pay your council tax", return_url = "https://your.service.gov.uk/completed" };
+            var paymentRequestDto = new PaymentRequestDto { Amount = 14500, Reference = "12345", ReasonForPayment = "Pay your council tax", return_url = "https://your.service.gov.uk/completed" };
 
             // Create a mock HttpMessageHandler to handle the SendAsync method
             var handlerMock = new Mock<HttpMessageHandler>();
@@ -82,7 +70,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock.Object,
                 new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
-                _configurationMock);
+                _configMock.Object);
 
             // Act
             var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto);
@@ -110,7 +98,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock.Object,
                 new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
-                _configurationMock);
+                _configMock.Object);
 
             // Act & Assert
             Func<Task> act = async () => await httpGovPayService.InitiatePaymentAsync(new PaymentRequestDto());
@@ -139,7 +127,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock.Object,
                 new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
-                _configurationMock);
+                _configMock.Object);
 
             // Act
             var result = await httpGovPayService.GetPaymentStatusAsync(paymentId);
@@ -168,7 +156,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock.Object,
                 new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
-                _configurationMock);
+                _configMock.Object);
 
             // Act & Assert
             Func<Task> act = async () => await httpGovPayService.GetPaymentStatusAsync(paymentId);

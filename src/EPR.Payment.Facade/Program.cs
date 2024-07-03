@@ -8,6 +8,7 @@ using System.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setupAction =>
@@ -63,14 +64,16 @@ logger.LogInformation($"EnablePaymentInitiation: {enablePaymentInitiation}");
 logger.LogInformation($"EnablePaymentStatus: {enablePaymentStatus}");
 logger.LogInformation($"EnablePaymentStatusInsert: {enablePaymentStatusInsert}");
 
-if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
-
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi v1");
-    c.RoutePrefix = "swagger";
-});
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi v1");
+        c.RoutePrefix = "swagger";
+    });
+}
 
 app.UseHttpsRedirection();
 app.UseRouting();

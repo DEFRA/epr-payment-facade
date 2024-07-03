@@ -1,15 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
-using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.UnitTests.Controllers
 {
@@ -35,7 +32,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var request = new PaymentRequestDto
             {
                 Amount = 100,
-                ReferenceNumber = "REF123",
+                Reference = "REF123",
                 ReasonForPayment = "Test Payment",
                 return_url = "https://example.com/callback",
                 OrganisationId = "Org123",
@@ -87,7 +84,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             {
                 // Missing required fields to make the model invalid
                 // Amount is missing
-                // ReferenceNumber is missing
+                // Reference is missing
                 // ReasonForPayment is missing
                 return_url = "https://example.com/callback",
                 // OrganisationId is missing
@@ -118,7 +115,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var request = new PaymentRequestDto
             {
                 Amount = 100,
-                ReferenceNumber = "REF123",
+                Reference = "REF123",
                 ReasonForPayment = "Test Payment",
                 return_url = "https://example.com/callback",
                 OrganisationId = "Org123",

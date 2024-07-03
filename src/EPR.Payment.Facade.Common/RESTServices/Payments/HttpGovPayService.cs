@@ -1,8 +1,9 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
@@ -13,13 +14,13 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
         public HttpGovPayService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
-            IConfiguration configuration)
+            IOptions<Service> config)
             : base(httpContextAccessor, httpClientFactory,
-                configuration?["GovPay:BaseUrl"] ?? throw new ArgumentNullException(nameof(configuration), "BaseUrl configuration is missing"),
-                configuration?["GovPay:EndPointName"] ?? throw new ArgumentNullException(nameof(configuration), "EndPointName configuration is missing"))
+                config.Value.Url ?? throw new ArgumentNullException(nameof(config), "GovPay BaseUrl configuration is missing"),
+                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), "GovPay EndPointName configuration is missing"))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _bearerToken = configuration["GovPay:BearerToken"] ?? throw new ArgumentNullException(nameof(configuration), "Bearer token configuration is missing");
+            _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), "GovPay Bearer token configuration is missing");
         }
 
         public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto paymentRequestDto)
@@ -40,7 +41,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
             catch (Exception ex)
             {
-
                 throw new Exception("Error occurred while initiating payment.", ex);
             }
         }

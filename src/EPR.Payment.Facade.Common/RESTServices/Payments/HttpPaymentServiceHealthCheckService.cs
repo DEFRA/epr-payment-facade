@@ -1,5 +1,7 @@
-﻿using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
@@ -8,8 +10,10 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
         public HttpPaymentServiceHealthCheckService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
-            string baseUrl,
-            string endPointName) : base(httpContextAccessor, httpClientFactory, baseUrl, endPointName)
+            IOptions<Service> config)
+            : base(httpContextAccessor, httpClientFactory,
+                config.Value.Url ?? throw new ArgumentNullException(nameof(config), "PaymentServiceHealthCheck BaseUrl configuration is missing"),
+                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), "PaymentServiceHealthCheck EndPointName configuration is missing"))
         {
         }
 

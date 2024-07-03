@@ -29,7 +29,7 @@ public class PaymentsService : IPaymentsService
         {
             UserId = request.UserId,
             OrganisationId = request.OrganisationId,
-            ReferenceNumber = request.ReferenceNumber,
+            Reference = request.Reference,
             Regulator = request.Regulator,
             Amount = request.Amount,
             ReasonForPayment = request.ReasonForPayment,
@@ -45,7 +45,7 @@ public class PaymentsService : IPaymentsService
             GovPayPaymentId = paymentResponse.PaymentId,
             UpdatedByUserId = request.UserId,
             UpdatedByOrganisationId = request.OrganisationId,
-            ReferenceNumber = request.ReferenceNumber,
+            Reference = request.Reference,
             Status = PaymentStatus.InProgress
         };
 
@@ -93,7 +93,7 @@ public class PaymentsService : IPaymentsService
             GovPayPaymentId = govPayPaymentId,
             UpdatedByUserId = completeRequest.UpdatedByUserId,
             UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
-            ReferenceNumber = paymentStatusResponse.Reference,
+            Reference = paymentStatusResponse.Reference,
             Status = status.Value,
             ErrorCode = paymentStatusResponse.State.Code
         };

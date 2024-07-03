@@ -1,8 +1,9 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -10,35 +11,24 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
     public class HttpPaymentsService : BaseHttpService, IHttpPaymentsService
     {
-        private readonly string? _bearerToken;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _httpClientName;
 
         public HttpPaymentsService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
-            IConfiguration configuration)
+            IOptions<Service> config)
             : base(httpContextAccessor, httpClientFactory,
-                configuration?["PaymentService:BaseUrl"] ?? throw new ArgumentNullException(nameof(configuration), "BaseUrl configuration is missing"),
-                configuration?["PaymentService:EndPointName"] ?? throw new ArgumentNullException(nameof(configuration), "EndPointName configuration is missing"))
+                config.Value.Url ?? throw new ArgumentNullException(nameof(config), "PaymentService BaseUrl configuration is missing"),
+                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), "PaymentService EndPointName configuration is missing"))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _bearerToken = configuration["PaymentService:BearerToken"] ?? throw new ArgumentNullException(nameof(configuration), "Bearer token configuration is missing");
-            _httpClientName = configuration["PaymentService:HttpClientName"] ?? throw new ArgumentNullException(nameof(configuration), "HttpClientName configuration is missing");
+            _httpClientName = config.Value.HttpClientName ?? throw new ArgumentNullException(nameof(config), "PaymentService HttpClientName configuration is missing");
         }
 
         public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest)
         {
-            if (_bearerToken != null)
-            {
-                SetBearerToken(_bearerToken); // Set the bearer token
-            }
-            else
-            {
-                throw new InvalidOperationException("Bearer token is null. Unable to insert payment.");
-            }
-
             var url = "payments/status";
             try
             {
@@ -53,15 +43,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 
         public async Task UpdatePaymentAsync(Guid externalPaymentId, UpdatePaymentRequestDto paymentStatusUpdateRequest)
         {
-            if (_bearerToken != null)
-            {
-                SetBearerToken(_bearerToken); // Set the bearer token
-            }
-            else
-            {
-                throw new InvalidOperationException("Bearer token is null. Unable to update payment.");
-            }
-
             var url = $"payments/{externalPaymentId}/status";
             try
             {
