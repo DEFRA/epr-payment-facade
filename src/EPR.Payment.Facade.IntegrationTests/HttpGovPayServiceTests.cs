@@ -45,8 +45,8 @@ namespace EPR.Payment.Facade.IntegrationTests
                 Reference = "123456",
                 return_url = "https://example.com/return",
                 ReasonForPayment = "Test payment",
-                UserId = "userId",
-                OrganisationId = "organisationId",
+                UserId = Guid.NewGuid(), // Use a new GUID for the test
+                OrganisationId = Guid.NewGuid(), // Use a new GUID for the test
                 Regulator = "regulator",
                 Description = "Payment description"
             };
@@ -55,7 +55,6 @@ namespace EPR.Payment.Facade.IntegrationTests
             await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
                 .Should().NotThrowAsync();
         }
-
 
         [TestMethod]
         public async Task GetPaymentStatus_Success_PaymentStatusRetrieved()

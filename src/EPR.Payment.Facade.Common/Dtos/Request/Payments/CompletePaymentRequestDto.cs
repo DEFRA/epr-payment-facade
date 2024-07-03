@@ -9,9 +9,9 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         public Guid ExternalPaymentId { get; set; }
 
         [Required(ErrorMessage = "Updated By User ID is required")]
-        public string? UpdatedByUserId { get; set; }
+        public Guid UpdatedByUserId { get; set; }
 
         [Required(ErrorMessage = "Updated By Organisation ID is required")]
-        public string? UpdatedByOrganisationId { get; set; }
+        public Guid UpdatedByOrganisationId { get; set; }
     }
 }

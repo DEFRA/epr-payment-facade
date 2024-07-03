@@ -35,8 +35,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 Reference = "REF123",
                 ReasonForPayment = "Test Payment",
                 return_url = "https://example.com/callback",
-                OrganisationId = "Org123",
-                UserId = "User123",
+                OrganisationId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 Regulator = "Reg123"
             };
             var expectedResponse = new PaymentResponseDto
@@ -118,8 +118,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 Reference = "REF123",
                 ReasonForPayment = "Test Payment",
                 return_url = "https://example.com/callback",
-                OrganisationId = "Org123",
-                UserId = "User123",
+                OrganisationId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 Regulator = "Reg123"
             };
             var exception = new Exception("Some error");
@@ -143,8 +143,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var completeRequest = new CompletePaymentRequestDto
             {
                 ExternalPaymentId = Guid.NewGuid(),
-                UpdatedByUserId = "User123",
-                UpdatedByOrganisationId = "Org123"
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             // Act
@@ -162,8 +162,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var completeRequest = new CompletePaymentRequestDto
             {
                 ExternalPaymentId = Guid.NewGuid(),
-                UpdatedByUserId = "User123",
-                UpdatedByOrganisationId = "Org123"
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             // Act
@@ -182,8 +182,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var completeRequest = new CompletePaymentRequestDto
             {
                 ExternalPaymentId = Guid.NewGuid(),
-                UpdatedByUserId = "User123",
-                UpdatedByOrganisationId = "Org123"
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             // Act
@@ -203,8 +203,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var completeRequest = new CompletePaymentRequestDto
             {
                 ExternalPaymentId = Guid.NewGuid(),
-                UpdatedByUserId = "User123",
-                UpdatedByOrganisationId = "Org123"
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
             var validationException = new ValidationException("Validation error");
             _paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest)).ThrowsAsync(validationException);
@@ -226,8 +226,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var completeRequest = new CompletePaymentRequestDto
             {
                 ExternalPaymentId = Guid.NewGuid(),
-                UpdatedByUserId = "User123",
-                UpdatedByOrganisationId = "Org123"
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
             var exception = new Exception("Some error");
             _paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest)).ThrowsAsync(exception);

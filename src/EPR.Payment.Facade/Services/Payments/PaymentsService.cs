@@ -25,10 +25,15 @@ public class PaymentsService : IPaymentsService
     {
         ValidateObject(request);
 
+        if (!request.UserId.HasValue || !request.OrganisationId.HasValue)
+        {
+            throw new ValidationException("User ID and Organisation ID must be provided.");
+        }
+
         var insertRequest = new InsertPaymentRequestDto
         {
-            UserId = request.UserId,
-            OrganisationId = request.OrganisationId,
+            UserId = request.UserId.Value,
+            OrganisationId = request.OrganisationId.Value,
             Reference = request.Reference,
             Regulator = request.Regulator,
             Amount = request.Amount,
@@ -43,8 +48,8 @@ public class PaymentsService : IPaymentsService
         {
             ExternalPaymentId = externalPaymentId,
             GovPayPaymentId = paymentResponse.PaymentId,
-            UpdatedByUserId = request.UserId,
-            UpdatedByOrganisationId = request.OrganisationId,
+            UpdatedByUserId = request.UserId.Value,
+            UpdatedByOrganisationId = request.OrganisationId.Value,
             Reference = request.Reference,
             Status = PaymentStatus.InProgress
         };

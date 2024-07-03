@@ -4,8 +4,6 @@ using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
@@ -29,10 +27,10 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 
         public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest)
         {
-            var url = "payments/status";
+            var url = "payments";
             try
             {
-                var response = await PostWithResponse<InsertPaymentResponseDto>(url, paymentStatusInsertRequest);
+                var response = await Post<InsertPaymentResponseDto>(url, paymentStatusInsertRequest);
                 return response.ExternalPaymentId;
             }
             catch (Exception ex)
@@ -52,15 +50,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             {
                 throw new Exception("Error occurred while updating payment status.", ex);
             }
-        }
-
-        private async Task<T> PostWithResponse<T>(string url, object content)
-        {
-            using var httpClient = _httpClientFactory.CreateClient(_httpClientName);
-            var response = await httpClient.PostAsJsonAsync(url, content);
-            response.EnsureSuccessStatusCode();
-            var responseContent = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
     }
 }
