@@ -354,3 +354,4 @@ MigrationBackup/
 .vscode
 .idea
 /src/EPR.Payment.Facade/appsettings.Development.json
+/src/EPR.Payment.Facade.IntegrationTests/appsettings.json
