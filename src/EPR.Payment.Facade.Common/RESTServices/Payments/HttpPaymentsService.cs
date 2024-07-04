@@ -1,6 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -30,8 +29,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             var url = "payments";
             try
             {
-                var response = await Post<InsertPaymentResponseDto>(url, paymentStatusInsertRequest);
-                return response.ExternalPaymentId;
+                var response = await Post<Guid>(url, paymentStatusInsertRequest);
+                return response;
             }
             catch (Exception ex)
             {
