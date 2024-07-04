@@ -30,44 +30,9 @@ public class PaymentsService : IPaymentsService
             throw new ValidationException("User ID and Organisation ID must be provided.");
         }
 
-        var insertRequest = new InsertPaymentRequestDto
-        {
-            UserId = request.UserId.Value,
-            OrganisationId = request.OrganisationId.Value,
-            Reference = request.Reference,
-            Regulator = request.Regulator,
-            Amount = request.Amount,
-            ReasonForPayment = request.ReasonForPayment,
-            Status = PaymentStatus.Initiated
-        };
-
-        var externalPaymentId = await _httpPaymentsService.InsertPaymentAsync(insertRequest);
-        var paymentResponse = await _httpGovPayService.InitiatePaymentAsync(request);
-
-        var updateRequest = new UpdatePaymentRequestDto
-        {
-            ExternalPaymentId = externalPaymentId,
-            GovPayPaymentId = paymentResponse.PaymentId,
-            UpdatedByUserId = request.UserId.Value,
-            UpdatedByOrganisationId = request.OrganisationId.Value,
-            Reference = request.Reference,
-            Status = PaymentStatus.InProgress
-        };
-
-        try
-        {
-            await _httpPaymentsService.UpdatePaymentAsync(externalPaymentId, updateRequest);
-        }
-        catch (ValidationException ex)
-        {
-            _logger.LogError(ex, "Validation error occurred while updating payment status.");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unexpected error occurred while updating payment status.");
-            throw new Exception("An unexpected error occurred while updating the payment status.", ex);
-        }
+        var id = await InsertPaymentAsync(request);
+        var paymentResponse = await InitiateGovPayPaymentAsync(request);
+        await UpdatePaymentAsync(id, request, paymentResponse.PaymentId, PaymentStatus.InProgress);
 
         return paymentResponse;
     }
@@ -94,7 +59,7 @@ public class PaymentsService : IPaymentsService
 
         var updateRequest = new UpdatePaymentRequestDto
         {
-            ExternalPaymentId = completeRequest.ExternalPaymentId,
+            Id = completeRequest.Id,
             GovPayPaymentId = govPayPaymentId,
             UpdatedByUserId = completeRequest.UpdatedByUserId,
             UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
@@ -105,7 +70,77 @@ public class PaymentsService : IPaymentsService
 
         try
         {
-            await _httpPaymentsService.UpdatePaymentAsync(completeRequest.ExternalPaymentId, updateRequest);
+            await _httpPaymentsService.UpdatePaymentAsync(completeRequest.Id, updateRequest);
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogError(ex, "Validation error occurred while updating payment status.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while updating payment status.");
+            throw new Exception("An unexpected error occurred while updating the payment status.", ex);
+        }
+    }
+
+    private async Task<Guid> InsertPaymentAsync(PaymentRequestDto request)
+    {
+        var insertRequest = new InsertPaymentRequestDto
+        {
+            UserId = request.UserId.Value,
+            OrganisationId = request.OrganisationId.Value,
+            Reference = request.Reference,
+            Regulator = request.Regulator,
+            Amount = request.Amount,
+            ReasonForPayment = request.Description,
+            Status = PaymentStatus.Initiated
+        };
+
+        try
+        {
+            return await _httpPaymentsService.InsertPaymentAsync(insertRequest);
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogError(ex, "Validation error occurred while inserting payment.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while inserting payment.");
+            throw new Exception("An unexpected error occurred while inserting the payment.", ex);
+        }
+    }
+
+    private async Task<PaymentResponseDto> InitiateGovPayPaymentAsync(PaymentRequestDto request)
+    {
+        try
+        {
+            return await _httpGovPayService.InitiatePaymentAsync(request);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while initiating payment.");
+            throw new Exception("An unexpected error occurred while initiating the payment.", ex);
+        }
+    }
+
+    private async Task UpdatePaymentAsync(Guid id, PaymentRequestDto request, string paymentId, PaymentStatus status)
+    {
+        var updateRequest = new UpdatePaymentRequestDto
+        {
+            Id = id,
+            GovPayPaymentId = paymentId,
+            UpdatedByUserId = request.UserId.Value,
+            UpdatedByOrganisationId = request.OrganisationId.Value,
+            Reference = request.Reference,
+            Status = status
+        };
+
+        try
+        {
+            await _httpPaymentsService.UpdatePaymentAsync(id, updateRequest);
         }
         catch (ValidationException ex)
         {

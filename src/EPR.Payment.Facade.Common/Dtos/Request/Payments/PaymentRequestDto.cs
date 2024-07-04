@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EPR.Payment.Facade.Common.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
@@ -19,10 +20,8 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         [Required(ErrorMessage = "Amount is required")]
         public int? Amount { get; set; }
 
-        [Required(ErrorMessage = "Reason For Payment is required")]
-        public string? ReasonForPayment { get; set; }
-
         [Required(ErrorMessage = "Return URL is required")]
+        [ValidUrl] // Custom attribute
         public string? return_url { get; set; }
 
         [Required(ErrorMessage = "Description is required")]

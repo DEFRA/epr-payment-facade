@@ -4,11 +4,8 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Payments
 {
     public class PaymentResponseDto
     {
-        [JsonProperty("paymentId")]
+        [JsonProperty("payment_id")]
         public string PaymentId { get; set; }
-
-        [JsonProperty("status")]
-        public string Status { get; set; }
 
         [JsonProperty("amount")]
         public int Amount { get; set; }
@@ -21,5 +18,17 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Payments
 
         [JsonProperty("return_url")]
         public string ReturnUrl { get; set; }
+
+        [JsonProperty("state")]
+        public PaymentState State { get; set; }
+    }
+
+    public class PaymentState
+    {
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("finished")]
+        public bool Finished { get; set; }
     }
 }

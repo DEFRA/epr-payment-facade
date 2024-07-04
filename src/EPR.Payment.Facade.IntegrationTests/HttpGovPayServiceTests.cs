@@ -1,5 +1,6 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.RESTServices;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace EPR.Payment.Facade.IntegrationTests
         }
 
         [TestMethod]
-        public async Task InitiatePayment_Success_PaymentInitiated()
+        public async Task InitiatePayment_Success_PaymentResponseValid()
         {
             // Arrange
             var serviceProvider = new ServiceCollection()
@@ -44,20 +45,27 @@ namespace EPR.Payment.Facade.IntegrationTests
                 Amount = 100,
                 Reference = "123456",
                 return_url = "https://example.com/return",
-                ReasonForPayment = "Test payment",
-                UserId = Guid.NewGuid(), // Use a new GUID for the test
-                OrganisationId = Guid.NewGuid(), // Use a new GUID for the test
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
                 Regulator = "regulator",
                 Description = "Payment description"
             };
 
-            // Act & Assert
-            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
-                .Should().NotThrowAsync();
+            // Act
+            var response = await service.InitiatePaymentAsync(paymentRequestDto);
+
+            // Assert
+            response.Should().NotBeNull();
+            response.PaymentId.Should().NotBeNullOrEmpty();
+            response.State.Status.Should().NotBeNullOrEmpty();
+            response.Amount.Should().Be(paymentRequestDto.Amount);
+            response.Reference.Should().Be(paymentRequestDto.Reference);
+            response.Description.Should().Be(paymentRequestDto.Description);
+            response.ReturnUrl.Should().Be(paymentRequestDto.return_url);
         }
 
         [TestMethod]
-        public async Task GetPaymentStatus_Success_PaymentStatusRetrieved()
+        public async Task InitiatePayment_BearerTokenNull_ThrowsInvalidOperationException()
         {
             // Arrange
             var serviceProvider = new ServiceCollection()
@@ -70,13 +78,87 @@ namespace EPR.Payment.Facade.IntegrationTests
             var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
             var options = serviceProvider.GetService<IOptions<Service>>();
 
-            var service = new HttpGovPayService(httpContextAccessor, httpClientFactory, options);
+            var service = new TestHttpGovPayService(httpContextAccessor, httpClientFactory, options, null);
 
-            var paymentId = "no7kr7it1vjbsvb7r402qqrv86"; // Provide an actual payment ID
+            var paymentRequestDto = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "123456",
+                return_url = "https://example.com/return",
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
+                Regulator = "regulator",
+                Description = "Payment description"
+            };
 
             // Act & Assert
-            await service.Invoking(async x => await x.GetPaymentStatusAsync(paymentId))
-                .Should().NotThrowAsync();
+            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
+                .Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Bearer token is null. Unable to initiate payment.");
+        }
+
+        [TestMethod]
+        public async Task InitiatePayment_PostThrowsException_ThrowsException()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection()
+                .AddHttpContextAccessor()
+                .AddHttpClient()
+                .Configure<Service>(options => _configuration.GetSection("GovPayService").Bind(options))
+                .BuildServiceProvider();
+
+            var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+            var options = serviceProvider.GetService<IOptions<Service>>();
+
+            var service = new TestHttpGovPayService(httpContextAccessor, httpClientFactory, options, options.Value.BearerToken);
+
+            var paymentRequestDto = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "123456",
+                return_url = "https://example.com/return",
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
+                Regulator = "regulator",
+                Description = "Payment description"
+            };
+
+            // Intentionally set an incorrect URL to force an exception
+            service.SetBaseUrl("https://invalid-url.com");
+
+            // Act & Assert
+            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
+                .Should().ThrowAsync<Exception>()
+                .WithMessage("Error occurred while initiating payment.");
+        }
+
+        private void SetBaseUrl(HttpGovPayService service, string baseUrl)
+        {
+            var field = typeof(BaseHttpService).GetField("_baseUrl", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            field.SetValue(service, baseUrl);
+        }
+    }
+
+    public class TestHttpGovPayService : HttpGovPayService
+    {
+        public TestHttpGovPayService(
+            IHttpContextAccessor httpContextAccessor,
+            IHttpClientFactory httpClientFactory,
+            IOptions<Service> config,
+            string bearerToken)
+            : base(httpContextAccessor, httpClientFactory, config)
+        {
+            // Use reflection to set the private _bearerToken field to the provided value
+            var field = typeof(HttpGovPayService).GetField("_bearerToken", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            field.SetValue(this, bearerToken);
+        }
+
+        // Provide a method to set the Base URL for testing
+        public void SetBaseUrl(string baseUrl)
+        {
+            var field = typeof(BaseHttpService).GetField("_baseUrl", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            field.SetValue(this, baseUrl);
         }
     }
 }

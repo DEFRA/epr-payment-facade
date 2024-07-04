@@ -38,9 +38,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
         }
 
-        public async Task UpdatePaymentAsync(Guid externalPaymentId, UpdatePaymentRequestDto paymentStatusUpdateRequest)
+        public async Task UpdatePaymentAsync(Guid id, UpdatePaymentRequestDto paymentStatusUpdateRequest)
         {
-            var url = $"payments/{externalPaymentId}/status";
+            var url = $"payments/{id}";
             try
             {
                 await Put(url, paymentStatusUpdateRequest);

@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using EPR.Payment.Facade.AppStart;
+using EPR.Payment.Facade.Common.Filters;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
 using Microsoft.FeatureManagement;
@@ -9,7 +10,15 @@ using System.Security.Authentication;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidateModelAttribute>(); // Ensure custom validation filters are added
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setupAction =>
 {
