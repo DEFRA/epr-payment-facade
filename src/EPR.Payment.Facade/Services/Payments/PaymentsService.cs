@@ -1,8 +1,9 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
+using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 
 public class PaymentsService : IPaymentsService
@@ -10,15 +11,18 @@ public class PaymentsService : IPaymentsService
     private readonly IHttpGovPayService _httpGovPayService;
     private readonly IHttpPaymentsService _httpPaymentsService;
     private readonly ILogger<PaymentsService> _logger;
+    private readonly PaymentServiceOptions _paymentServiceOptions;
 
     public PaymentsService(
         IHttpGovPayService httpGovPayService,
         IHttpPaymentsService httpPaymentsService,
-        ILogger<PaymentsService> logger)
+        ILogger<PaymentsService> logger,
+        IOptions<PaymentServiceOptions> paymentServiceOptions)
     {
-        _httpGovPayService = httpGovPayService;
-        _httpPaymentsService = httpPaymentsService;
-        _logger = logger;
+        _httpGovPayService = httpGovPayService ?? throw new ArgumentNullException(nameof(httpGovPayService));
+        _httpPaymentsService = httpPaymentsService ?? throw new ArgumentNullException(nameof(httpPaymentsService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _paymentServiceOptions = paymentServiceOptions.Value ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
     }
 
     public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request)
@@ -30,12 +34,29 @@ public class PaymentsService : IPaymentsService
             throw new ValidationException("User ID and Organisation ID must be provided.");
         }
 
+        // Use the static values from configuration
+        var returnUrl = _paymentServiceOptions.ReturnUrl ?? throw new InvalidOperationException("ReturnUrl is not configured.");
+        var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException("Description is not configured.");
+
+        // Add returnUrl and description to the request
+        var govPayRequest = new GovPayPaymentRequestDto
+        {
+            Amount = request.Amount,
+            Reference = request.Reference,
+            return_url = returnUrl,
+            UserId = request.UserId.Value,
+            OrganisationId = request.OrganisationId.Value,
+            Regulator = request.Regulator,
+            Description = description
+        };
+
         var id = await InsertPaymentAsync(request);
-        var paymentResponse = await InitiateGovPayPaymentAsync(request);
+        var paymentResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest);
         await UpdatePaymentAsync(id, request, paymentResponse.PaymentId, PaymentStatus.InProgress);
 
         return paymentResponse;
     }
+
 
     public async Task CompletePaymentAsync(string govPayPaymentId, CompletePaymentRequestDto completeRequest)
     {
@@ -93,7 +114,7 @@ public class PaymentsService : IPaymentsService
             Reference = request.Reference,
             Regulator = request.Regulator,
             Amount = request.Amount,
-            ReasonForPayment = request.Description,
+            ReasonForPayment = _paymentServiceOptions.Description, // Use the configured description
             Status = PaymentStatus.Initiated
         };
 
@@ -113,7 +134,7 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private async Task<PaymentResponseDto> InitiateGovPayPaymentAsync(PaymentRequestDto request)
+    private async Task<PaymentResponseDto> InitiateGovPayPaymentAsync(GovPayPaymentRequestDto request)
     {
         try
         {

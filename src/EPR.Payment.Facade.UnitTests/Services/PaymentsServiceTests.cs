@@ -1,10 +1,12 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,6 +18,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         private Mock<IHttpGovPayService> _httpGovPayServiceMock;
         private Mock<IHttpPaymentsService> _httpPaymentsServiceMock;
         private Mock<ILogger<PaymentsService>> _loggerMock;
+        private Mock<IOptions<PaymentServiceOptions>> _optionsMock;
         private PaymentsService _service;
 
         [TestInitialize]
@@ -24,10 +27,20 @@ namespace EPR.Payment.Facade.UnitTests.Services
             _httpGovPayServiceMock = new Mock<IHttpGovPayService>();
             _httpPaymentsServiceMock = new Mock<IHttpPaymentsService>();
             _loggerMock = new Mock<ILogger<PaymentsService>>();
+            _optionsMock = new Mock<IOptions<PaymentServiceOptions>>();
+
+            // Setup default values for configuration options
+            _optionsMock.Setup(o => o.Value).Returns(new PaymentServiceOptions
+            {
+                ReturnUrl = "https://example.com/return",
+                Description = "Payment description"
+            });
+
             _service = new PaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpPaymentsServiceMock.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _optionsMock.Object);
         }
 
         [TestMethod]
@@ -38,11 +51,9 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 Amount = 100,
                 Reference = "REF123",
-                return_url = "https://example.com/callback",
                 OrganisationId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                Regulator = "Reg123",
-                Description = "Payment description"
+                Regulator = "Reg123"
             };
             var expectedResponse = new PaymentResponseDto
             {
@@ -50,9 +61,9 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 ReturnUrl = "https://example.com/response"
             };
 
-            _httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(request)).ReturnsAsync(expectedResponse);
+            _httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayPaymentRequestDto>())).ReturnsAsync(expectedResponse);
             _httpPaymentsServiceMock.Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>())).ReturnsAsync(Guid.NewGuid());
-            _httpPaymentsServiceMock.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>())).Returns(Task.CompletedTask);
+            _httpPaymentsServiceMock.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>()));
 
             // Act
             var result = await _service.InitiatePaymentAsync(request);
@@ -72,26 +83,35 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [DataTestMethod]
-        [DataRow(null, "REF123", "Test Payment", "https://example.com/callback", "00000000-0000-0000-0000-000000000000", "d2f1e2c2-0f2e-4e3d-8f2e-5f2f0e2f2f2f", "Reg123", "Amount is required")]
-        [DataRow(100, null, "Test Payment", "https://example.com/callback", "00000000-0000-0000-0000-000000000000", "d2f1e2c2-0f2e-4e3d-8f2e-5f2f0e2f2f2f", "Reg123", "Reference is required")]
-        [DataRow(100, "REF123", null, "https://example.com/callback", "00000000-0000-0000-0000-000000000000", "d2f1e2c2-0f2e-4e3d-8f2e-5f2f0e2f2f2f", "Reg123", "Description is required")]
-        [DataRow(100, "REF123", "Test Payment", null, "00000000-0000-0000-0000-000000000000", "d2f1e2c2-0f2e-4e3d-8f2e-5f2f0e2f2f2f", "Reg123", "Return URL is required")]
-        [DataRow(100, "REF123", "Test Payment", "https://example.com/callback", null, "d2f1e2c2-0f2e-4e3d-8f2e-5f2f0e2f2f2f", "Reg123", "Organisation ID is required")]
-        [DataRow(100, "REF123", "Test Payment", "https://example.com/callback", "00000000-0000-0000-0000-000000000000", null, "Reg123", "User ID is required")]
-        [DataRow(100, "REF123", "Test Payment", "https://example.com/callback", "00000000-0000-0000-0000-000000000000", "d2f1e2c2-0f2e-4e3d-8f2e-5f2f0e2f2f2f", null, "Regulator is required")]
-        public async Task InitiatePayment_MissingFields_ThrowsValidationException(int? amount, string reference, string description,
-            string returnUrl, string organisationId, string userId, string regulator, string expectedMessage)
+        [DataRow(null, "REF123", "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "Reg123", "Amount is required")]
+        [DataRow(100, null, "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "Reg123", "Reference is required")]
+        [DataRow(100, "REF123", null, "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "Reg123", "Organisation ID is required")]
+        [DataRow(100, "REF123", "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", null, "Reg123", "User ID is required")]
+        [DataRow(100, "REF123", "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", null, "Regulator is required")]
+        public async Task InitiatePayment_MissingFields_ThrowsValidationException(int? amount, string reference,
+    string organisationId, string userId, string regulator, string expectedMessage)
         {
             // Arrange
+            Guid? orgId = null;
+            Guid? usrId = null;
+
+            if (!string.IsNullOrEmpty(organisationId) && Guid.TryParse(organisationId, out var parsedOrgId))
+            {
+                orgId = parsedOrgId;
+            }
+
+            if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var parsedUserId))
+            {
+                usrId = parsedUserId;
+            }
+
             var request = new PaymentRequestDto
             {
                 Amount = amount,
                 Reference = reference,
-                return_url = returnUrl,
-                OrganisationId = string.IsNullOrEmpty(organisationId) ? (Guid?)null : Guid.Parse(organisationId),
-                UserId = string.IsNullOrEmpty(userId) ? (Guid?)null : Guid.Parse(userId),
-                Regulator = regulator,
-                Description = description
+                OrganisationId = orgId,
+                UserId = usrId,
+                Regulator = regulator
             };
 
             // Act & Assert
@@ -99,6 +119,32 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .Should().ThrowAsync<ValidationException>();
 
             exception.Which.Message.Should().Contain(expectedMessage);
+        }
+
+        [TestMethod]
+        public async Task InitiatePayment_StatusUpdateValidationFails_ThrowsValidationException()
+        {
+            // Arrange
+            var request = new PaymentRequestDto
+            {
+                Amount = 100,
+                Reference = "REF123",
+                OrganisationId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Regulator = "Reg123"
+            };
+            var expectedResponse = new PaymentResponseDto
+            {
+                PaymentId = "12345",
+                ReturnUrl = "https://example.com/response"
+            };
+
+            _httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayPaymentRequestDto>())).ReturnsAsync(expectedResponse);
+            _httpPaymentsServiceMock.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>())).ThrowsAsync(new ValidationException("Validation error"));
+
+            // Act & Assert
+            var exception = await _service.Invoking(async s => await s.InitiatePaymentAsync(request))
+                .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
         }
 
         [TestMethod]
@@ -288,3 +334,5 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
     }
 }
+
+

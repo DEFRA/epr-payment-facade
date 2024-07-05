@@ -1,7 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -23,7 +22,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), "GovPay Bearer token configuration is missing");
         }
 
-        public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto paymentRequestDto)
+        public async Task<PaymentResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto paymentRequestDto)
         {
             if (_bearerToken != null)
             {

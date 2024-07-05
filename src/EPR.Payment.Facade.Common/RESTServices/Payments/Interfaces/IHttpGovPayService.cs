@@ -1,11 +1,8 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 
-namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
+public interface IHttpGovPayService
 {
-    public interface IHttpGovPayService
-    {
-        Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto requestDto);
-        Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId);
-    }
+    Task<PaymentResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto request);
+    Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId);
 }

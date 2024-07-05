@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using EPR.Payment.Facade.AppStart;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Filters;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
@@ -18,6 +19,8 @@ builder.Services.AddControllers(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
+
+builder.Services.Configure<PaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setupAction =>

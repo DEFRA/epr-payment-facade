@@ -1,6 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -33,11 +32,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             {
                 Amount = 100,
                 Reference = "REF123",
-                return_url = "https://example.com/callback",
                 OrganisationId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                Regulator = "Reg123",
-                Description = "Payment description"
+                Regulator = "Reg123"
             };
             var expectedResponse = new PaymentResponseDto
             {
@@ -57,6 +54,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             createdAtActionResult.ActionName.Should().Be(nameof(_controller.CompletePayment));
             createdAtActionResult.RouteValues["paymentId"].Should().Be(expectedResponse.PaymentId);
 
+            // Verify that the ReturnUrl in the response is correctly set
             var responseDto = createdAtActionResult.Value as PaymentResponseDto;
             responseDto.ReturnUrl.Should().Be(expectedResponse.ReturnUrl);
         }
@@ -76,28 +74,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod]
-        public async Task InitiatePayment_InvalidUrl_ReturnsBadRequest()
-        {
-            // Arrange
-            var request = new PaymentRequestDto
-            {
-                Amount = 100,
-                Reference = "REF123",
-                Description = "Test Payment",
-                return_url = "invalid_url", // Invalid URL
-                OrganisationId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                Regulator = "Reg123"
-            };
-
-            // Act
-            var result = await _controller.InitiatePayment(request);
-
-            // Assert
-            result.Result.Should().BeOfType<BadRequestObjectResult>();
-        }
-
-        [TestMethod]
         public async Task InitiatePayment_ThrowsValidationException_ReturnsBadRequest()
         {
             // Arrange
@@ -106,8 +82,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 // Missing required fields to make the model invalid
                 // Amount is missing
                 // Reference is missing
-                // ReasonForPayment is missing
-                return_url = "https://example.com/callback"
                 // OrganisationId is missing
                 // UserId is missing
                 // Regulator is missing
@@ -121,17 +95,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await _controller.InitiatePayment(invalidRequest);
 
             // Assert
+            // Check if the result is a BadRequestObjectResult
             result.Result.Should().BeOfType<BadRequestObjectResult>();
+
+            // Check if the BadRequestObjectResult contains the expected validation error message
             var badRequestResult = result.Result as BadRequestObjectResult;
-
-            var problemDetails = badRequestResult.Value as ProblemDetails;
-            problemDetails.Should().NotBeNull();
-            problemDetails.Title.Should().Be("Validation Error");
-
-            var expectedMessage = "User ID is required, Organisation ID is required, Reference is required, Regulator is required, Amount is required, Description is required";
-            problemDetails.Detail.Should().Be(expectedMessage);
+            badRequestResult.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
         }
-
 
         [TestMethod]
         public async Task InitiatePayment_ThrowsException_ReturnsInternalServerError()
@@ -141,11 +111,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             {
                 Amount = 100,
                 Reference = "REF123",
-                return_url = "https://example.com/callback",
                 OrganisationId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                Regulator = "Reg123",
-                Description = "Payment description"
+                Regulator = "Reg123"
             };
             var exception = new Exception("Some error");
             _paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request)).ThrowsAsync(exception);
@@ -159,7 +127,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
             objectResult.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(exception.Message);
         }
-
 
         [TestMethod]
         public async Task CompletePayment_ValidGovPayPaymentId_ReturnsOk()
@@ -184,6 +151,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod]
         public async Task CompletePayment_NullGovPayPaymentId_ReturnsBadRequest()
         {
+            // Arrange
             var completeRequest = new CompletePaymentRequestDto
             {
                 Id = Guid.NewGuid(),
@@ -203,6 +171,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod]
         public async Task CompletePayment_EmptyGovPayPaymentId_ReturnsBadRequest()
         {
+            // Arrange
             var completeRequest = new CompletePaymentRequestDto
             {
                 Id = Guid.NewGuid(),

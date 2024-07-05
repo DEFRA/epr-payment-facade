@@ -26,29 +26,16 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(typeof(PaymentResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data. <br>" +
-    "Return_url input parameter is the URL that Gov Pay will return back to when the payment journey is complete. <br>" +
-    "The return_url parameter in the response object is the initial page in the Gov Pay journey.")]
+    [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data.")]
     [SwaggerResponse(StatusCodes.Status201Created, "Returns the created payment response.", typeof(PaymentResponseDto))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
     [FeatureGate("EnablePaymentInitiation")]
     public async Task<ActionResult<PaymentResponseDto>> InitiatePayment([FromBody] PaymentRequestDto request)
     {
-        var context = new ValidationContext(request, serviceProvider: null, items: null);
-        var results = new List<ValidationResult>();
-        bool isValid = Validator.TryValidateObject(request, context, results, true);
-
-        if (!isValid)
+        if (!ModelState.IsValid)
         {
-            var errorMessage = string.Join(", ", results.Select(r => r.ErrorMessage));
-            _logger.LogError("Validation failed: {ValidationErrors}", errorMessage);
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Validation Error",
-                Detail = errorMessage,
-                Status = StatusCodes.Status400BadRequest
-            });
+            return BadRequest(ModelState);
         }
 
         try

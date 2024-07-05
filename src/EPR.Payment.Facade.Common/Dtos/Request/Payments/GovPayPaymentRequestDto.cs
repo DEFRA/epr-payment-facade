@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EPR.Payment.Facade.Common.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
-    public class PaymentRequestDto
+    public class GovPayPaymentRequestDto
     {
         [Required(ErrorMessage = "User ID is required")]
         public Guid? UserId { get; set; }
@@ -18,5 +19,12 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 
         [Required(ErrorMessage = "Amount is required")]
         public int? Amount { get; set; }
+
+        [Required(ErrorMessage = "Return URL is required")]
+        [ValidUrl] // Custom attribute
+        public string? return_url { get; set; }
+
+        [Required(ErrorMessage = "Description is required")]
+        public string? Description { get; set; }
     }
 }
