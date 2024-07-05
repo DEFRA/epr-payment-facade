@@ -55,7 +55,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UserId = Guid.NewGuid(),
                 Regulator = "Reg123"
             };
-            var expectedResponse = new PaymentResponseDto
+            var expectedResponse = new GovPayResponseDto
             {
                 PaymentId = "12345",
                 ReturnUrl = "https://example.com/response"
@@ -70,7 +70,6 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.PaymentId.Should().Be(expectedResponse.PaymentId);
             result.ReturnUrl.Should().Be(expectedResponse.ReturnUrl);
         }
 
@@ -82,35 +81,21 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .Should().ThrowAsync<ArgumentNullException>();
         }
 
-        [DataTestMethod]
-        [DataRow(null, "REF123", "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "Reg123", "Amount is required")]
-        [DataRow(100, null, "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "Reg123", "Reference is required")]
-        [DataRow(100, "REF123", null, "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "Reg123", "Organisation ID is required")]
-        [DataRow(100, "REF123", "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", null, "Reg123", "User ID is required")]
-        [DataRow(100, "REF123", "8a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d", null, "Regulator is required")]
-        public async Task InitiatePayment_MissingFields_ThrowsValidationException(int? amount, string reference,
-    string organisationId, string userId, string regulator, string expectedMessage)
+        [TestMethod]
+        [DataRow(null, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Amount is required")]
+        [DataRow(100, null, "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Reference is required")]
+        [DataRow(100, "REF123", null, "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Organisation ID is required")]
+        [DataRow(100, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", null, "Reg123", "User ID is required")]
+        [DataRow(100, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", null, "Regulator is required")]
+        public async Task InitiatePayment_MissingFields_ThrowsValidationException(int? amount, string reference, string organisationId, string userId, string regulator, string expectedMessage)
         {
             // Arrange
-            Guid? orgId = null;
-            Guid? usrId = null;
-
-            if (!string.IsNullOrEmpty(organisationId) && Guid.TryParse(organisationId, out var parsedOrgId))
-            {
-                orgId = parsedOrgId;
-            }
-
-            if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var parsedUserId))
-            {
-                usrId = parsedUserId;
-            }
-
             var request = new PaymentRequestDto
             {
                 Amount = amount,
                 Reference = reference,
-                OrganisationId = orgId,
-                UserId = usrId,
+                OrganisationId = organisationId != null ? Guid.Parse(organisationId) : (Guid?)null,
+                UserId = userId != null ? Guid.Parse(userId) : (Guid?)null,
                 Regulator = regulator
             };
 
@@ -120,6 +105,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             exception.Which.Message.Should().Contain(expectedMessage);
         }
+
 
         [TestMethod]
         public async Task InitiatePayment_StatusUpdateValidationFails_ThrowsValidationException()
@@ -133,7 +119,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UserId = Guid.NewGuid(),
                 Regulator = "Reg123"
             };
-            var expectedResponse = new PaymentResponseDto
+            var expectedResponse = new GovPayResponseDto
             {
                 PaymentId = "12345",
                 ReturnUrl = "https://example.com/response"
@@ -157,6 +143,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 PaymentId = govPayPaymentId,
                 State = new State { Status = "success" }
             };
+
+
 
             _httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId)).ReturnsAsync(paymentStatusResponse);
 
@@ -334,5 +322,3 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
     }
 }
-
-

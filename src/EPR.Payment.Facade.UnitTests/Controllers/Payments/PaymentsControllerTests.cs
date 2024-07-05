@@ -25,7 +25,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod]
-        public async Task InitiatePayment_ValidRequest_ReturnsCreatedResponse()
+        public async Task InitiatePayment_ValidRequest_ReturnsRedirectResponse()
         {
             // Arrange
             var request = new PaymentRequestDto
@@ -38,7 +38,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             };
             var expectedResponse = new PaymentResponseDto
             {
-                PaymentId = "12345",
                 ReturnUrl = "https://example.com/response"
             };
 
@@ -48,15 +47,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await _controller.InitiatePayment(request);
 
             // Assert
-            result.Result.Should().BeOfType<CreatedAtActionResult>();
-            var createdAtActionResult = result.Result as CreatedAtActionResult;
-            createdAtActionResult.Value.Should().BeEquivalentTo(expectedResponse);
-            createdAtActionResult.ActionName.Should().Be(nameof(_controller.CompletePayment));
-            createdAtActionResult.RouteValues["paymentId"].Should().Be(expectedResponse.PaymentId);
-
-            // Verify that the ReturnUrl in the response is correctly set
-            var responseDto = createdAtActionResult.Value as PaymentResponseDto;
-            responseDto.ReturnUrl.Should().Be(expectedResponse.ReturnUrl);
+            result.Should().BeOfType<RedirectResult>();
+            var redirectResult = result as RedirectResult;
+            redirectResult.Url.Should().Be(expectedResponse.ReturnUrl);
         }
 
         [TestMethod]
@@ -70,7 +63,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await _controller.InitiatePayment(request);
 
             // Assert
-            result.Result.Should().BeOfType<BadRequestObjectResult>();
+            result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         [TestMethod]
@@ -82,6 +75,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 // Missing required fields to make the model invalid
                 // Amount is missing
                 // Reference is missing
+                // ReasonForPayment is missing
                 // OrganisationId is missing
                 // UserId is missing
                 // Regulator is missing
@@ -96,10 +90,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
             // Assert
             // Check if the result is a BadRequestObjectResult
-            result.Result.Should().BeOfType<BadRequestObjectResult>();
+            result.Should().BeOfType<BadRequestObjectResult>();
 
             // Check if the BadRequestObjectResult contains the expected validation error message
-            var badRequestResult = result.Result as BadRequestObjectResult;
+            var badRequestResult = result as BadRequestObjectResult;
             badRequestResult.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
         }
 
@@ -122,8 +116,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await _controller.InitiatePayment(request);
 
             // Assert
-            result.Result.Should().BeOfType<ObjectResult>();
-            var objectResult = result.Result as ObjectResult;
+            result.Should().BeOfType<ObjectResult>();
+            var objectResult = result as ObjectResult;
             objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
             objectResult.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(exception.Message);
         }
@@ -236,3 +230,4 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
     }
 }
+

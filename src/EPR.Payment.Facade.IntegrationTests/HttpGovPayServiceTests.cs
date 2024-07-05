@@ -64,7 +64,6 @@ namespace EPR.Payment.Facade.IntegrationTests
             response.ReturnUrl.Should().Be(paymentRequestDto.return_url);
         }
 
-
         [TestMethod]
         public async Task InitiatePayment_BearerTokenNull_ThrowsInvalidOperationException()
         {
@@ -81,16 +80,19 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             var service = new TestHttpGovPayService(httpContextAccessor, httpClientFactory, options, null);
 
-            var govPayPaymentRequestDto = new GovPayPaymentRequestDto
+            var paymentRequestDto = new GovPayPaymentRequestDto
             {
                 Amount = 100,
                 Reference = "123456",
                 return_url = "https://example.com/return",
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
+                Regulator = "regulator",
                 Description = "Payment description"
             };
 
             // Act & Assert
-            await service.Invoking(async x => await x.InitiatePaymentAsync(govPayPaymentRequestDto))
+            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
                 .Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("Bearer token is null. Unable to initiate payment.");
         }
@@ -111,11 +113,14 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             var service = new TestHttpGovPayService(httpContextAccessor, httpClientFactory, options, options.Value.BearerToken);
 
-            var govPayPaymentRequestDto = new GovPayPaymentRequestDto
+            var paymentRequestDto = new GovPayPaymentRequestDto
             {
                 Amount = 100,
                 Reference = "123456",
                 return_url = "https://example.com/return",
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
+                Regulator = "regulator",
                 Description = "Payment description"
             };
 
@@ -123,7 +128,7 @@ namespace EPR.Payment.Facade.IntegrationTests
             service.SetBaseUrl("https://invalid-url.com");
 
             // Act & Assert
-            await service.Invoking(async x => await x.InitiatePaymentAsync(govPayPaymentRequestDto))
+            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
                 .Should().ThrowAsync<Exception>()
                 .WithMessage("Error occurred while initiating payment.");
         }
@@ -135,7 +140,7 @@ namespace EPR.Payment.Facade.IntegrationTests
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
             IOptions<Service> config,
-            string? bearerToken)
+            string bearerToken)
             : base(httpContextAccessor, httpClientFactory, config)
         {
             // Use reflection to set the private _bearerToken field to the provided value

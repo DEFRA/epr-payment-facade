@@ -38,24 +38,30 @@ public class PaymentsService : IPaymentsService
         var returnUrl = _paymentServiceOptions.ReturnUrl ?? throw new InvalidOperationException("ReturnUrl is not configured.");
         var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException("Description is not configured.");
 
-        // Add returnUrl and description to the request
+        // Create the GovPayPaymentRequestDto
         var govPayRequest = new GovPayPaymentRequestDto
         {
-            Amount = request.Amount,
+            Amount = request.Amount.Value,
             Reference = request.Reference,
             return_url = returnUrl,
-            UserId = request.UserId.Value,
+            Description = description,
             OrganisationId = request.OrganisationId.Value,
-            Regulator = request.Regulator,
-            Description = description
+            UserId = request.UserId.Value,
+            Regulator = request.Regulator
         };
 
-        var id = await InsertPaymentAsync(request);
-        var paymentResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest);
-        await UpdatePaymentAsync(id, request, paymentResponse.PaymentId, PaymentStatus.InProgress);
+        var externalPaymentId = await InsertPaymentAsync(request);
 
-        return paymentResponse;
+        var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest);
+
+        await UpdatePaymentAsync(externalPaymentId, request, govPayResponse.PaymentId, PaymentStatus.InProgress);
+
+        return new PaymentResponseDto
+        {
+            ReturnUrl = govPayResponse.ReturnUrl
+        };
     }
+
 
 
     public async Task CompletePaymentAsync(string govPayPaymentId, CompletePaymentRequestDto completeRequest)
@@ -134,7 +140,7 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private async Task<PaymentResponseDto> InitiateGovPayPaymentAsync(GovPayPaymentRequestDto request)
+    private async Task<GovPayResponseDto> InitiateGovPayPaymentAsync(GovPayPaymentRequestDto request)
     {
         try
         {

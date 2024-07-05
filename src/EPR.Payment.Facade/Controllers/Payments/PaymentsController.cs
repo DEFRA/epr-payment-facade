@@ -1,7 +1,5 @@
 ﻿using Asp.Versioning;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -23,15 +21,15 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(PaymentResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status302Found)] // 302 Found for redirect responses
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data.")]
-    [SwaggerResponse(StatusCodes.Status201Created, "Returns the created payment response.", typeof(PaymentResponseDto))]
+    [SwaggerResponse(StatusCodes.Status302Found, "Redirects to the payment return URL.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
     [FeatureGate("EnablePaymentInitiation")]
-    public async Task<ActionResult<PaymentResponseDto>> InitiatePayment([FromBody] PaymentRequestDto request)
+    public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request)
     {
         if (!ModelState.IsValid)
         {
@@ -41,7 +39,9 @@ public class PaymentsController : ControllerBase
         try
         {
             var result = await _paymentsService.InitiatePaymentAsync(request);
-            return CreatedAtAction(nameof(CompletePayment), new { paymentId = result.PaymentId }, result);
+
+            // Return a RedirectResult to the ReturnUrl
+            return Redirect(result.ReturnUrl);
         }
         catch (ValidationException ex)
         {
@@ -64,6 +64,8 @@ public class PaymentsController : ControllerBase
             });
         }
     }
+
+
 
     [HttpPost("{govPayPaymentId}/complete")]
     [ProducesResponseType(StatusCodes.Status200OK)]

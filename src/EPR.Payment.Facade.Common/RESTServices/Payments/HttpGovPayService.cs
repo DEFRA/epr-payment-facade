@@ -22,7 +22,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), "GovPay Bearer token configuration is missing");
         }
 
-        public async Task<PaymentResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto paymentRequestDto)
+        public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto paymentRequestDto)
         {
             if (_bearerToken != null)
             {
@@ -36,13 +36,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             var url = "payments";
             try
             {
-                return await Post<PaymentResponseDto>(url, paymentRequestDto);
+                return await Post<GovPayResponseDto>(url, paymentRequestDto);
             }
             catch (Exception ex)
             {
                 throw new Exception("Error occurred while initiating payment.", ex);
             }
         }
+
 
         public async Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId)
         {
