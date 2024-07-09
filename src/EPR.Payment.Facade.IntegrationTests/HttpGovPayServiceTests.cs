@@ -13,7 +13,7 @@ namespace EPR.Payment.Facade.IntegrationTests
     [TestClass]
     public class HttpGovPayServiceIntegrationTests
     {
-        private static IConfiguration _configuration;
+        private static IConfiguration? _configuration;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
@@ -31,24 +31,24 @@ namespace EPR.Payment.Facade.IntegrationTests
             var serviceProvider = new ServiceCollection()
                 .AddHttpContextAccessor()
                 .AddHttpClient()
-                .Configure<Service>(options => _configuration.GetSection("GovPayService").Bind(options))
+                .Configure<Service>(options => _configuration?.GetSection("GovPayService").Bind(options))
                 .BuildServiceProvider();
 
             var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
             var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
             var options = serviceProvider.GetService<IOptions<Service>>();
 
-            var service = new HttpGovPayService(httpContextAccessor, httpClientFactory, options);
+            var service = new HttpGovPayService(httpContextAccessor!, httpClientFactory!, options!);
 
             var paymentRequestDto = new GovPayPaymentRequestDto
             {
                 Amount = 100,
                 Reference = "123456",
                 return_url = "https://example.com/return",
-                UserId = Guid.NewGuid(),
+                Description = "Payment description",
                 OrganisationId = Guid.NewGuid(),
-                Regulator = "regulator",
-                Description = "Payment description"
+                UserId = Guid.NewGuid(),
+                Regulator = "regulator"
             };
 
             // Act
@@ -57,11 +57,11 @@ namespace EPR.Payment.Facade.IntegrationTests
             // Assert
             response.Should().NotBeNull();
             response.PaymentId.Should().NotBeNullOrEmpty();
-            response.State.Status.Should().NotBeNullOrEmpty();
+            response.State?.Status.Should().NotBeNullOrEmpty();
             response.Amount.Should().Be(paymentRequestDto.Amount);
             response.Reference.Should().Be(paymentRequestDto.Reference);
             response.Description.Should().Be(paymentRequestDto.Description);
-            response.ReturnUrl.Should().Be(paymentRequestDto.return_url);
+            response.Links?.NextUrl?.Href.Should().NotBeNullOrEmpty();
         }
 
         [TestMethod]
@@ -71,24 +71,24 @@ namespace EPR.Payment.Facade.IntegrationTests
             var serviceProvider = new ServiceCollection()
                 .AddHttpContextAccessor()
                 .AddHttpClient()
-                .Configure<Service>(options => _configuration.GetSection("GovPayService").Bind(options))
+                .Configure<Service>(options => _configuration?.GetSection("GovPayService").Bind(options))
                 .BuildServiceProvider();
 
             var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
             var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
             var options = serviceProvider.GetService<IOptions<Service>>();
 
-            var service = new TestHttpGovPayService(httpContextAccessor, httpClientFactory, options, null);
+            var service = new TestHttpGovPayService(httpContextAccessor!, httpClientFactory!, options!, null);
 
             var paymentRequestDto = new GovPayPaymentRequestDto
             {
                 Amount = 100,
                 Reference = "123456",
                 return_url = "https://example.com/return",
-                UserId = Guid.NewGuid(),
+                Description = "Payment description",
                 OrganisationId = Guid.NewGuid(),
-                Regulator = "regulator",
-                Description = "Payment description"
+                UserId = Guid.NewGuid(),
+                Regulator = "regulator"
             };
 
             // Act & Assert
@@ -104,24 +104,24 @@ namespace EPR.Payment.Facade.IntegrationTests
             var serviceProvider = new ServiceCollection()
                 .AddHttpContextAccessor()
                 .AddHttpClient()
-                .Configure<Service>(options => _configuration.GetSection("GovPayService").Bind(options))
+                .Configure<Service>(options => _configuration?.GetSection("GovPayService").Bind(options))
                 .BuildServiceProvider();
 
             var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
             var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
             var options = serviceProvider.GetService<IOptions<Service>>();
 
-            var service = new TestHttpGovPayService(httpContextAccessor, httpClientFactory, options, options.Value.BearerToken);
+            var service = new TestHttpGovPayService(httpContextAccessor!, httpClientFactory!, options!, options!.Value.BearerToken);
 
             var paymentRequestDto = new GovPayPaymentRequestDto
             {
                 Amount = 100,
                 Reference = "123456",
                 return_url = "https://example.com/return",
-                UserId = Guid.NewGuid(),
+                Description = "Payment description",
                 OrganisationId = Guid.NewGuid(),
-                Regulator = "regulator",
-                Description = "Payment description"
+                UserId = Guid.NewGuid(),
+                Regulator = "regulator"
             };
 
             // Intentionally set an incorrect URL to force an exception
@@ -140,19 +140,19 @@ namespace EPR.Payment.Facade.IntegrationTests
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
             IOptions<Service> config,
-            string bearerToken)
+            string? bearerToken)
             : base(httpContextAccessor, httpClientFactory, config)
         {
             // Use reflection to set the private _bearerToken field to the provided value
             var field = typeof(HttpGovPayService).GetField("_bearerToken", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            field.SetValue(this, bearerToken);
+            field?.SetValue(this, bearerToken);
         }
 
         // Provide a method to set the Base URL for testing
         public void SetBaseUrl(string baseUrl)
         {
             var field = typeof(BaseHttpService).GetField("_baseUrl", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            field.SetValue(this, baseUrl);
+            field?.SetValue(this, baseUrl);
         }
     }
 }

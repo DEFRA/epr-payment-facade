@@ -1,6 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.Extensions.Options;
@@ -25,13 +24,21 @@ public class PaymentsService : IPaymentsService
         _paymentServiceOptions = paymentServiceOptions.Value ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
     }
 
-    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request)
+    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto? request)
     {
         ValidateObject(request);
 
-        if (!request.UserId.HasValue || !request.OrganisationId.HasValue)
+        if (!request!.UserId.HasValue)
         {
-            throw new ValidationException("User ID and Organisation ID must be provided.");
+            throw new ValidationException("User ID must be provided.");
+        }
+        if (!request.OrganisationId.HasValue)
+        {
+            throw new ValidationException("Organisation ID must be provided.");
+        }
+        if (!request.Amount.HasValue)
+        {
+            throw new ValidationException("Amount must be provided.");
         }
 
         // Use the static values from configuration
@@ -54,17 +61,20 @@ public class PaymentsService : IPaymentsService
 
         var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest);
 
+        if (string.IsNullOrEmpty(govPayResponse.PaymentId))
+        {
+            throw new InvalidOperationException("GovPay response does not contain a valid PaymentId.");
+        }
+
         await UpdatePaymentAsync(externalPaymentId, request, govPayResponse.PaymentId, PaymentStatus.InProgress);
 
         return new PaymentResponseDto
         {
-            ReturnUrl = govPayResponse.ReturnUrl
+            NextUrl = govPayResponse.Links?.NextUrl?.Href
         };
     }
 
-
-
-    public async Task CompletePaymentAsync(string govPayPaymentId, CompletePaymentRequestDto completeRequest)
+    public async Task CompletePaymentAsync(string? govPayPaymentId, CompletePaymentRequestDto completeRequest)
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
             throw new ArgumentException("GovPayPaymentId cannot be null or empty", nameof(govPayPaymentId));
@@ -113,14 +123,27 @@ public class PaymentsService : IPaymentsService
 
     private async Task<Guid> InsertPaymentAsync(PaymentRequestDto request)
     {
+        if (!request.UserId.HasValue)
+        {
+            throw new ValidationException("User ID must be provided.");
+        }
+        if (!request.OrganisationId.HasValue)
+        {
+            throw new ValidationException("Organisation ID must be provided.");
+        }
+        if (!request.Amount.HasValue)
+        {
+            throw new ValidationException("Amount must be provided.");
+        }
+
         var insertRequest = new InsertPaymentRequestDto
         {
             UserId = request.UserId.Value,
             OrganisationId = request.OrganisationId.Value,
             Reference = request.Reference,
             Regulator = request.Regulator,
-            Amount = request.Amount,
-            ReasonForPayment = _paymentServiceOptions.Description, // Use the configured description
+            Amount = request.Amount.Value,
+            ReasonForPayment = _paymentServiceOptions.Description,
             Status = PaymentStatus.Initiated
         };
 
@@ -140,21 +163,17 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private async Task<GovPayResponseDto> InitiateGovPayPaymentAsync(GovPayPaymentRequestDto request)
-    {
-        try
-        {
-            return await _httpGovPayService.InitiatePaymentAsync(request);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unexpected error occurred while initiating payment.");
-            throw new Exception("An unexpected error occurred while initiating the payment.", ex);
-        }
-    }
-
     private async Task UpdatePaymentAsync(Guid id, PaymentRequestDto request, string paymentId, PaymentStatus status)
     {
+        if (!request.UserId.HasValue)
+        {
+            throw new ValidationException("User ID must be provided.");
+        }
+        if (!request.OrganisationId.HasValue)
+        {
+            throw new ValidationException("Organisation ID must be provided.");
+        }
+
         var updateRequest = new UpdatePaymentRequestDto
         {
             Id = id,
@@ -181,9 +200,9 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private void ValidateObject(object obj)
+    private void ValidateObject(object? obj)
     {
-        var context = new ValidationContext(obj, serviceProvider: null, items: null);
-        Validator.ValidateObject(obj, context, validateAllProperties: true);
+        var context = new ValidationContext(obj!, serviceProvider: null, items: null);
+        Validator.ValidateObject(obj!, context, validateAllProperties: true);
     }
 }

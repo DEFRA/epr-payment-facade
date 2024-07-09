@@ -45,7 +45,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
         }
 
 
-        public async Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId)
+        public async Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId)
         {
             if (_bearerToken != null)
             {

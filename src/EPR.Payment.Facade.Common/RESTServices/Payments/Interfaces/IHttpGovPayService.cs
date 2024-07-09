@@ -4,5 +4,5 @@ using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 public interface IHttpGovPayService
 {
     Task<GovPayResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto request);
-    Task<PaymentStatusResponseDto> GetPaymentStatusAsync(string paymentId);
+    Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId);
 }

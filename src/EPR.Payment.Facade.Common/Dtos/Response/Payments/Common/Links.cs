@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Common.Dtos.Response.Payments.Common
 {
+    [ExcludeFromCodeCoverage]
     public class Links
     {
         [JsonProperty("self")]

@@ -1,7 +1,6 @@
 using Asp.Versioning;
 using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Common.Configuration;
-using EPR.Payment.Facade.Common.Filters;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
 using Microsoft.FeatureManagement;
@@ -11,15 +10,7 @@ using System.Security.Authentication;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<ValidateModelAttribute>(); // Ensure custom validation filters are added
-})
-.AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.PropertyNamingPolicy = null;
-});
-
+builder.Services.AddControllers();
 builder.Services.Configure<PaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
 
 builder.Services.AddEndpointsApiExplorer();
@@ -43,6 +34,17 @@ builder.Services.AddHttpClient("HttpClient")
     });
 builder.Services.AddFacadeDependencies(builder.Configuration);
 builder.Services.AddDependencies();
+
+// Add CORS configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 builder.Services.AddApiVersioning(options =>
 {
@@ -88,9 +90,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Enable serving static files
 app.UseRouting();
+app.UseCors("AllowAll");
 app.UseHealthChecks();
 app.UseAuthorization();
+app.UseMiddleware<RedirectionMiddleware>();
 app.UseMiddleware<ConditionalEndpointMiddleware>();
 
 app.MapControllers();

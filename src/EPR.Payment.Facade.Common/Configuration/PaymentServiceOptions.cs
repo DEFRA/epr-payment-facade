@@ -7,9 +7,9 @@ namespace EPR.Payment.Facade.Common.Configuration
     {
         [Required(ErrorMessage = "Return URL is required")]
         [ValidUrl]
-        public string ReturnUrl { get; set; }
+        public string? ReturnUrl { get; set; }
 
         [Required(ErrorMessage = "Description is required")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
 }

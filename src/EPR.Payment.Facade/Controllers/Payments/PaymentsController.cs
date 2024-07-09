@@ -21,11 +21,11 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status302Found)] // 302 Found for redirect responses
+    [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data.")]
-    [SwaggerResponse(StatusCodes.Status302Found, "Redirects to the payment return URL.")]
+    [SwaggerResponse(StatusCodes.Status302Found, "Redirects to the payment next URL.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
     [FeatureGate("EnablePaymentInitiation")]
@@ -40,8 +40,29 @@ public class PaymentsController : ControllerBase
         {
             var result = await _paymentsService.InitiatePaymentAsync(request);
 
-            // Return a RedirectResult to the ReturnUrl
-            return Redirect(result.ReturnUrl);
+            // Return a simple HTML page with JavaScript to perform the redirection
+            var htmlContent = $@"
+        <!DOCTYPE html>
+        <html lang=""en"">
+        <head>
+            <meta charset=""UTF-8"">
+            <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+            <title>Redirecting...</title>
+            <script>
+                window.location.href = '{result.NextUrl}';
+            </script>
+        </head>
+        <body>
+            Redirecting to payment page...
+        </body>
+        </html>";
+
+            return new ContentResult
+            {
+                Content = htmlContent,
+                ContentType = "text/html",
+                StatusCode = StatusCodes.Status200OK
+            };
         }
         catch (ValidationException ex)
         {
@@ -76,7 +97,7 @@ public class PaymentsController : ControllerBase
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
     [FeatureGate("EnablePaymentCompletion")]
-    public async Task<IActionResult> CompletePayment(string govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest)
+    public async Task<IActionResult> CompletePayment(string? govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest)
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
         {

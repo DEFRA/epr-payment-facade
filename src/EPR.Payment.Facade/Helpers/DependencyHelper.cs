@@ -30,21 +30,21 @@ namespace EPR.Payment.Facade.Helpers
         }
 
         private static void RegisterHttpService<TInterface, TImplementation>(
-            IServiceCollection services, string configName, string endPointOverride = null)
+            IServiceCollection services, string configName, string? endPointOverride = null)
             where TInterface : class
             where TImplementation : class, TInterface
         {
             services.AddScoped<TInterface>(s =>
             {
                 var servicesConfig = s.GetRequiredService<IOptions<ServicesConfiguration>>().Value;
-                var serviceConfig = (Service)servicesConfig.GetType().GetProperty(configName)?.GetValue(servicesConfig);
+                var serviceConfig = (Service?)servicesConfig.GetType().GetProperty(configName)?.GetValue(servicesConfig);
 
                 if (serviceConfig?.Url == null)
                 {
                     throw new InvalidOperationException($"{configName} Url configuration is missing.");
                 }
 
-                var endPointName = endPointOverride ?? serviceConfig?.EndPointName;
+                var endPointName = endPointOverride ?? serviceConfig.EndPointName;
 
                 if (endPointName == null)
                 {
@@ -59,10 +59,14 @@ namespace EPR.Payment.Facade.Helpers
                     HttpClientName = serviceConfig.HttpClientName
                 });
 
-                return (TImplementation)Activator.CreateInstance(typeof(TImplementation),
+                var instance = Activator.CreateInstance(typeof(TImplementation),
                     s.GetRequiredService<IHttpContextAccessor>(),
                     s.GetRequiredService<IHttpClientFactory>(),
-                    serviceOptions) ?? throw new InvalidOperationException($"Failed to create instance of {typeof(TImplementation).Name}");
+                    serviceOptions);
+
+                return instance == null
+                    ? throw new InvalidOperationException($"Failed to create instance of {typeof(TImplementation).Name}")
+                    : (TInterface)(TImplementation)instance;
             });
         }
     }
