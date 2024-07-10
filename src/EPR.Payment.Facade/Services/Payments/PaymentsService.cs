@@ -28,19 +28,6 @@ public class PaymentsService : IPaymentsService
     {
         ValidateObject(request);
 
-        if (!request!.UserId.HasValue)
-        {
-            throw new ValidationException("User ID must be provided.");
-        }
-        if (!request.OrganisationId.HasValue)
-        {
-            throw new ValidationException("Organisation ID must be provided.");
-        }
-        if (!request.Amount.HasValue)
-        {
-            throw new ValidationException("Amount must be provided.");
-        }
-
         // Use the static values from configuration
         var returnUrl = _paymentServiceOptions.ReturnUrl ?? throw new InvalidOperationException("ReturnUrl is not configured.");
         var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException("Description is not configured.");
@@ -48,12 +35,12 @@ public class PaymentsService : IPaymentsService
         // Create the GovPayPaymentRequestDto
         var govPayRequest = new GovPayPaymentRequestDto
         {
-            Amount = request.Amount.Value,
+            Amount = request!.Amount!.Value,
             Reference = request.Reference,
             return_url = returnUrl,
             Description = description,
-            OrganisationId = request.OrganisationId.Value,
-            UserId = request.UserId.Value,
+            OrganisationId = request.OrganisationId!.Value,
+            UserId = request.UserId!.Value,
             Regulator = request.Regulator
         };
 
@@ -123,26 +110,13 @@ public class PaymentsService : IPaymentsService
 
     private async Task<Guid> InsertPaymentAsync(PaymentRequestDto request)
     {
-        if (!request.UserId.HasValue)
-        {
-            throw new ValidationException("User ID must be provided.");
-        }
-        if (!request.OrganisationId.HasValue)
-        {
-            throw new ValidationException("Organisation ID must be provided.");
-        }
-        if (!request.Amount.HasValue)
-        {
-            throw new ValidationException("Amount must be provided.");
-        }
-
         var insertRequest = new InsertPaymentRequestDto
         {
-            UserId = request.UserId.Value,
-            OrganisationId = request.OrganisationId.Value,
+            UserId = request.UserId!.Value,
+            OrganisationId = request.OrganisationId!.Value,
             Reference = request.Reference,
             Regulator = request.Regulator,
-            Amount = request.Amount.Value,
+            Amount = request.Amount!.Value,
             ReasonForPayment = _paymentServiceOptions.Description,
             Status = PaymentStatus.Initiated
         };
@@ -165,21 +139,12 @@ public class PaymentsService : IPaymentsService
 
     private async Task UpdatePaymentAsync(Guid id, PaymentRequestDto request, string paymentId, PaymentStatus status)
     {
-        if (!request.UserId.HasValue)
-        {
-            throw new ValidationException("User ID must be provided.");
-        }
-        if (!request.OrganisationId.HasValue)
-        {
-            throw new ValidationException("Organisation ID must be provided.");
-        }
-
         var updateRequest = new UpdatePaymentRequestDto
         {
             Id = id,
             GovPayPaymentId = paymentId,
-            UpdatedByUserId = request.UserId.Value,
-            UpdatedByOrganisationId = request.OrganisationId.Value,
+            UpdatedByUserId = request.UserId!.Value,
+            UpdatedByOrganisationId = request.OrganisationId!.Value,
             Reference = request.Reference,
             Status = status
         };
