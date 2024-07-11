@@ -47,99 +47,89 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http GET returning the specified object
         /// </summary>
-        protected async Task<T> Get<T>(string url, bool includeTrailingSlash = true)
+        protected async Task<T> Get<T>(string url, CancellationToken cancellationToken, bool includeTrailingSlash = true)
         {
             url = string.IsNullOrEmpty(url) && !includeTrailingSlash ? _baseUrl : includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
 
-            return await Send<T>(CreateMessage(url, null, HttpMethod.Get));
+            return await Send<T>(CreateMessage(url, null, HttpMethod.Get), cancellationToken);
         }
 
         /// <summary>
-        /// Performs an Http POST returning the speicified object
+        /// Performs an Http POST returning the specified object
         /// </summary>
-        protected async Task<T> Post<T>(string url, object? payload = null)
+        protected async Task<T> Post<T>(string url, object? payload, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
 
             url = $"{_baseUrl}/{url}/";
 
-            return await Send<T>(CreateMessage(url, payload, HttpMethod.Post));
-        }
-
-        /// <summary>
-        /// Performs an Http POST returning the speicified object
-        /// </summary>
-        protected async Task<T> Post<T>(object? payload = null)
-        {
-            var url = $"{_baseUrl}";
-
-            return await Send<T>(CreateMessage(url, payload, HttpMethod.Post));
+            return await Send<T>(CreateMessage(url, payload, HttpMethod.Post), cancellationToken);
         }
 
         /// <summary>
         /// Performs an Http POST without returning any data
         /// </summary>
-        protected async Task Post(string url, object? payload = null)
+        protected async Task Post(string url, object? payload, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
 
             url = $"{_baseUrl}/{url}/";
 
-            await Send(CreateMessage(url, payload, HttpMethod.Post));
+            await Send(CreateMessage(url, payload, HttpMethod.Post), cancellationToken);
         }
 
         /// <summary>
-        /// Performs an Http PUT returning the speicified object
+        /// Performs an Http PUT returning the specified object
         /// </summary>
-        protected async Task<T> Put<T>(string url, object? payload = null)
+        protected async Task<T> Put<T>(string url, object? payload, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
 
             url = $"{_baseUrl}/{url}/";
 
-            return await Send<T>(CreateMessage(url, payload, HttpMethod.Put));
+            return await Send<T>(CreateMessage(url, payload, HttpMethod.Put), cancellationToken);
         }
 
         /// <summary>
         /// Performs an Http PUT without returning any data
         /// </summary>
-        protected async Task Put(string url, object? payload = null)
+        protected async Task Put(string url, object? payload, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
 
             url = $"{_baseUrl}/{url}/";
 
-            await Send(CreateMessage(url, payload, HttpMethod.Put));
+            await Send(CreateMessage(url, payload, HttpMethod.Put), cancellationToken);
         }
 
         /// <summary>
-        /// Performs an Http DELETE returning the speicified object
+        /// Performs an Http DELETE returning the specified object
         /// </summary>
-        protected async Task<T> Delete<T>(string url, object? payload = null)
+        protected async Task<T> Delete<T>(string url, object? payload, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
 
             url = $"{_baseUrl}/{url}/";
 
-            return await Send<T>(CreateMessage(url, payload, HttpMethod.Delete));
+            return await Send<T>(CreateMessage(url, payload, HttpMethod.Delete), cancellationToken);
         }
 
         /// <summary>
         /// Performs an Http DELETE without returning any data
         /// </summary>
-        protected async Task Delete(string url, object? payload = null)
+        protected async Task Delete(string url, object? payload, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
 
             url = $"{_baseUrl}/{url}/";
 
-            await Send(CreateMessage(url, payload, HttpMethod.Delete));
+            await Send(CreateMessage(url, payload, HttpMethod.Delete), cancellationToken);
         }
 
         private HttpRequestMessage CreateMessage(
@@ -161,9 +151,9 @@ namespace EPR.Payment.Facade.Common.RESTServices
             return msg;
         }
 
-        private async Task<T> Send<T>(HttpRequestMessage requestMessage)
+        private async Task<T> Send<T>(HttpRequestMessage requestMessage, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
@@ -193,9 +183,9 @@ namespace EPR.Payment.Facade.Common.RESTServices
             }
         }
 
-        private async Task Send(HttpRequestMessage requestMessage)
+        private async Task Send(HttpRequestMessage requestMessage, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {

@@ -24,7 +24,7 @@ public class PaymentsService : IPaymentsService
         _paymentServiceOptions = paymentServiceOptions.Value ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
     }
 
-    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto? request)
+    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto? request, CancellationToken cancellationToken)
     {
         ValidateObject(request);
 
@@ -44,16 +44,16 @@ public class PaymentsService : IPaymentsService
             Regulator = request.Regulator
         };
 
-        var externalPaymentId = await InsertPaymentAsync(request);
+        var externalPaymentId = await InsertPaymentAsync(request, cancellationToken);
 
-        var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest);
+        var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest, cancellationToken);
 
         if (string.IsNullOrEmpty(govPayResponse.PaymentId))
         {
             throw new InvalidOperationException("GovPay response does not contain a valid PaymentId.");
         }
 
-        await UpdatePaymentAsync(externalPaymentId, request, govPayResponse.PaymentId, PaymentStatus.InProgress);
+        await UpdatePaymentAsync(externalPaymentId, request, govPayResponse.PaymentId, PaymentStatus.InProgress, cancellationToken);
 
         return new PaymentResponseDto
         {
@@ -61,12 +61,14 @@ public class PaymentsService : IPaymentsService
         };
     }
 
-    public async Task CompletePaymentAsync(string? govPayPaymentId, CompletePaymentRequestDto completeRequest)
+    public async Task CompletePaymentAsync(string? govPayPaymentId, CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
             throw new ArgumentException("GovPayPaymentId cannot be null or empty", nameof(govPayPaymentId));
 
-        var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId);
+
+
+        var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId, cancellationToken);
         if (paymentStatusResponse == null || paymentStatusResponse.State == null)
             throw new Exception("Payment status not found or status is not available.");
 
@@ -94,7 +96,7 @@ public class PaymentsService : IPaymentsService
 
         try
         {
-            await _httpPaymentsService.UpdatePaymentAsync(completeRequest.Id, updateRequest);
+            await _httpPaymentsService.UpdatePaymentAsync(completeRequest.Id, updateRequest, cancellationToken);
         }
         catch (ValidationException ex)
         {
@@ -108,7 +110,7 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private async Task<Guid> InsertPaymentAsync(PaymentRequestDto request)
+    private async Task<Guid> InsertPaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken)
     {
         var insertRequest = new InsertPaymentRequestDto
         {
@@ -123,7 +125,7 @@ public class PaymentsService : IPaymentsService
 
         try
         {
-            return await _httpPaymentsService.InsertPaymentAsync(insertRequest);
+            return await _httpPaymentsService.InsertPaymentAsync(insertRequest, cancellationToken);
         }
         catch (ValidationException ex)
         {
@@ -137,7 +139,7 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private async Task UpdatePaymentAsync(Guid id, PaymentRequestDto request, string paymentId, PaymentStatus status)
+    private async Task UpdatePaymentAsync(Guid id, PaymentRequestDto request, string paymentId, PaymentStatus status, CancellationToken cancellationToken)
     {
         var updateRequest = new UpdatePaymentRequestDto
         {
@@ -151,7 +153,7 @@ public class PaymentsService : IPaymentsService
 
         try
         {
-            await _httpPaymentsService.UpdatePaymentAsync(id, updateRequest);
+            await _httpPaymentsService.UpdatePaymentAsync(id, updateRequest, cancellationToken);
         }
         catch (ValidationException ex)
         {

@@ -1,8 +1,11 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 
-public interface IHttpGovPayService
+namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
 {
-    Task<GovPayResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto request);
-    Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId);
+    public interface IHttpGovPayService
+    {
+        Task<GovPayResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto paymentRequestDto, CancellationToken cancellationToken = default);
+        Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId, CancellationToken cancellationToken = default);
+    }
 }

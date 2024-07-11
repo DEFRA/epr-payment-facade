@@ -4,7 +4,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
 {
     public interface IHttpPaymentsService
     {
-        Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest);
-        Task UpdatePaymentAsync(Guid Id, UpdatePaymentRequestDto paymentStatusUpdateRequest);
+        Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest, CancellationToken cancellationToken = default);
+        Task UpdatePaymentAsync(Guid id, UpdatePaymentRequestDto paymentStatusUpdateRequest, CancellationToken cancellationToken = default);
     }
 }

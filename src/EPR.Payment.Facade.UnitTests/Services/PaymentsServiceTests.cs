@@ -67,12 +67,14 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 }
             };
 
-            _httpGovPayServiceMock?.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayPaymentRequestDto>())).ReturnsAsync(expectedResponse);
-            _httpPaymentsServiceMock?.Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>())).ReturnsAsync(Guid.NewGuid());
-            _httpPaymentsServiceMock?.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>()));
+            _httpGovPayServiceMock?.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayPaymentRequestDto>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
+            _httpPaymentsServiceMock?.Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>(), It.IsAny<CancellationToken>())).ReturnsAsync(Guid.NewGuid());
+            _httpPaymentsServiceMock?.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>(), It.IsAny<CancellationToken>()));
+
+            var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await _service!.InitiatePaymentAsync(request);
+            var result = await _service!.InitiatePaymentAsync(request, cancellationToken);
 
             // Assert
             result.Should().NotBeNull();
@@ -82,10 +84,13 @@ namespace EPR.Payment.Facade.UnitTests.Services
         [TestMethod]
         public async Task InitiatePayment_NullRequest_ThrowsArgumentNullException()
         {
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.InitiatePaymentAsync(null))
+            await _service.Invoking(async s => await s!.InitiatePaymentAsync(null, cancellationToken))
                 .Should().ThrowAsync<ArgumentNullException>();
         }
+
         [TestMethod]
         [DataRow(null, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Amount is required")]
         [DataRow(100, null, "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Reference is required")]
@@ -104,8 +109,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Regulator = regulator
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<ValidationException>();
 
             exception.Which.Message.Should().Contain(expectedMessage);
@@ -135,13 +142,16 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 }
             };
 
-            _httpGovPayServiceMock?.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayPaymentRequestDto>())).ReturnsAsync(expectedResponse);
-            _httpPaymentsServiceMock?.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>())).ThrowsAsync(new ValidationException("Validation error"));
+            _httpGovPayServiceMock?.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayPaymentRequestDto>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
+            _httpPaymentsServiceMock?.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>(), It.IsAny<CancellationToken>())).ThrowsAsync(new ValidationException("Validation error"));
+
+            var cancellationToken = new CancellationToken();
 
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
         }
+
         [TestMethod]
         public async Task CompletePayment_ValidGovPayPaymentId_UpdatesPaymentStatus()
         {
@@ -153,7 +163,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 State = new State { Status = "success", Finished = true }
             };
 
-            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId)).ReturnsAsync(paymentStatusResponse);
+            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>())).ReturnsAsync(paymentStatusResponse);
 
             var completeRequest = new CompletePaymentRequestDto
             {
@@ -162,13 +172,16 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act
-            await _service!.CompletePaymentAsync(govPayPaymentId, completeRequest);
+            await _service!.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken);
 
             // Assert
             _httpPaymentsServiceMock?.Verify(s => s.UpdatePaymentAsync(
                 completeRequest.Id,
-                It.Is<UpdatePaymentRequestDto>(r => r.Status == PaymentStatus.Success && r.GovPayPaymentId == govPayPaymentId)), Times.Once);
+                It.Is<UpdatePaymentRequestDto>(r => r.Status == PaymentStatus.Success && r.GovPayPaymentId == govPayPaymentId),
+                It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
@@ -181,8 +194,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.CompletePaymentAsync(null, completeRequest))
+            await _service.Invoking(async s => await s!.CompletePaymentAsync(null, completeRequest, cancellationToken))
                 .Should().ThrowAsync<ArgumentException>()
                 .WithMessage("GovPayPaymentId cannot be null or empty (Parameter 'govPayPaymentId')");
         }
@@ -197,8 +212,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.CompletePaymentAsync(string.Empty, completeRequest))
+            await _service.Invoking(async s => await s!.CompletePaymentAsync(string.Empty, completeRequest, cancellationToken))
                 .Should().ThrowAsync<ArgumentException>()
                 .WithMessage("GovPayPaymentId cannot be null or empty (Parameter 'govPayPaymentId')");
         }
@@ -208,7 +225,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         {
             // Arrange
             var govPayPaymentId = "12345";
-            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId))
+            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((PaymentStatusResponseDto?)null);
 
             var completeRequest = new CompletePaymentRequestDto
@@ -218,8 +235,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest))
+            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken))
                 .Should().ThrowAsync<Exception>().WithMessage("Payment status not found or status is not available.");
         }
 
@@ -234,7 +253,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 State = null
             };
 
-            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId)).ReturnsAsync(paymentStatusResponse);
+            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>())).ReturnsAsync(paymentStatusResponse);
 
             var completeRequest = new CompletePaymentRequestDto
             {
@@ -243,8 +262,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest))
+            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken))
                 .Should().ThrowAsync<Exception>().WithMessage("Payment status not found or status is not available.");
         }
 
@@ -259,7 +280,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 State = new State { Status = null, Finished = true }
             };
 
-            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId)).ReturnsAsync(paymentStatusResponse);
+            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>())).ReturnsAsync(paymentStatusResponse);
 
             var completeRequest = new CompletePaymentRequestDto
             {
@@ -268,8 +289,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest))
+            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken))
                 .Should().ThrowAsync<Exception>().WithMessage("Payment status not found or status is not available.");
         }
 
@@ -284,9 +307,9 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 State = new State { Status = "error", Finished = true }
             };
 
-            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId)).ReturnsAsync(paymentStatusResponse);
+            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>())).ReturnsAsync(paymentStatusResponse);
             _httpPaymentsServiceMock?
-                .Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>()))
+                .Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new ValidationException("Validation error"));
 
             var completeRequest = new CompletePaymentRequestDto
@@ -296,10 +319,13 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest))
+            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
         }
+
         [TestMethod]
         public async Task CompletePayment_StatusUpdateUnexpectedError_ThrowsException()
         {
@@ -311,9 +337,9 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 State = new State { Status = "error", Finished = true }
             };
 
-            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId)).ReturnsAsync(paymentStatusResponse);
+            _httpGovPayServiceMock?.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>())).ReturnsAsync(paymentStatusResponse);
             _httpPaymentsServiceMock?
-                .Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>()))
+                .Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             var completeRequest = new CompletePaymentRequestDto
@@ -323,8 +349,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest))
+            await _service.Invoking(async s => await s!.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken))
                 .Should().ThrowAsync<Exception>().WithMessage("An unexpected error occurred while updating the payment status.");
         }
 
@@ -353,8 +381,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 _loggerMock!.Object,
                 optionsMock.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await service.Invoking(async s => await s!.InitiatePaymentAsync(request))
+            var exception = await service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<InvalidOperationException>();
 
             exception.Which.Message.Should().Be("ReturnUrl is not configured.");
@@ -385,8 +415,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 _loggerMock.Object,
                 optionsMock.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await service.Invoking(async s => await s!.InitiatePaymentAsync(request))
+            var exception = await service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<InvalidOperationException>();
 
             exception.Which.Message.Should().Be("Description is not configured.");
@@ -404,8 +436,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Regulator = "Reg123"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<ValidationException>()
                 .WithMessage("User ID is required");
         }
@@ -422,12 +456,13 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Regulator = "Reg123"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<ValidationException>()
                 .WithMessage("Organisation ID is required");
         }
-
 
         [TestMethod]
         public async Task InitiatePayment_MissingAmount_ThrowsValidationException()
@@ -441,12 +476,13 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Regulator = "Reg123"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<ValidationException>()
                 .WithMessage("Amount is required");
         }
-
 
         [TestMethod]
         public async Task InitiatePayment_UserIdMissing_ThrowsValidationException()
@@ -460,9 +496,12 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Regulator = "Reg123"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
-                .Should().ThrowAsync<ValidationException>().WithMessage("User ID is required");
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
+                .Should().ThrowAsync<ValidationException>()
+                .WithMessage("User ID is required");
         }
 
         [TestMethod]
@@ -477,9 +516,12 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Regulator = "Reg123"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
-                .Should().ThrowAsync<ValidationException>().WithMessage("Organisation ID is required");
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
+                .Should().ThrowAsync<ValidationException>()
+                .WithMessage("Organisation ID is required");
         }
 
         [TestMethod]
@@ -494,9 +536,12 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Regulator = "Reg123"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request))
-                .Should().ThrowAsync<ValidationException>().WithMessage("Amount is required");
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, cancellationToken))
+                .Should().ThrowAsync<ValidationException>()
+                .WithMessage("Amount is required");
         }
 
         [TestMethod]
@@ -514,7 +559,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             var validationException = new ValidationException("Validation error");
             _httpPaymentsServiceMock?
-                .Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>()))
+                .Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(validationException);
 
             var logger = new TestLogger<PaymentsService>();
@@ -524,8 +569,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 logger,
                 _optionsMock.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            var exception = await service.Invoking(async s => await s.InitiatePaymentAsync(request))
+            var exception = await service.Invoking(async s => await s.InitiatePaymentAsync(request, cancellationToken))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
 
             // Verify log entry
@@ -548,7 +595,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var testLogger = new TestLogger<PaymentsService>();
 
             _httpPaymentsServiceMock
-                .Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>()))
+                .Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Create a new instance of PaymentsService with the custom test logger
@@ -558,8 +605,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 testLogger,
                 _optionsMock.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act
-            Func<Task> act = async () => await service.InitiatePaymentAsync(request);
+            Func<Task> act = async () => await service.InitiatePaymentAsync(request, cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage("An unexpected error occurred while inserting the payment.");
@@ -567,3 +616,5 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
     }
 }
+
+

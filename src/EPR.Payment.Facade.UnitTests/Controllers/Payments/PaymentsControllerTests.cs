@@ -40,10 +40,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 NextUrl = "https://example.com/response"
             };
 
-            _paymentsServiceMock?.Setup(s => s.InitiatePaymentAsync(request)).ReturnsAsync(expectedResponse);
+            var cancellationToken = new CancellationToken();
+
+            _paymentsServiceMock?.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await _controller!.InitiatePayment(request);
+            var result = await _controller!.InitiatePayment(request, cancellationToken);
 
             // Assert
             result.Should().BeOfType<ContentResult>();
@@ -60,8 +62,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var request = new PaymentRequestDto(); // Invalid request
             _controller!.ModelState.AddModelError("Amount", "Amount is required");
 
+            var cancellationToken = new CancellationToken();
+
             // Act
-            var result = await _controller.InitiatePayment(request);
+            var result = await _controller.InitiatePayment(request, cancellationToken);
 
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>();
@@ -81,18 +85,16 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 // Regulator is missing
             };
 
-            // Simulate a validation exception from the service layer
             var validationException = new ValidationException("Validation error");
-            _paymentsServiceMock?.Setup(s => s.InitiatePaymentAsync(invalidRequest)).ThrowsAsync(validationException);
+            var cancellationToken = new CancellationToken();
+
+            _paymentsServiceMock?.Setup(s => s.InitiatePaymentAsync(invalidRequest, cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await _controller!.InitiatePayment(invalidRequest);
+            var result = await _controller!.InitiatePayment(invalidRequest, cancellationToken);
 
             // Assert
-            // Check if the result is a BadRequestObjectResult
             result.Should().BeOfType<BadRequestObjectResult>();
-
-            // Check if the BadRequestObjectResult contains the expected validation error message
             var badRequestResult = result as BadRequestObjectResult;
             badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
         }
@@ -110,10 +112,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 Regulator = "Reg123"
             };
             var exception = new Exception("Some error");
-            _paymentsServiceMock?.Setup(s => s.InitiatePaymentAsync(request)).ThrowsAsync(exception);
+            var cancellationToken = new CancellationToken();
+
+            _paymentsServiceMock?.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await _controller!.InitiatePayment(request);
+            var result = await _controller!.InitiatePayment(request, cancellationToken);
 
             // Assert
             result.Should().BeOfType<ObjectResult>();
@@ -133,13 +137,14 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 UpdatedByUserId = Guid.NewGuid(),
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
+            var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await _controller!.CompletePayment(govPayPaymentId, completeRequest);
+            var result = await _controller!.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
 
             // Assert
             result.Should().BeOfType<OkResult>();
-            _paymentsServiceMock?.Verify(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest), Times.Once);
+            _paymentsServiceMock?.Verify(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken), Times.Once);
         }
 
         [TestMethod]
@@ -152,9 +157,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 UpdatedByUserId = Guid.NewGuid(),
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
+            var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await _controller!.CompletePayment(null, completeRequest);
+            var result = await _controller!.CompletePayment(null, completeRequest, cancellationToken);
 
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>();
@@ -172,9 +178,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 UpdatedByUserId = Guid.NewGuid(),
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
+            var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await _controller!.CompletePayment(string.Empty, completeRequest);
+            var result = await _controller!.CompletePayment(string.Empty, completeRequest, cancellationToken);
 
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>();
@@ -194,10 +201,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
             var validationException = new ValidationException("Validation error");
-            _paymentsServiceMock?.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest)).ThrowsAsync(validationException);
+            var cancellationToken = new CancellationToken();
+
+            _paymentsServiceMock?.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await _controller!.CompletePayment(govPayPaymentId, completeRequest);
+            var result = await _controller!.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
 
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>();
@@ -217,10 +226,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
             var exception = new Exception("Some error");
-            _paymentsServiceMock?.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest)).ThrowsAsync(exception);
+            var cancellationToken = new CancellationToken();
+
+            _paymentsServiceMock?.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await _controller!.CompletePayment(govPayPaymentId, completeRequest);
+            var result = await _controller!.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
 
             // Assert
             result.Should().BeOfType<ObjectResult>();

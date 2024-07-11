@@ -29,7 +29,7 @@ public class PaymentsController : ControllerBase
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
     [FeatureGate("EnablePaymentInitiation")]
-    public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request)
+    public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
@@ -38,7 +38,7 @@ public class PaymentsController : ControllerBase
 
         try
         {
-            var result = await _paymentsService.InitiatePaymentAsync(request);
+            var result = await _paymentsService.InitiatePaymentAsync(request, cancellationToken);
 
             // Return a simple HTML page with JavaScript to perform the redirection
             var htmlContent = $@"
@@ -86,8 +86,6 @@ public class PaymentsController : ControllerBase
         }
     }
 
-
-
     [HttpPost("{govPayPaymentId}/complete")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -97,7 +95,7 @@ public class PaymentsController : ControllerBase
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
     [FeatureGate("EnablePaymentCompletion")]
-    public async Task<IActionResult> CompletePayment(string? govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest)
+    public async Task<IActionResult> CompletePayment(string? govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
         {
@@ -106,7 +104,7 @@ public class PaymentsController : ControllerBase
 
         try
         {
-            await _paymentsService.CompletePaymentAsync(govPayPaymentId, completeRequest);
+            await _paymentsService.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken);
             return Ok();
         }
         catch (ValidationException ex)

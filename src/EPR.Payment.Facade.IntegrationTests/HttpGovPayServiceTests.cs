@@ -51,8 +51,10 @@ namespace EPR.Payment.Facade.IntegrationTests
                 Regulator = "regulator"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act
-            var response = await service.InitiatePaymentAsync(paymentRequestDto);
+            var response = await service.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
             response.Should().NotBeNull();
@@ -91,8 +93,10 @@ namespace EPR.Payment.Facade.IntegrationTests
                 Regulator = "regulator"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
+            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto, cancellationToken))
                 .Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("Bearer token is null. Unable to initiate payment.");
         }
@@ -124,11 +128,13 @@ namespace EPR.Payment.Facade.IntegrationTests
                 Regulator = "regulator"
             };
 
+            var cancellationToken = new CancellationToken();
+
             // Intentionally set an incorrect URL to force an exception
             service.SetBaseUrl("https://invalid-url.com");
 
             // Act & Assert
-            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto))
+            await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto, cancellationToken))
                 .Should().ThrowAsync<Exception>()
                 .WithMessage("Error occurred while initiating payment.");
         }

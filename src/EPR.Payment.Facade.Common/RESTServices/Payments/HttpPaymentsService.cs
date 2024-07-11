@@ -24,12 +24,12 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             _httpClientName = config.Value.HttpClientName ?? throw new ArgumentNullException(nameof(config), "PaymentService HttpClientName configuration is missing");
         }
 
-        public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest)
+        public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest, CancellationToken cancellationToken)
         {
             var url = "payments";
             try
             {
-                var response = await Post<Guid>(url, paymentStatusInsertRequest);
+                var response = await Post<Guid>(url, paymentStatusInsertRequest, cancellationToken);
                 return response;
             }
             catch (Exception ex)
@@ -38,12 +38,12 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
         }
 
-        public async Task UpdatePaymentAsync(Guid id, UpdatePaymentRequestDto paymentStatusUpdateRequest)
+        public async Task UpdatePaymentAsync(Guid id, UpdatePaymentRequestDto paymentStatusUpdateRequest, CancellationToken cancellationToken)
         {
             var url = $"payments/{id}";
             try
             {
-                await Put(url, paymentStatusUpdateRequest);
+                await Put(url, paymentStatusUpdateRequest, cancellationToken);
             }
             catch (Exception ex)
             {

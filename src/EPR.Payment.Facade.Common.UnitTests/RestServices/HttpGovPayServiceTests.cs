@@ -59,7 +59,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
         [TestMethod]
         public async Task InitiatePayment_Success_ReturnsPaymentResponseDto()
         {
-            // Arrange            
+            // Arrange
             var paymentRequestDto = new GovPayPaymentRequestDto
             {
                 Amount = 14500,
@@ -71,7 +71,6 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                 Regulator = "regulator"
             };
 
-            // Create a mock HttpMessageHandler to handle the SendAsync method
             var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -82,15 +81,15 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-
-            // Create the HttpGovPayService with the mocked HttpClient
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
+                new HttpClientFactoryMock(httpClient),
                 _configMock!.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act
-            var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto);
+            var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
             result.Should().NotBeNull();
@@ -116,22 +115,21 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                 Regulator = "regulator"
             };
 
-            // Create a mock HttpMessageHandler to handle the SendAsync method
             var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                        .ThrowsAsync(new HttpRequestException("Error occurred while initiating payment."));
 
             var httpClient = new HttpClient(handlerMock.Object);
-
-            // Create the HttpGovPayService with the mocked HttpClient
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
+                new HttpClientFactoryMock(httpClient),
                 _configMock!.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            Func<Task> act = async () => await httpGovPayService.InitiatePaymentAsync(paymentRequestDto);
+            Func<Task> act = async () => await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
             await act.Should().ThrowAsync<Exception>().WithMessage("Error occurred while initiating payment.");
         }
 
@@ -141,7 +139,6 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             // Arrange
             var paymentId = "12345";
 
-            // Create a mock HttpMessageHandler to handle the SendAsync method
             var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -152,15 +149,15 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-
-            // Create the HttpGovPayService with the mocked HttpClient
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
+                new HttpClientFactoryMock(httpClient),
                 _configMock!.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act
-            var result = await httpGovPayService.GetPaymentStatusAsync(paymentId);
+            var result = await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
             result.Should().NotBeNull();
@@ -172,22 +169,21 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             // Arrange
             var paymentId = "123";
 
-            // Create a mock HttpMessageHandler to handle the SendAsync method
             var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                        .ThrowsAsync(new HttpRequestException("Error occurred while retrieving payment status."));
 
             var httpClient = new HttpClient(handlerMock.Object);
-
-            // Create the HttpGovPayService with the mocked HttpClient
             var httpGovPayService = new HttpGovPayService(
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient), // Pass the mocked HttpClientFactory
+                new HttpClientFactoryMock(httpClient),
                 _configMock!.Object);
 
+            var cancellationToken = new CancellationToken();
+
             // Act & Assert
-            Func<Task> act = async () => await httpGovPayService.GetPaymentStatusAsync(paymentId);
+            Func<Task> act = async () => await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
             await act.Should().ThrowAsync<Exception>().WithMessage("Error occurred while retrieving payment status.");
         }
     }
