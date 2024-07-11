@@ -19,7 +19,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 
         public async Task<HttpResponseMessage> GetHealthAsync(CancellationToken cancellationToken)
         {
-            return await Get<HttpResponseMessage>(string.Empty, cancellationToken);
+            return await Get<HttpResponseMessage>(string.Empty, cancellationToken,false);
         }
 
     }
