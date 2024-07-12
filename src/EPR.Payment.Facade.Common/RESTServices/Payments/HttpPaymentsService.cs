@@ -1,4 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -16,17 +17,17 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
             : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), "PaymentService BaseUrl configuration is missing"),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), "PaymentService EndPointName configuration is missing"))
+                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceBaseUrlMissing),
+                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceEndPointNameMissing))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _httpClientName = config.Value.HttpClientName ?? throw new ArgumentNullException(nameof(config), "PaymentService HttpClientName configuration is missing");
+            _httpClientName = config.Value.HttpClientName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceHttpClientNameMissing);
         }
 
         public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest, CancellationToken cancellationToken)
         {
-            var url = "payments";
+            var url = UrlConstants.PaymentsInsert;
             try
             {
                 var response = await Post<Guid>(url, paymentStatusInsertRequest, cancellationToken);
@@ -34,20 +35,20 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
             catch (Exception ex)
             {
-                throw new Exception("Error occurred while inserting payment status.", ex);
+                throw new Exception(ExceptionMessages.ErrorInsertingPayment, ex);
             }
         }
 
         public async Task UpdatePaymentAsync(Guid id, UpdatePaymentRequestDto paymentStatusUpdateRequest, CancellationToken cancellationToken)
         {
-            var url = $"payments/{id}";
+            var url = UrlConstants.PaymentsUpdate.Replace("{paymentId}", id.ToString());
             try
             {
                 await Put(url, paymentStatusUpdateRequest, cancellationToken);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error occurred while updating payment status.", ex);
+                throw new Exception(ExceptionMessages.ErrorUpdatingPayment, ex);
             }
         }
     }

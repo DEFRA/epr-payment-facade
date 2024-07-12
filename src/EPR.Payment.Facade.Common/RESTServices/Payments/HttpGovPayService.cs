@@ -1,4 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
@@ -16,11 +17,11 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
             : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), "GovPay BaseUrl configuration is missing"),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), "GovPay EndPointName configuration is missing"))
+                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceBaseUrlMissing),
+                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceEndPointNameMissing))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), "GovPay Bearer token configuration is missing");
+            _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.BearerTokenNull);
         }
 
         public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto paymentRequestDto, CancellationToken cancellationToken)
@@ -31,17 +32,17 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
             else
             {
-                throw new InvalidOperationException("Bearer token is null. Unable to initiate payment.");
+                throw new InvalidOperationException(ExceptionMessages.BearerTokenNull);
             }
 
-            var url = "payments";
+            var url = UrlConstants.GovPayInitiatePayment;
             try
             {
                 return await Post<GovPayResponseDto>(url, paymentRequestDto, cancellationToken);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error occurred while initiating payment.", ex);
+                throw new Exception(ExceptionMessages.ErrorInitiatingPayment, ex);
             }
         }
 
@@ -53,17 +54,17 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
             else
             {
-                throw new InvalidOperationException("Bearer token is null. Unable to retrieve payment status.");
+                throw new InvalidOperationException(ExceptionMessages.BearerTokenNull);
             }
 
-            var url = $"payments/{paymentId}";
+            var url = UrlConstants.GovPayGetPaymentStatus.Replace("{paymentId}", paymentId);
             try
             {
                 return await Get<PaymentStatusResponseDto>(url, cancellationToken);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error occurred while retrieving payment status.", ex);
+                throw new Exception(ExceptionMessages.ErrorRetrievingPaymentStatus, ex);
             }
         }
     }

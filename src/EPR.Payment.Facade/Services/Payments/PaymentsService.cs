@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
@@ -33,8 +34,8 @@ public class PaymentsService : IPaymentsService
         ValidateObject(request);
 
         // Use the static values from configuration
-        var returnUrl = _paymentServiceOptions.ReturnUrl ?? throw new InvalidOperationException("ReturnUrl is not configured.");
-        var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException("Description is not configured.");
+        var returnUrl = _paymentServiceOptions.ReturnUrl ?? throw new InvalidOperationException(ExceptionMessages.ReturnUrlNotConfigured);
+        var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException(ExceptionMessages.DescriptionNotConfigured);
 
         // Map PaymentRequestDto to GovPayPaymentRequestDto using AutoMapper
         var govPayRequest = _mapper.Map<GovPayPaymentRequestDto>(request);
@@ -47,7 +48,7 @@ public class PaymentsService : IPaymentsService
 
         if (string.IsNullOrEmpty(govPayResponse.PaymentId))
         {
-            throw new InvalidOperationException("GovPay response does not contain a valid PaymentId.");
+            throw new InvalidOperationException(ExceptionMessages.GovPayResponseInvalid);
         }
 
         await UpdatePaymentAsync(externalPaymentId, request, govPayResponse.PaymentId, PaymentStatus.InProgress, cancellationToken);
@@ -61,11 +62,11 @@ public class PaymentsService : IPaymentsService
     public async Task CompletePaymentAsync(string? govPayPaymentId, CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
-            throw new ArgumentException("GovPayPaymentId cannot be null or empty", nameof(govPayPaymentId));
+            throw new ArgumentException(ExceptionMessages.GovPayPaymentIdNull, nameof(govPayPaymentId));
 
         var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId, cancellationToken);
         if (paymentStatusResponse == null || paymentStatusResponse.State == null)
-            throw new Exception("Payment status not found or status is not available.");
+            throw new Exception(ExceptionMessages.PaymentStatusNotFound);
 
         PaymentStatus? status = paymentStatusResponse.State.Status switch
         {
@@ -76,7 +77,7 @@ public class PaymentsService : IPaymentsService
         };
 
         if (status == null)
-            throw new Exception("Payment status not found or status is not available.");
+            throw new Exception(ExceptionMessages.PaymentStatusNotFound);
 
         var updateRequest = new UpdatePaymentRequestDto
         {
@@ -95,16 +96,15 @@ public class PaymentsService : IPaymentsService
         }
         catch (ValidationException ex)
         {
-            _logger.LogError(ex, "Validation error occurred while updating payment status.");
+            _logger.LogError(ex, LogMessages.ValidationErrorUpdatingPayment);
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unexpected error occurred while updating payment status.");
-            throw new Exception("An unexpected error occurred while updating the payment status.", ex);
+            _logger.LogError(ex, LogMessages.UnexpectedErrorUpdatingPayment);
+            throw new Exception(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
         }
     }
-
 
     private async Task<Guid> InsertPaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken)
     {
@@ -118,13 +118,13 @@ public class PaymentsService : IPaymentsService
         }
         catch (ValidationException ex)
         {
-            _logger.LogError(ex, "Validation error occurred while inserting payment.");
+            _logger.LogError(ex, LogMessages.ValidationErrorInsertingPayment);
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unexpected error occurred while inserting payment.");
-            throw new Exception("An unexpected error occurred while inserting the payment.", ex);
+            _logger.LogError(ex, LogMessages.UnexpectedErrorInsertingPayment);
+            throw new Exception(ExceptionMessages.UnexpectedErrorInsertingPayment, ex);
         }
     }
 
@@ -141,13 +141,13 @@ public class PaymentsService : IPaymentsService
         }
         catch (ValidationException ex)
         {
-            _logger.LogError(ex, "Validation error occurred while updating payment status.");
+            _logger.LogError(ex, LogMessages.ValidationErrorUpdatingPayment);
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unexpected error occurred while updating payment status.");
-            throw new Exception("An unexpected error occurred while updating the payment status.", ex);
+            _logger.LogError(ex, LogMessages.UnexpectedErrorUpdatingPayment);
+            throw new Exception(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
         }
     }
 

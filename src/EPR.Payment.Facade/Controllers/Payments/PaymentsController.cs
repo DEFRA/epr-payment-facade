@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -40,22 +41,18 @@ public class PaymentsController : ControllerBase
         {
             var result = await _paymentsService.InitiatePaymentAsync(request, cancellationToken);
 
-            // Return a simple HTML page with JavaScript to perform the redirection
-            var htmlContent = $@"
-        <!DOCTYPE html>
-        <html lang=""en"">
-        <head>
-            <meta charset=""UTF-8"">
-            <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-            <title>Redirecting...</title>
-            <script>
-                window.location.href = '{result.NextUrl}';
-            </script>
-        </head>
-        <body>
-            Redirecting to payment page...
-        </body>
-        </html>";
+            if (result.NextUrl == null)
+            {
+                _logger.LogError(LogMessages.NextUrlNull);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Internal Server Error",
+                    Detail = "Next URL is null.",
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+
+            var htmlContent = CreateHtmlContent(result.NextUrl);
 
             return new ContentResult
             {
@@ -66,7 +63,7 @@ public class PaymentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogError(ex, "Validation error occurred while processing InitiatePayment request");
+            _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiatePayment));
             return BadRequest(new ProblemDetails
             {
                 Title = "Validation Error",
@@ -76,7 +73,7 @@ public class PaymentsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while processing InitiatePayment request");
+            _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiatePayment));
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Title = "Internal Server Error",
@@ -99,7 +96,7 @@ public class PaymentsController : ControllerBase
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
         {
-            return BadRequest("GovPayPaymentId cannot be null or empty");
+            return BadRequest(ExceptionMessages.GovPayPaymentIdNull);
         }
 
         try
@@ -109,7 +106,7 @@ public class PaymentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            _logger.LogError(ex, "Validation error occurred while processing CompletePayment request");
+            _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CompletePayment));
             return BadRequest(new ProblemDetails
             {
                 Title = "Validation Error",
@@ -119,7 +116,7 @@ public class PaymentsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while processing CompletePayment request");
+            _logger.LogError(ex, LogMessages.ErrorOccured, nameof(CompletePayment));
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Title = "Internal Server Error",
@@ -127,5 +124,24 @@ public class PaymentsController : ControllerBase
                 Status = StatusCodes.Status500InternalServerError
             });
         }
+    }
+
+    private string CreateHtmlContent(string nextUrl)
+    {
+        return $@"
+    <!DOCTYPE html>
+    <html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Redirecting...</title>
+        <script>
+            window.location.href = '{nextUrl}';
+        </script>
+    </head>
+    <body>
+        Redirecting to payment page...
+    </body>
+    </html>";
     }
 }
