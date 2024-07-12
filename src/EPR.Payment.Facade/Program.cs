@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using EPR.Payment.Common.Mapping;
 using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Extension;
@@ -34,6 +35,9 @@ builder.Services.AddHttpClient("HttpClient")
     });
 builder.Services.AddFacadeDependencies(builder.Configuration);
 builder.Services.AddDependencies();
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(PaymentRequestMappingProfile));
 
 // Add CORS configuration
 builder.Services.AddCors(options =>

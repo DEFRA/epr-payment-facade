@@ -1,4 +1,5 @@
-﻿using EPR.Payment.Facade.Common.Configuration;
+﻿using AutoMapper;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
@@ -11,20 +12,23 @@ public class PaymentsService : IPaymentsService
     private readonly IHttpPaymentsService _httpPaymentsService;
     private readonly ILogger<PaymentsService> _logger;
     private readonly PaymentServiceOptions _paymentServiceOptions;
+    private readonly IMapper _mapper;
 
     public PaymentsService(
         IHttpGovPayService httpGovPayService,
         IHttpPaymentsService httpPaymentsService,
         ILogger<PaymentsService> logger,
-        IOptions<PaymentServiceOptions> paymentServiceOptions)
+        IOptions<PaymentServiceOptions> paymentServiceOptions,
+        IMapper mapper)
     {
         _httpGovPayService = httpGovPayService ?? throw new ArgumentNullException(nameof(httpGovPayService));
         _httpPaymentsService = httpPaymentsService ?? throw new ArgumentNullException(nameof(httpPaymentsService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _paymentServiceOptions = paymentServiceOptions.Value ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
-    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto? request, CancellationToken cancellationToken)
+    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken)
     {
         ValidateObject(request);
 
@@ -32,19 +36,12 @@ public class PaymentsService : IPaymentsService
         var returnUrl = _paymentServiceOptions.ReturnUrl ?? throw new InvalidOperationException("ReturnUrl is not configured.");
         var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException("Description is not configured.");
 
-        // Create the GovPayPaymentRequestDto
-        var govPayRequest = new GovPayPaymentRequestDto
-        {
-            Amount = request!.Amount!.Value,
-            Reference = request.Reference,
-            return_url = returnUrl,
-            Description = description,
-            OrganisationId = request.OrganisationId!.Value,
-            UserId = request.UserId!.Value,
-            Regulator = request.Regulator
-        };
+        // Map PaymentRequestDto to GovPayPaymentRequestDto using AutoMapper
+        var govPayRequest = _mapper.Map<GovPayPaymentRequestDto>(request);
+        govPayRequest.return_url = returnUrl;
+        govPayRequest.Description = description;
 
-        var externalPaymentId = await InsertPaymentAsync(request, cancellationToken);
+        var externalPaymentId = await InsertPaymentAsync(request!, cancellationToken);
 
         var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest, cancellationToken);
 
@@ -65,8 +62,6 @@ public class PaymentsService : IPaymentsService
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
             throw new ArgumentException("GovPayPaymentId cannot be null or empty", nameof(govPayPaymentId));
-
-
 
         var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId, cancellationToken);
         if (paymentStatusResponse == null || paymentStatusResponse.State == null)
@@ -110,18 +105,12 @@ public class PaymentsService : IPaymentsService
         }
     }
 
+
     private async Task<Guid> InsertPaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken)
     {
-        var insertRequest = new InsertPaymentRequestDto
-        {
-            UserId = request.UserId!.Value,
-            OrganisationId = request.OrganisationId!.Value,
-            Reference = request.Reference,
-            Regulator = request.Regulator,
-            Amount = request.Amount!.Value,
-            ReasonForPayment = _paymentServiceOptions.Description,
-            Status = PaymentStatus.Initiated
-        };
+        var insertRequest = _mapper.Map<InsertPaymentRequestDto>(request);
+        insertRequest.ReasonForPayment = _paymentServiceOptions.Description;
+        insertRequest.Status = PaymentStatus.Initiated;
 
         try
         {
@@ -141,15 +130,10 @@ public class PaymentsService : IPaymentsService
 
     private async Task UpdatePaymentAsync(Guid id, PaymentRequestDto request, string paymentId, PaymentStatus status, CancellationToken cancellationToken)
     {
-        var updateRequest = new UpdatePaymentRequestDto
-        {
-            Id = id,
-            GovPayPaymentId = paymentId,
-            UpdatedByUserId = request.UserId!.Value,
-            UpdatedByOrganisationId = request.OrganisationId!.Value,
-            Reference = request.Reference,
-            Status = status
-        };
+        var updateRequest = _mapper.Map<UpdatePaymentRequestDto>(request);
+        updateRequest.Id = id;
+        updateRequest.GovPayPaymentId = paymentId;
+        updateRequest.Status = status;
 
         try
         {

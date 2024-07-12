@@ -1,4 +1,6 @@
-﻿using EPR.Payment.Facade.Common.Configuration;
+﻿using AutoMapper;
+using EPR.Payment.Common.Mapping;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
@@ -20,6 +22,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         private Mock<ILogger<PaymentsService>>? _loggerMock;
         private Mock<IOptions<PaymentServiceOptions>>? _optionsMock;
         private PaymentsService? _service;
+        private IMapper? _mapper;
 
         [TestInitialize]
         public void TestInitialize()
@@ -36,11 +39,19 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Description = "Payment description"
             });
 
+            // Setup AutoMapper
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<PaymentRequestMappingProfile>();
+            });
+            _mapper = mapperConfig.CreateMapper();
+
             _service = new PaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpPaymentsServiceMock.Object,
                 _loggerMock.Object,
-                _optionsMock.Object);
+                _optionsMock.Object,
+                _mapper);
         }
 
         [TestMethod]
@@ -87,7 +98,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var cancellationToken = new CancellationToken();
 
             // Act & Assert
-            await _service.Invoking(async s => await s!.InitiatePaymentAsync(null, cancellationToken))
+            await _service.Invoking(async s => await s!.InitiatePaymentAsync(null!, cancellationToken))
                 .Should().ThrowAsync<ArgumentNullException>();
         }
 
@@ -172,16 +183,34 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
+            var expectedUpdateRequest = new UpdatePaymentRequestDto
+            {
+                Id = completeRequest.Id,
+                GovPayPaymentId = govPayPaymentId,
+                UpdatedByUserId = completeRequest.UpdatedByUserId,
+                UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
+                Reference = paymentStatusResponse.Reference,
+                Status = PaymentStatus.Success,
+                ErrorCode = paymentStatusResponse.State.Code
+            };
+
             var cancellationToken = new CancellationToken();
 
             // Act
             await _service!.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken);
 
             // Assert
-            _httpPaymentsServiceMock?.Verify(s => s.UpdatePaymentAsync(
-                completeRequest.Id,
-                It.Is<UpdatePaymentRequestDto>(r => r.Status == PaymentStatus.Success && r.GovPayPaymentId == govPayPaymentId),
-                It.IsAny<CancellationToken>()), Times.Once);
+            _httpPaymentsServiceMock?.Verify(s =>
+                s.UpdatePaymentAsync(
+                    completeRequest.Id,
+                    It.Is<UpdatePaymentRequestDto>(r =>
+                        r.Status == PaymentStatus.Success &&
+                        r.GovPayPaymentId == govPayPaymentId &&
+                        r.UpdatedByUserId == completeRequest.UpdatedByUserId &&
+                        r.UpdatedByOrganisationId == completeRequest.UpdatedByOrganisationId &&
+                        r.Reference == paymentStatusResponse.Reference &&
+                        r.ErrorCode == paymentStatusResponse.State.Code),
+                    cancellationToken), Times.Once);
         }
 
         [TestMethod]
@@ -379,7 +408,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 _httpGovPayServiceMock!.Object,
                 _httpPaymentsServiceMock!.Object,
                 _loggerMock!.Object,
-                optionsMock.Object);
+                optionsMock.Object,
+                _mapper!);
 
             var cancellationToken = new CancellationToken();
 
@@ -410,10 +440,11 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Re-initialize the PaymentsService with the updated options
             var service = new PaymentsService(
-                _httpGovPayServiceMock.Object,
-                _httpPaymentsServiceMock.Object,
-                _loggerMock.Object,
-                optionsMock.Object);
+                _httpGovPayServiceMock!.Object,
+                _httpPaymentsServiceMock!.Object,
+                _loggerMock!.Object,
+                optionsMock.Object,
+                _mapper!);
 
             var cancellationToken = new CancellationToken();
 
@@ -564,10 +595,11 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             var logger = new TestLogger<PaymentsService>();
             var service = new PaymentsService(
-                _httpGovPayServiceMock.Object,
-                _httpPaymentsServiceMock.Object,
+                _httpGovPayServiceMock!.Object,
+                _httpPaymentsServiceMock!.Object,
                 logger,
-                _optionsMock.Object);
+                _optionsMock!.Object,
+                _mapper!);
 
             var cancellationToken = new CancellationToken();
 
@@ -594,16 +626,17 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             var testLogger = new TestLogger<PaymentsService>();
 
-            _httpPaymentsServiceMock
+            _httpPaymentsServiceMock?
                 .Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Create a new instance of PaymentsService with the custom test logger
             var service = new PaymentsService(
-                _httpGovPayServiceMock.Object,
-                _httpPaymentsServiceMock.Object,
+                _httpGovPayServiceMock!.Object,
+                _httpPaymentsServiceMock!.Object,
                 testLogger,
-                _optionsMock.Object);
+                _optionsMock!.Object,
+                _mapper!);
 
             var cancellationToken = new CancellationToken();
 
@@ -616,5 +649,3 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
     }
 }
-
-
