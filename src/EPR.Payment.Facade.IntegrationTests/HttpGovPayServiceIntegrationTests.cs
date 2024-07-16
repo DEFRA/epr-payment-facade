@@ -141,6 +141,59 @@ namespace EPR.Payment.Facade.IntegrationTests
                 .Should().ThrowAsync<Exception>()
                 .WithMessage("Error occurred while initiating payment.");
         }
+
+        [TestMethod]
+        public async Task GetPaymentStatus_BearerTokenNull_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection()
+                .AddHttpContextAccessor()
+                .AddHttpClient()
+                .Configure<Service>(options => _configuration?.GetSection("GovPayService").Bind(options))
+                .BuildServiceProvider();
+
+            var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+            var options = serviceProvider.GetService<IOptions<Service>>();
+
+            var service = new TestHttpGovPayService(httpContextAccessor!, httpClientFactory!, options!, null);
+
+            var paymentId = "test-payment-id";
+            var cancellationToken = new CancellationToken();
+
+            // Act & Assert
+            await service.Invoking(async x => await x.GetPaymentStatusAsync(paymentId, cancellationToken))
+                .Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Bearer token is null. Unable to initiate payment.");
+        }
+
+        [TestMethod]
+        public async Task GetPaymentStatus_PostThrowsException_ThrowsException()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection()
+                .AddHttpContextAccessor()
+                .AddHttpClient()
+                .Configure<Service>(options => _configuration?.GetSection("GovPayService").Bind(options))
+                .BuildServiceProvider();
+
+            var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+            var options = serviceProvider.GetService<IOptions<Service>>();
+
+            var service = new TestHttpGovPayService(httpContextAccessor!, httpClientFactory!, options!, options!.Value.BearerToken);
+
+            var paymentId = "test-payment-id";
+            var cancellationToken = new CancellationToken();
+
+            // Intentionally set an incorrect URL to force an exception
+            service.SetBaseUrl("https://invalid-url.com");
+
+            // Act & Assert
+            await service.Invoking(async x => await x.GetPaymentStatusAsync(paymentId, cancellationToken))
+                .Should().ThrowAsync<Exception>()
+                .WithMessage("Error occurred while retrieving payment status.");
+        }
     }
 
     public class TestHttpGovPayService : HttpGovPayService
