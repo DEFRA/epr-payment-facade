@@ -24,7 +24,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.BearerTokenNull);
         }
 
-        public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayPaymentRequestDto paymentRequestDto, CancellationToken cancellationToken)
+        public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayRequestDto paymentRequestDto, CancellationToken cancellationToken)
         {
             if (_bearerToken != null)
             {

@@ -1,12 +1,13 @@
 ﻿using EPR.Payment.Facade.Helpers;
+using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 
-namespace EPR.Payment.Facade.UnitTests.Helpers
+namespace EPR.Payment.Facade.UnitTests.Middleware
 {
     [TestClass]
     public class FeatureEnabledAttributeTests
     {
-        [TestMethod]
+        [TestMethod, AutoMoqData]
         public void Constructor_SetsFeatureNameProperty()
         {
             // Arrange
@@ -19,7 +20,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             attribute.FeatureName.Should().Be(featureName);
         }
 
-        [TestMethod]
+        [TestMethod, AutoMoqData]
         public void AttributeUsage_ValidTargets()
         {
             // Arrange & Act
@@ -28,12 +29,15 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             ) as AttributeUsageAttribute;
 
             // Assert
-            attributeUsage.Should().NotBeNull();
-            attributeUsage!.ValidOn.Should().Be(AttributeTargets.Class | AttributeTargets.Method);
-            attributeUsage.AllowMultiple.Should().BeFalse();
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                attributeUsage.Should().NotBeNull();
+                attributeUsage!.ValidOn.Should().Be(AttributeTargets.Class | AttributeTargets.Method);
+                attributeUsage.AllowMultiple.Should().BeFalse();
+            }
         }
 
-        [TestMethod]
+        [TestMethod, AutoMoqData]
         public void FeatureEnabledAttribute_CanBeUsedOnClass()
         {
             // Arrange
@@ -43,11 +47,14 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             var attribute = Attribute.GetCustomAttribute(type, typeof(FeatureEnabledAttribute)) as FeatureEnabledAttribute;
 
             // Assert
-            attribute.Should().NotBeNull();
-            attribute!.FeatureName.Should().Be("ClassFeature");
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                attribute.Should().NotBeNull();
+                attribute!.FeatureName.Should().Be("ClassFeature");
+            }
         }
 
-        [TestMethod]
+        [TestMethod, AutoMoqData]
         public void FeatureEnabledAttribute_CanBeUsedOnMethod()
         {
             // Arrange
@@ -57,8 +64,11 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             var attribute = Attribute.GetCustomAttribute(method!, typeof(FeatureEnabledAttribute)) as FeatureEnabledAttribute;
 
             // Assert
-            attribute.Should().NotBeNull();
-            attribute!.FeatureName.Should().Be("MethodFeature");
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                attribute.Should().NotBeNull();
+                attribute!.FeatureName.Should().Be("MethodFeature");
+            }
         }
 
         [FeatureEnabled("ClassFeature")]

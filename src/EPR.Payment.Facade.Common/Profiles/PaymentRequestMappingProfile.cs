@@ -7,7 +7,7 @@ namespace EPR.Payment.Common.Mapping
     {
         public PaymentRequestMappingProfile()
         {
-            CreateMap<PaymentRequestDto, GovPayPaymentRequestDto>()
+            CreateMap<PaymentRequestDto, GovPayRequestDto>()
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount!.Value))
                 .ForMember(dest => dest.OrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId!.Value))

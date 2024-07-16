@@ -99,7 +99,6 @@ app.UseRouting();
 app.UseCors("AllowAll");
 app.UseHealthChecks();
 app.UseAuthorization();
-app.UseMiddleware<RedirectionMiddleware>();
 app.UseMiddleware<ConditionalEndpointMiddleware>();
 
 app.MapControllers();

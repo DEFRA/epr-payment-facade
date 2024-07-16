@@ -1,4 +1,7 @@
-﻿using FluentAssertions;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using EPR.Payment.Facade.UnitTests.TestHelpers;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -10,7 +13,7 @@ using Moq;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
-namespace EPR.Payment.Facade.UnitTests.Helpers
+namespace EPR.Payment.Facade.UnitTests.Middleware
 {
     [TestClass]
     public class FeatureEnabledDocumentFilterTests
@@ -22,14 +25,15 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
         [TestInitialize]
         public void Setup()
         {
-            _featureManagerMock = new Mock<IFeatureManager>();
-            var loggerMock = new Mock<ILogger<FeatureEnabledDocumentFilter>>();
+            var fixture = new Fixture().Customize(new AutoMoqCustomization());
+            _featureManagerMock = fixture.Freeze<Mock<IFeatureManager>>();
+            var loggerMock = fixture.Freeze<Mock<ILogger<FeatureEnabledDocumentFilter>>>();
             _output = new StringWriter();
             Console.SetOut(_output);
             _filter = new FeatureEnabledDocumentFilter(_featureManagerMock.Object, loggerMock.Object);
         }
 
-        [TestMethod]
+        [TestMethod, AutoMoqData]
         public void Apply_RemovesPaths_WhenActionFeatureIsDisabled()
         {
             // Arrange
@@ -68,11 +72,14 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             _filter.Apply(swaggerDoc, context);
 
             // Assert
-            swaggerDoc.Paths.Should().NotContainKey("/test");
-            Assert.IsTrue(_output.ToString().Contains("Removing path '/test' from Swagger documentation because the feature gate is disabled."));
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                swaggerDoc.Paths.Should().NotContainKey("/test");
+                _output.ToString().Should().Contain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
+            }
         }
 
-        [TestMethod]
+        [TestMethod, AutoMoqData]
         public void Apply_DoesNotRemovePaths_WhenActionFeatureIsEnabled()
         {
             // Arrange
@@ -111,8 +118,11 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             _filter.Apply(swaggerDoc, context);
 
             // Assert
-            swaggerDoc.Paths.Should().ContainKey("/test");
-            Assert.IsFalse(_output.ToString().Contains("Removing path '/test' from Swagger documentation because the feature gate is disabled."));
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                swaggerDoc.Paths.Should().ContainKey("/test");
+                _output.ToString().Should().NotContain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
+            }
         }
 
         private class TestController : ControllerBase

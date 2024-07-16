@@ -8,7 +8,7 @@ using Microsoft.FeatureManagement.Mvc;
 using Moq;
 using System.Reflection;
 
-namespace EPR.Payment.Facade.UnitTests.Helpers
+namespace EPR.Payment.Facade.UnitTests.Middleware
 {
     [TestClass]
     public class ConditionalEndpointMiddlewareTests
@@ -102,8 +102,11 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             await _middleware.InvokeAsync(context);
 
             // Assert
-            context.Response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-            _nextMock.Verify(next => next(It.IsAny<HttpContext>()), Times.Never);
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                context.Response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+                _nextMock.Verify(next => next(It.IsAny<HttpContext>()), Times.Never);
+            }
         }
 
         // A test controller for creating action descriptors

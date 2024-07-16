@@ -38,7 +38,7 @@ public class PaymentsService : IPaymentsService
         var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException(ExceptionMessages.DescriptionNotConfigured);
 
         // Map PaymentRequestDto to GovPayPaymentRequestDto using AutoMapper
-        var govPayRequest = _mapper.Map<GovPayPaymentRequestDto>(request);
+        var govPayRequest = _mapper.Map<GovPayRequestDto>(request);
         govPayRequest.return_url = returnUrl;
         govPayRequest.Description = description;
 

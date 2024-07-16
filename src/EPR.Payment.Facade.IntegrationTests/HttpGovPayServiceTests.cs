@@ -40,7 +40,7 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             var service = new HttpGovPayService(httpContextAccessor!, httpClientFactory!, options!);
 
-            var paymentRequestDto = new GovPayPaymentRequestDto
+            var paymentRequestDto = new GovPayRequestDto
             {
                 Amount = 100,
                 Reference = "123456",
@@ -57,13 +57,16 @@ namespace EPR.Payment.Facade.IntegrationTests
             var response = await service.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
-            response.Should().NotBeNull();
-            response.PaymentId.Should().NotBeNullOrEmpty();
-            response.State?.Status.Should().NotBeNullOrEmpty();
-            response.Amount.Should().Be(paymentRequestDto.Amount);
-            response.Reference.Should().Be(paymentRequestDto.Reference);
-            response.Description.Should().Be(paymentRequestDto.Description);
-            response.Links?.NextUrl?.Href.Should().NotBeNullOrEmpty();
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                response.Should().NotBeNull();
+                response.PaymentId.Should().NotBeNullOrEmpty();
+                response.State?.Status.Should().NotBeNullOrEmpty();
+                response.Amount.Should().Be(paymentRequestDto.Amount);
+                response.Reference.Should().Be(paymentRequestDto.Reference);
+                response.Description.Should().Be(paymentRequestDto.Description);
+                response.Links?.NextUrl?.Href.Should().NotBeNullOrEmpty();
+            }
         }
 
         [TestMethod]
@@ -82,7 +85,7 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             var service = new TestHttpGovPayService(httpContextAccessor!, httpClientFactory!, options!, null);
 
-            var paymentRequestDto = new GovPayPaymentRequestDto
+            var paymentRequestDto = new GovPayRequestDto
             {
                 Amount = 100,
                 Reference = "123456",
@@ -117,7 +120,7 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             var service = new TestHttpGovPayService(httpContextAccessor!, httpClientFactory!, options!, options!.Value.BearerToken);
 
-            var paymentRequestDto = new GovPayPaymentRequestDto
+            var paymentRequestDto = new GovPayRequestDto
             {
                 Amount = 100,
                 Reference = "123456",

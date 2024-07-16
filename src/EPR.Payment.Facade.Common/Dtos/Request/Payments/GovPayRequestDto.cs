@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
-    public class GovPayPaymentRequestDto
+    public class GovPayRequestDto
     {
         [Required(ErrorMessage = "User ID is required")]
         public Guid? UserId { get; set; }

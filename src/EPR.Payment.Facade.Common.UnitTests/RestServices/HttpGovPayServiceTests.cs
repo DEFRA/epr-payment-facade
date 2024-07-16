@@ -1,7 +1,10 @@
-﻿using EPR.Payment.Facade.Common.Configuration;
+﻿using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
+using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -10,14 +13,13 @@ using Moq.Protected;
 using Newtonsoft.Json;
 using System.Net;
 
-namespace EPR.Payment.Facade.UnitTests.RESTServices
+namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
     public class HttpGovPayServiceTests
     {
         private Mock<IHttpContextAccessor>? _httpContextAccessorMock;
         private Mock<IOptions<Service>>? _configMock;
-        private HttpGovPayService? _httpGovPayService;
         private GovPayResponseDto? _expectedResponse;
 
         [TestInitialize]
@@ -44,34 +46,24 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                 ReturnUrl = "https://example.com/return",
                 State = new StateDto { Status = "created", Finished = false }
             };
-
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-            httpClientFactoryMock
-                .Setup(x => x.CreateClient(It.IsAny<string>()))
-                .Returns(new HttpClient(new Mock<HttpMessageHandler>().Object));
-
-            _httpGovPayService = new HttpGovPayService(
-                _httpContextAccessorMock.Object,
-                httpClientFactoryMock.Object,
-                _configMock.Object);
         }
 
-        [TestMethod]
-        public async Task InitiatePayment_Success_ReturnsPaymentResponseDto()
+        private HttpGovPayService CreateHttpGovPayService(HttpClient httpClient)
+        {
+            return new HttpGovPayService(
+                _httpContextAccessorMock!.Object,
+                new HttpClientFactoryMock(httpClient),
+                _configMock!.Object);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_Success_ReturnsPaymentResponseDto(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            GovPayRequestDto paymentRequestDto,
+            HttpGovPayService httpGovPayService,
+            CancellationToken cancellationToken)
         {
             // Arrange
-            var paymentRequestDto = new GovPayPaymentRequestDto
-            {
-                Amount = 14500,
-                Reference = "12345",
-                Description = "Pay your council tax",
-                return_url = "https://your.service.gov.uk/completed",
-                OrganisationId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                Regulator = "regulator"
-            };
-
-            var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                        .ReturnsAsync(new HttpResponseMessage
@@ -81,65 +73,51 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            var httpGovPayService = new HttpGovPayService(
-                _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
-
-            var cancellationToken = new CancellationToken();
+            httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
             var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
-            result.Should().NotBeNull();
-            result.PaymentId.Should().Be(_expectedResponse!.PaymentId);
-            result.Amount.Should().Be(_expectedResponse.Amount);
-            result.Reference.Should().Be(_expectedResponse.Reference);
-            result.Description.Should().Be(_expectedResponse.Description);
-            result.ReturnUrl.Should().Be(_expectedResponse.ReturnUrl);
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().NotBeNull();
+                result.PaymentId.Should().Be(_expectedResponse!.PaymentId);
+                result.Amount.Should().Be(_expectedResponse.Amount);
+                result.Reference.Should().Be(_expectedResponse.Reference);
+                result.Description.Should().Be(_expectedResponse.Description);
+                result.ReturnUrl.Should().Be(_expectedResponse.ReturnUrl);
+            }
         }
 
-        [TestMethod]
-        public async Task InitiatePayment_Failure_ThrowsException()
+        [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_Failure_ThrowsException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            GovPayRequestDto paymentRequestDto,
+            HttpGovPayService httpGovPayService,
+            CancellationToken cancellationToken)
         {
             // Arrange
-            var paymentRequestDto = new GovPayPaymentRequestDto
-            {
-                Amount = 14500,
-                Reference = "12345",
-                Description = "Pay your council tax",
-                return_url = "https://your.service.gov.uk/completed",
-                OrganisationId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                Regulator = "regulator"
-            };
-
-            var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new HttpRequestException("Error occurred while initiating payment."));
+                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorInitiatingPayment));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            var httpGovPayService = new HttpGovPayService(
-                _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
-
-            var cancellationToken = new CancellationToken();
+            httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act & Assert
             Func<Task> act = async () => await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
-            await act.Should().ThrowAsync<Exception>().WithMessage("Error occurred while initiating payment.");
+            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInitiatingPayment);
         }
 
-        [TestMethod]
-        public async Task GetPaymentStatus_Success_ReturnsPaymentStatusResponseDto()
+        [TestMethod, AutoMoqData]
+        public async Task GetPaymentStatus_Success_ReturnsPaymentStatusResponseDto(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            string paymentId,
+            HttpGovPayService httpGovPayService,
+            CancellationToken cancellationToken)
         {
             // Arrange
-            var paymentId = "12345";
-
-            var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                        .ReturnsAsync(new HttpResponseMessage
@@ -149,12 +127,7 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            var httpGovPayService = new HttpGovPayService(
-                _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
-
-            var cancellationToken = new CancellationToken();
+            httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
             var result = await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
@@ -163,28 +136,24 @@ namespace EPR.Payment.Facade.UnitTests.RESTServices
             result.Should().NotBeNull();
         }
 
-        [TestMethod]
-        public async Task GetPaymentStatus_Failure_ThrowsException()
+        [TestMethod, AutoMoqData]
+        public async Task GetPaymentStatus_Failure_ThrowsException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            string paymentId,
+            HttpGovPayService httpGovPayService,
+            CancellationToken cancellationToken)
         {
             // Arrange
-            var paymentId = "123";
-
-            var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new HttpRequestException("Error occurred while retrieving payment status."));
+                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorRetrievingPaymentStatus));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            var httpGovPayService = new HttpGovPayService(
-                _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
-
-            var cancellationToken = new CancellationToken();
+            httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act & Assert
             Func<Task> act = async () => await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
-            await act.Should().ThrowAsync<Exception>().WithMessage("Error occurred while retrieving payment status.");
+            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentStatus);
         }
     }
 }
