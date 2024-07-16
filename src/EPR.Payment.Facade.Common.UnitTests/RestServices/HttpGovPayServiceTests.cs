@@ -200,6 +200,34 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                     ItExpr.IsAny<CancellationToken>());
             }
         }
+
+        [TestMethod, AutoMoqData]
+        public void GetPaymentStatusAsync_WhenBearerTokenIsNull_ThrowsArgumentNullException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            string paymentId,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            var config = new Service
+            {
+                Url = "https://example.com",
+                EndPointName = "payments",
+                BearerToken = null // Simulate null BearerToken
+            };
+            var configMock = new Mock<IOptions<Service>>();
+            configMock.Setup(x => x.Value).Returns(config);
+
+            // Act
+            Action act = () => new HttpGovPayService(
+                _httpContextAccessorMock!.Object,
+                new HttpClientFactoryMock(new HttpClient(handlerMock.Object)),
+                configMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+               .WithMessage("*Bearer token is null. Unable to initiate payment.*")
+               .WithParameterName("config");
+        }
     }
 }
 
