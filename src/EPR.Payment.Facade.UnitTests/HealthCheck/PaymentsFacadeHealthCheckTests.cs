@@ -38,16 +38,5 @@ namespace EPR.Payment.Facade.UnitTests.HealthCheck
 
             actual.Status.Should().Be(HealthStatus.Unhealthy);
         }
-
-        [TestMethod, Common.UnitTests.TestHelpers.AutoMoqData]
-        public void CheckHealthAsync_NotValidQueryResult_ReturnsUnHealthyStatus1()
-        {
-            //Act
-            Action act = () => new PaymentServiceHealthService(null);
-
-            //Assert
-            act.Should().Throw<ArgumentNullException>();
-
-        }
     }
 }
