@@ -1,8 +1,5 @@
 ﻿using AutoFixture.MSTest;
-using EPR.Payment.Facade.Common.Configuration;
-using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.HealthCheck;
-using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
