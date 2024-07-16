@@ -356,3 +356,5 @@ MigrationBackup/
 /src/EPR.Payment.Facade/appsettings.Development.json
 /src/EPR.Payment.Facade.IntegrationTests/appsettings.json
 /src/EPR.Payment.Facade/wwwroot/index.html
+/src/.runsettings
+/.gitignore

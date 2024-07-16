@@ -5,6 +5,7 @@ using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -94,6 +95,12 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             using (new FluentAssertions.Execution.AssertionScope())
             {
                 result.Should().Be(_paymentId);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
             }
         }
 
@@ -111,9 +118,21 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpClient = new HttpClient(handlerMock.Object);
             httpPaymentsService = CreateHttpPaymentsService(httpClient);
 
-            // Act & Assert
+            // Act
             Func<Task> act = async () => await httpPaymentsService.InsertPaymentAsync(_insertPaymentRequestDto, cancellationToken);
-            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInsertingPayment);
+
+            // Assert
+            using(new AssertionScope())
+            {
+                await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInsertingPayment);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+
         }
 
         [TestMethod, AutoMoqData]
@@ -137,10 +156,14 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             await httpPaymentsService.UpdatePaymentAsync(_paymentId, _updatePaymentRequestDto, cancellationToken);
 
             // Assert
-            // No exception means success
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
-                // Any additional assertions for success can be added here
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Put),
+                    ItExpr.IsAny<CancellationToken>());
             }
         }
 
@@ -160,24 +183,21 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpClient = new HttpClient(handlerMock.Object);
             httpPaymentsService = CreateHttpPaymentsService(httpClient);
 
-            // Act & Assert
+            // Act
             Func<Task> act = async () => await httpPaymentsService.UpdatePaymentAsync(updatePaymentRequestDto.Id, updatePaymentRequestDto, cancellationToken);
-            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorUpdatingPayment);
-        }
-    }
-
-    public class HttpClientFactoryMock : IHttpClientFactory
-    {
-        private readonly HttpClient _httpClient;
-
-        public HttpClientFactoryMock(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
-
-        public HttpClient CreateClient(string name)
-        {
-            return _httpClient;
+            
+            // Assert
+            using(new AssertionScope())
+            {
+                await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorUpdatingPayment);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Put),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+            
         }
     }
 }

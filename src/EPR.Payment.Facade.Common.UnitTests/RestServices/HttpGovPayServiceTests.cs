@@ -6,6 +6,7 @@ using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -65,7 +66,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         {
             // Arrange
             handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), 
+                       ItExpr.IsAny<CancellationToken>())
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.OK,
@@ -87,6 +89,14 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 result.Reference.Should().Be(_expectedResponse.Reference);
                 result.Description.Should().Be(_expectedResponse.Description);
                 result.ReturnUrl.Should().Be(_expectedResponse.ReturnUrl);
+
+                handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
+
             }
         }
 
@@ -105,9 +115,21 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpClient = new HttpClient(handlerMock.Object);
             httpGovPayService = CreateHttpGovPayService(httpClient);
 
-            // Act & Assert
+            // Act
             Func<Task> act = async () => await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
-            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInitiatingPayment);
+
+            // Assert
+            using(new AssertionScope())
+            {
+                await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInitiatingPayment);
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -119,12 +141,13 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         {
             // Arrange
             handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), 
+                       ItExpr.IsAny<CancellationToken>())
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.OK,
                            Content = new StringContent(JsonConvert.SerializeObject(new PaymentStatusResponseDto())),
-                       });
+                       }).Verifiable();
 
             var httpClient = new HttpClient(handlerMock.Object);
             httpGovPayService = CreateHttpGovPayService(httpClient);
@@ -133,7 +156,18 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var result = await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
-            result.Should().NotBeNull();
+            using (new AssertionScope())
+            {
+                result.Should().NotBeNull();
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>());
+
+            };
         }
 
         [TestMethod, AutoMoqData]
@@ -151,24 +185,22 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpClient = new HttpClient(handlerMock.Object);
             httpGovPayService = CreateHttpGovPayService(httpClient);
 
-            // Act & Assert
+            // Act
             Func<Task> act = async () => await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
-            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentStatus);
+
+            // Assert
+            using(new AssertionScope())
+            {
+                await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentStatus);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>());
+            }
         }
     }
 }
 
-public class HttpClientFactoryMock : IHttpClientFactory
-{
-    private readonly HttpClient _httpClient;
 
-    public HttpClientFactoryMock(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
-    public HttpClient CreateClient(string name)
-    {
-        return _httpClient;
-    }
-}
