@@ -1,5 +1,8 @@
 ﻿using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.HealthCheck;
+using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -34,6 +37,17 @@ namespace EPR.Payment.Facade.UnitTests.HealthCheck
             var actual = await paymentsFacadeHealthCheck.CheckHealthAsync(healthCheckContext, CancellationToken.None);
 
             actual.Status.Should().Be(HealthStatus.Unhealthy);
+        }
+
+        [TestMethod, Common.UnitTests.TestHelpers.AutoMoqData]
+        public void CheckHealthAsync_NotValidQueryResult_ReturnsUnHealthyStatus1()
+        {
+            //Act
+            Action act = () => new PaymentServiceHealthService(null);
+
+            //Assert
+            act.Should().Throw<ArgumentNullException>();
+
         }
     }
 }
