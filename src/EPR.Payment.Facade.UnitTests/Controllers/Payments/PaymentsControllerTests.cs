@@ -1,4 +1,5 @@
 ﻿using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
@@ -16,7 +17,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ValidRequest_ReturnsRedirectResponse(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             PaymentRequestDto request,
             PaymentResponseDto expectedResponse)
@@ -37,6 +37,35 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{expectedResponse.NextUrl}'");
             }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_NextURlIsNull_LogsInternalServerError(
+            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
+            PaymentsController controller,
+            PaymentRequestDto request,
+            PaymentResponseDto expectedResponse)
+        {
+            // Arrange
+            var cancellationToken = new CancellationToken();
+            expectedResponse.NextUrl = null;
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await controller.InitiatePayment(request, cancellationToken);
+
+            // Assert
+            loggerMock.Verify(
+            x => x.Log(
+                It.Is<LogLevel>(l => l == LogLevel.Error),
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(LogMessages.NextUrlNull)),
+                It.IsAny<Exception>(),
+                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
+            Times.Once);
+
+            ((ObjectResult)result).StatusCode.Should().Be(500);
         }
 
         [TestMethod, AutoMoqData]
