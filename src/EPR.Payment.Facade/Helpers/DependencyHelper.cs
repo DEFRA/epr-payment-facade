@@ -64,14 +64,14 @@ namespace EPR.Payment.Facade.Helpers
 
             ValidateServiceConfiguration(serviceConfig, configName);
 
-            var endPointName = endPointOverride ?? serviceConfig.EndPointName;
+            var endPointName = endPointOverride ?? serviceConfig?.EndPointName;
 
             return Options.Create(new Service
             {
-                Url = serviceConfig.Url,
+                Url = serviceConfig?.Url,
                 EndPointName = endPointName,
-                BearerToken = serviceConfig.BearerToken,
-                HttpClientName = serviceConfig.HttpClientName
+                BearerToken = serviceConfig?.BearerToken,
+                HttpClientName = serviceConfig?.HttpClientName
             });
         }
 

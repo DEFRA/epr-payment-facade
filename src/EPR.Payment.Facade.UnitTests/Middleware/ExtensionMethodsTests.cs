@@ -15,7 +15,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
     [TestClass]
     public class ExtensionMethodsTests
     {
-        private IServiceCollection _services;
+        private IServiceCollection? _services;
 
         [TestInitialize]
         public void Setup()
@@ -51,25 +51,25 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            _services.AddFacadeDependencies(configurationBuilder);
-            var serviceProvider = _services.BuildServiceProvider();
+            _services?.AddFacadeDependencies(configurationBuilder);
+            var serviceProvider = _services?.BuildServiceProvider();
 
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
             {
-                var paymentHealthService = serviceProvider.GetService<IPaymentServiceHealthService>();
+                var paymentHealthService = serviceProvider?.GetService<IPaymentServiceHealthService>();
                 paymentHealthService.Should().NotBeNull();
                 paymentHealthService.Should().BeOfType<PaymentServiceHealthService>();
 
-                var httpPaymentServiceHealthCheck = serviceProvider.GetService<IHttpPaymentServiceHealthCheckService>();
+                var httpPaymentServiceHealthCheck = serviceProvider?.GetService<IHttpPaymentServiceHealthCheckService>();
                 httpPaymentServiceHealthCheck.Should().NotBeNull();
                 httpPaymentServiceHealthCheck.Should().BeOfType<HttpPaymentServiceHealthCheckService>();
 
-                var httpPaymentsService = serviceProvider.GetService<IHttpPaymentsService>();
+                var httpPaymentsService = serviceProvider?.GetService<IHttpPaymentsService>();
                 httpPaymentsService.Should().NotBeNull();
                 httpPaymentsService.Should().BeOfType<HttpPaymentsService>();
 
-                var httpGovPayService = serviceProvider.GetService<IHttpGovPayService>();
+                var httpGovPayService = serviceProvider?.GetService<IHttpGovPayService>();
                 httpGovPayService.Should().NotBeNull();
                 httpGovPayService.Should().BeOfType<HttpGovPayService>();
             }
@@ -81,7 +81,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             // Arrange
             var configurationData = new Dictionary<string, string>
             {
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", null },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", null! },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
             };
@@ -91,7 +91,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            Action act = () => _services.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
 
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService Url configuration is missing.");
@@ -104,7 +104,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             var configurationData = new Dictionary<string, string>
             {
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", null },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", null! },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
             };
 
@@ -113,7 +113,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            Action act = () => _services.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
 
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService EndPointName configuration is missing.");
