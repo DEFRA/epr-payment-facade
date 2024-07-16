@@ -8,13 +8,14 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
-namespace EPR.Payment.Facade.UnitTests.Middleware
+namespace EPR.Payment.Facade.UnitTests.Helpers
 {
     [TestClass]
     public class ExtensionMethodsTests
     {
-        private IServiceCollection _services = null!;
+        private IServiceCollection _services;
 
         [TestInitialize]
         public void Setup()
@@ -24,11 +25,14 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             // Add required services
             _services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             _services.AddHttpClient(); // Register the default HttpClientFactory
+
+            Trace.Listeners.Clear();
+            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            Trace.AutoFlush = true;
         }
 
-        [TestMethod, Common.UnitTests.TestHelpers.AutoMoqData]
-        public void AddFacadeDependencies_RegistersServicesCorrectly(
-            IConfiguration configuration)
+        [TestMethod]
+        public void AddFacadeDependencies_RegistersServicesCorrectly()
         {
             // Arrange
             var configurationData = new Dictionary<string, string>
@@ -69,6 +73,50 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
                 httpGovPayService.Should().NotBeNull();
                 httpGovPayService.Should().BeOfType<HttpGovPayService>();
             }
+        }
+
+        [TestMethod]
+        public void AddFacadeDependencies_WithMissingUrlConfiguration_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var configurationData = new Dictionary<string, string>
+            {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", null },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
+            };
+
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddInMemoryCollection(configurationData!)
+                .Build();
+
+            // Act
+            Action act = () => _services.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService Url configuration is missing.");
+        }
+
+        [TestMethod]
+        public void AddFacadeDependencies_WithMissingEndPointNameConfiguration_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var configurationData = new Dictionary<string, string>
+            {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", null },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
+            };
+
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddInMemoryCollection(configurationData!)
+                .Build();
+
+            // Act
+            Action act = () => _services.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService EndPointName configuration is missing.");
         }
     }
 }

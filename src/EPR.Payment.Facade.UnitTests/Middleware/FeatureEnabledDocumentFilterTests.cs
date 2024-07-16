@@ -1,6 +1,5 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
-using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -33,7 +32,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             _filter = new FeatureEnabledDocumentFilter(_featureManagerMock.Object, loggerMock.Object);
         }
 
-        [TestMethod, AutoMoqData]
+        [TestMethod]
         public void Apply_RemovesPaths_WhenActionFeatureIsDisabled()
         {
             // Arrange
@@ -79,7 +78,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             }
         }
 
-        [TestMethod, AutoMoqData]
+        [TestMethod]
         public void Apply_DoesNotRemovePaths_WhenActionFeatureIsEnabled()
         {
             // Arrange
@@ -125,7 +124,148 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             }
         }
 
+        [TestMethod]
+        public void Apply_RemovesPaths_WhenControllerFeatureIsDisabled()
+        {
+            // Arrange
+            var swaggerDoc = new OpenApiDocument
+            {
+                Paths = new OpenApiPaths
+                {
+                    ["/test"] = new OpenApiPathItem
+                    {
+                        Operations = new Dictionary<OperationType, OpenApiOperation>
+                        {
+                            [OperationType.Get] = new OpenApiOperation()
+                        }
+                    }
+                }
+            };
+
+            var apiDescription = new ApiDescription
+            {
+                RelativePath = "test",
+                ActionDescriptor = new ControllerActionDescriptor
+                {
+                    ControllerTypeInfo = typeof(TestControllerWithFeatureGate).GetTypeInfo(),
+                    EndpointMetadata = new List<object>()
+                }
+            };
+
+            var apiDescriptions = new List<ApiDescription> { apiDescription };
+            var schemaRepository = new SchemaRepository();
+            var schemaGeneratorMock = new Mock<ISchemaGenerator>();
+            var context = new DocumentFilterContext(apiDescriptions, schemaGeneratorMock.Object, schemaRepository);
+
+            _featureManagerMock.Setup(x => x.IsEnabledAsync("ControllerFeature")).ReturnsAsync(false);
+
+            // Act
+            _filter.Apply(swaggerDoc, context);
+
+            // Assert
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                swaggerDoc.Paths.Should().NotContainKey("/test");
+                _output.ToString().Should().Contain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
+            }
+        }
+
+        [TestMethod]
+        public void Apply_DoesNotRemovePaths_WhenNoFeatureGateAttributes()
+        {
+            // Arrange
+            var swaggerDoc = new OpenApiDocument
+            {
+                Paths = new OpenApiPaths
+                {
+                    ["/test"] = new OpenApiPathItem
+                    {
+                        Operations = new Dictionary<OperationType, OpenApiOperation>
+                        {
+                            [OperationType.Get] = new OpenApiOperation()
+                        }
+                    }
+                }
+            };
+
+            var apiDescription = new ApiDescription
+            {
+                RelativePath = "test",
+                ActionDescriptor = new ControllerActionDescriptor
+                {
+                    ControllerTypeInfo = typeof(TestController).GetTypeInfo(),
+                    EndpointMetadata = new List<object>()
+                }
+            };
+
+            var apiDescriptions = new List<ApiDescription> { apiDescription };
+            var schemaRepository = new SchemaRepository();
+            var schemaGeneratorMock = new Mock<ISchemaGenerator>();
+            var context = new DocumentFilterContext(apiDescriptions, schemaGeneratorMock.Object, schemaRepository);
+
+            // Act
+            _filter.Apply(swaggerDoc, context);
+
+            // Assert
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                swaggerDoc.Paths.Should().ContainKey("/test");
+                _output.ToString().Should().NotContain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
+            }
+        }
+
+        [TestMethod]
+        public void Apply_DoesNotRemovePaths_WhenAllFeaturesAreEnabled()
+        {
+            // Arrange
+            var swaggerDoc = new OpenApiDocument
+            {
+                Paths = new OpenApiPaths
+                {
+                    ["/test"] = new OpenApiPathItem
+                    {
+                        Operations = new Dictionary<OperationType, OpenApiOperation>
+                        {
+                            [OperationType.Get] = new OpenApiOperation()
+                        }
+                    }
+                }
+            };
+
+            var apiDescription = new ApiDescription
+            {
+                RelativePath = "test",
+                ActionDescriptor = new ControllerActionDescriptor
+                {
+                    ControllerTypeInfo = typeof(TestControllerWithFeatureGate).GetTypeInfo(),
+                    EndpointMetadata = new List<object> { new FeatureGateAttribute("ControllerFeature") }
+                }
+            };
+
+            var apiDescriptions = new List<ApiDescription> { apiDescription };
+            var schemaRepository = new SchemaRepository();
+            var schemaGeneratorMock = new Mock<ISchemaGenerator>();
+            var context = new DocumentFilterContext(apiDescriptions, schemaGeneratorMock.Object, schemaRepository);
+
+            _featureManagerMock.Setup(x => x.IsEnabledAsync("ControllerFeature")).ReturnsAsync(true);
+
+            // Act
+            _filter.Apply(swaggerDoc, context);
+
+            // Assert
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                swaggerDoc.Paths.Should().ContainKey("/test");
+                _output.ToString().Should().NotContain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
+            }
+        }
+
         private class TestController : ControllerBase
+        {
+        }
+
+        [FeatureGate("ControllerFeature")]
+        private class TestControllerWithFeatureGate : ControllerBase
         {
         }
     }
