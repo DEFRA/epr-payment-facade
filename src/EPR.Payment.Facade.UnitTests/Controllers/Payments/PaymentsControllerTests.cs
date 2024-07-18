@@ -81,9 +81,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
 
-            var redirectResult = result as RedirectResult;
-            redirectResult?.Url.Should().Be("https://example.com/error");
-            redirectResult?.Permanent.Should().BeFalse();
+            var contentResult = result as ContentResult;
+            contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+            contentResult?.ContentType.Should().Be("text/html");
+            contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/error'");
         }
 
         [TestMethod, AutoMoqData]
@@ -146,10 +147,11 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
             {
-                result.Should().BeOfType<RedirectResult>();
-                var redirectResult = result as RedirectResult;
-                redirectResult?.Url.Should().Be(errorUrl);
-                redirectResult?.Permanent.Should().BeFalse();
+                result.Should().BeOfType<ContentResult>();
+                var contentResult = result as ContentResult;
+                contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+                contentResult?.ContentType.Should().Be("text/html");
+                contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
             }
         }
 
@@ -250,10 +252,11 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
             {
-                result.Should().BeOfType<RedirectResult>();
-                var redirectResult = result as RedirectResult;
-                redirectResult?.Url.Should().Be(errorUrl);
-                redirectResult?.Permanent.Should().BeFalse();
+                result.Should().BeOfType<ContentResult>();
+                var contentResult = result as ContentResult;
+                contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+                contentResult?.ContentType.Should().Be("text/html");
+                contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
             }
         }
     }

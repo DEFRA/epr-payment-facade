@@ -51,7 +51,12 @@ public class PaymentsController : ControllerBase
             if (result.NextUrl == null)
             {
                 _logger.LogError(LogMessages.NextUrlNull);
-                return Redirect(_errorUrl);
+                return new ContentResult
+                {
+                    Content = CreateHtmlContent(_errorUrl),
+                    ContentType = "text/html",
+                    StatusCode = StatusCodes.Status200OK
+                };
             }
 
             var htmlContent = CreateHtmlContent(result.NextUrl);
@@ -76,7 +81,12 @@ public class PaymentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiatePayment));
-            return Redirect(_errorUrl);
+            return new ContentResult
+            {
+                Content = CreateHtmlContent(_errorUrl),
+                ContentType = "text/html",
+                StatusCode = StatusCodes.Status200OK
+            };
         }
     }
 
@@ -117,7 +127,12 @@ public class PaymentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.ErrorOccured, nameof(CompletePayment));
-            return Redirect(_errorUrl);
+            return new ContentResult
+            {
+                Content = CreateHtmlContent(_errorUrl),
+                ContentType = "text/html",
+                StatusCode = StatusCodes.Status200OK
+            };
         }
     }
 
