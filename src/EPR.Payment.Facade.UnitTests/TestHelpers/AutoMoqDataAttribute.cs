@@ -24,7 +24,8 @@ namespace EPR.Payment.Facade.UnitTests.TestHelpers
             optionsMock.Setup(o => o.Value).Returns(new PaymentServiceOptions
             {
                 ReturnUrl = "https://example.com/return",
-                Description = "Payment description"
+                Description = "Payment description",
+                ErrorUrl = "https://example.com/error"
             });
 
             var mapperConfig = new MapperConfiguration(cfg =>

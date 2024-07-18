@@ -53,7 +53,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         {
             // Arrange
             Action act = () => new HttpPaymentServiceHealthCheckService(
-                null,
+                null!,
                 _httpClientFactoryMock.Object,
                 _config);
 
@@ -197,7 +197,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             var result = await service.GetHealthAsync(cancellationToken);
 
             // Assert
-            using(new AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().NotBeNull();
                 result.StatusCode.Should().Be(HttpStatusCode.OK);

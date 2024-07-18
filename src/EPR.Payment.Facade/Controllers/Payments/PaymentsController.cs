@@ -1,7 +1,9 @@
 ﻿using Asp.Versioning;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
@@ -14,21 +16,26 @@ public class PaymentsController : ControllerBase
 {
     private readonly IPaymentsService _paymentsService;
     private readonly ILogger<PaymentsController> _logger;
+    private readonly string _errorUrl;
 
-    public PaymentsController(IPaymentsService paymentsService, ILogger<PaymentsController> logger)
+    public PaymentsController(IPaymentsService paymentsService, ILogger<PaymentsController> logger, IOptions<PaymentServiceOptions> paymentServiceOptions)
     {
         _paymentsService = paymentsService ?? throw new ArgumentNullException(nameof(paymentsService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _errorUrl = paymentServiceOptions.Value.ErrorUrl ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
     }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [SwaggerOperation(Summary = "Initiates a new payment", Description = "Initiates a new payment with mandatory payment request data.")]
+    [SwaggerOperation(
+        Summary = "Initiates a new payment",
+        Description = "Initiates a new payment with mandatory payment request data. In case of an error, redirects to the error URL."
+    )]
     [SwaggerResponse(StatusCodes.Status302Found, "Redirects to the payment next URL.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, redirects to the error URL.")]
     [FeatureGate("EnablePaymentInitiation")]
     public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request, CancellationToken cancellationToken)
     {
@@ -44,12 +51,7 @@ public class PaymentsController : ControllerBase
             if (result.NextUrl == null)
             {
                 _logger.LogError(LogMessages.NextUrlNull);
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Title = "Internal Server Error",
-                    Detail = "Next URL is null.",
-                    Status = StatusCodes.Status500InternalServerError
-                });
+                return Redirect(_errorUrl);
             }
 
             var htmlContent = CreateHtmlContent(result.NextUrl);
@@ -74,12 +76,7 @@ public class PaymentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiatePayment));
-            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-            {
-                Title = "Internal Server Error",
-                Detail = ex.Message,
-                Status = StatusCodes.Status500InternalServerError
-            });
+            return Redirect(_errorUrl);
         }
     }
 
@@ -87,10 +84,13 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [SwaggerOperation(Summary = "Completes the payment process", Description = "Completes the payment process for the paymentId requested.")]
+    [SwaggerOperation(
+        Summary = "Completes the payment process",
+        Description = "Completes the payment process for the paymentId requested. In case of an error, redirects to the error URL."
+    )]
     [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.")]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, redirects to the error URL.")]
     [FeatureGate("EnablePaymentCompletion")]
     public async Task<IActionResult> CompletePayment(string? govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
     {
@@ -117,12 +117,7 @@ public class PaymentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.ErrorOccured, nameof(CompletePayment));
-            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-            {
-                Title = "Internal Server Error",
-                Detail = ex.Message,
-                Status = StatusCodes.Status500InternalServerError
-            });
+            return Redirect(_errorUrl);
         }
     }
 
