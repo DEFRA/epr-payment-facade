@@ -22,7 +22,7 @@ namespace EPR.Payment.Common.Mapping
                 .ForMember(dest => dest.Status, opt => opt.Ignore());
 
             CreateMap<PaymentRequestDto, UpdatePaymentRequestDto>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.ExternalPaymentId, opt => opt.Ignore())
                 .ForMember(dest => dest.GovPayPaymentId, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedByOrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))

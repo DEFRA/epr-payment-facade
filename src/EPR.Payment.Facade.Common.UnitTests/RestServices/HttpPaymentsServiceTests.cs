@@ -52,7 +52,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
             _updatePaymentRequestDto = new UpdatePaymentRequestDto
             {
-                Id = Guid.NewGuid(),
+                ExternalPaymentId = Guid.NewGuid(),
                 GovPayPaymentId = "govpay123",
                 UpdatedByUserId = Guid.NewGuid(),
                 UpdatedByOrganisationId = Guid.NewGuid(),
@@ -122,7 +122,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Func<Task> act = async () => await httpPaymentsService.InsertPaymentAsync(_insertPaymentRequestDto, cancellationToken);
 
             // Assert
-            using(new AssertionScope())
+            using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInsertingPayment);
                 handlerMock.Protected().Verify(
@@ -184,10 +184,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpPaymentsService = CreateHttpPaymentsService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpPaymentsService.UpdatePaymentAsync(updatePaymentRequestDto.Id, updatePaymentRequestDto, cancellationToken);
-            
+            Func<Task> act = async () => await httpPaymentsService.UpdatePaymentAsync(updatePaymentRequestDto.ExternalPaymentId, updatePaymentRequestDto, cancellationToken);
+
             // Assert
-            using(new AssertionScope())
+            using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorUpdatingPayment);
                 handlerMock.Protected().Verify(
@@ -197,7 +197,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         msg.Method == HttpMethod.Put),
                     ItExpr.IsAny<CancellationToken>());
             }
-            
+
         }
     }
 }

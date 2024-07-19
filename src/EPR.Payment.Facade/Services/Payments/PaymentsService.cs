@@ -81,7 +81,7 @@ public class PaymentsService : IPaymentsService
 
         var updateRequest = new UpdatePaymentRequestDto
         {
-            Id = completeRequest.Id,
+            ExternalPaymentId = completeRequest.ExternalPaymentId,
             GovPayPaymentId = govPayPaymentId,
             UpdatedByUserId = completeRequest.UpdatedByUserId,
             UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
@@ -92,7 +92,7 @@ public class PaymentsService : IPaymentsService
 
         try
         {
-            await _httpPaymentsService.UpdatePaymentAsync(completeRequest.Id, updateRequest, cancellationToken);
+            await _httpPaymentsService.UpdatePaymentAsync(completeRequest.ExternalPaymentId, updateRequest, cancellationToken);
         }
         catch (ValidationException ex)
         {
@@ -128,16 +128,16 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private async Task UpdatePaymentAsync(Guid id, PaymentRequestDto request, string paymentId, PaymentStatus status, CancellationToken cancellationToken)
+    private async Task UpdatePaymentAsync(Guid externalPaymentId, PaymentRequestDto request, string paymentId, PaymentStatus status, CancellationToken cancellationToken)
     {
         var updateRequest = _mapper.Map<UpdatePaymentRequestDto>(request);
-        updateRequest.Id = id;
+        updateRequest.ExternalPaymentId = externalPaymentId;
         updateRequest.GovPayPaymentId = paymentId;
         updateRequest.Status = status;
 
         try
         {
-            await _httpPaymentsService.UpdatePaymentAsync(id, updateRequest, cancellationToken);
+            await _httpPaymentsService.UpdatePaymentAsync(externalPaymentId, updateRequest, cancellationToken);
         }
         catch (ValidationException ex)
         {

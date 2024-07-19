@@ -39,9 +39,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
         }
 
-        public async Task UpdatePaymentAsync(Guid id, UpdatePaymentRequestDto paymentStatusUpdateRequest, CancellationToken cancellationToken)
+        public async Task UpdatePaymentAsync(Guid externalPaymentId, UpdatePaymentRequestDto paymentStatusUpdateRequest, CancellationToken cancellationToken)
         {
-            var url = UrlConstants.PaymentsUpdate.Replace("{paymentId}", id.ToString());
+            var url = UrlConstants.PaymentsUpdate.Replace("{externalPaymentId}", externalPaymentId.ToString());
             try
             {
                 await Put(url, paymentStatusUpdateRequest, cancellationToken);

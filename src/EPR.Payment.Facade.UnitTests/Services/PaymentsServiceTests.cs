@@ -187,7 +187,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             var expectedUpdateRequest = new UpdatePaymentRequestDto
             {
-                Id = completeRequest.Id,
+                ExternalPaymentId = completeRequest.ExternalPaymentId,
                 GovPayPaymentId = govPayPaymentId,
                 UpdatedByUserId = completeRequest.UpdatedByUserId,
                 UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
@@ -202,7 +202,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             // Assert
             httpPaymentsServiceMock.Verify(s =>
                 s.UpdatePaymentAsync(
-                    completeRequest.Id,
+                    completeRequest.ExternalPaymentId,
                     It.Is<UpdatePaymentRequestDto>(r =>
                         r.Status == PaymentStatus.Success &&
                         r.GovPayPaymentId == govPayPaymentId &&
@@ -231,7 +231,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             var expectedUpdateRequest = new UpdatePaymentRequestDto
             {
-                Id = completeRequest.Id,
+                ExternalPaymentId = completeRequest.ExternalPaymentId,
                 GovPayPaymentId = govPayPaymentId,
                 UpdatedByUserId = completeRequest.UpdatedByUserId,
                 UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
@@ -246,7 +246,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             // Assert
             httpPaymentsServiceMock.Verify(s =>
                 s.UpdatePaymentAsync(
-                    completeRequest.Id,
+                    completeRequest.ExternalPaymentId,
                     It.Is<UpdatePaymentRequestDto>(r =>
                         r.Status == PaymentStatus.Failed &&
                         r.GovPayPaymentId == govPayPaymentId &&
