@@ -13,12 +13,13 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             : base(httpContextAccessor, httpClientFactory, baseUrl, endPointName)
         {
         }
+        public string BaseUrl => _baseUrl;
 
         // Public wrappers for protected methods for testing purposes
 
         public Task<T> PublicGet<T>(string url, CancellationToken cancellationToken) =>
             Get<T>(url, cancellationToken);
-        
+
         public Task<T> PublicPost<T>(string url, object payload, CancellationToken cancellationToken) =>
             Post<T>(url, payload, cancellationToken);
 

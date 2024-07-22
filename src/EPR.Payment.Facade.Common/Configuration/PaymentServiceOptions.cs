@@ -11,5 +11,9 @@ namespace EPR.Payment.Facade.Common.Configuration
 
         [Required(ErrorMessage = "Description is required")]
         public string? Description { get; set; }
+
+        [Required(ErrorMessage = "Error URL is required")]
+        [ValidUrl]
+        public string? ErrorUrl { get; set; }
     }
 }

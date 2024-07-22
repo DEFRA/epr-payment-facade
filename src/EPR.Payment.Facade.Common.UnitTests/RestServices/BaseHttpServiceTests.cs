@@ -134,7 +134,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                         msg.Content!.Headers.ContentType!.MediaType == "application/json"),
                     ItExpr.IsAny<CancellationToken>());
             }
-            
+
         }
 
         [TestMethod]
@@ -390,6 +390,45 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         }
 
         [TestMethod]
+        public async Task Get_WhenUrlIsEmpty_ShouldThrowException()
+        {
+            // Arrange
+            var cancellationToken = CancellationToken.None;
+
+            _handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Get &&
+                        req.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("Bad Request"),
+                })
+                .Verifiable();
+
+            // Act
+            Func<Task> act = async () => await _testableHttpService.PublicGet<object>("", cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<Exception>();
+
+                _handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Never(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get &&
+                        msg.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod]
         public async Task Post_WhenResponseIsUnsuccessful_ShouldThrowResponseCodeException()
         {
             // Arrange
@@ -423,6 +462,48 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 _handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post &&
+                        msg.RequestUri!.ToString() == expectedUrl &&
+                        msg.Content!.Headers.ContentType!.MediaType == "application/json"),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod]
+        public async Task Post_WhenUrlIsEmpty_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            var payload = new { Id = 1, Name = "Test" };
+            var cancellationToken = CancellationToken.None;
+
+            _handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Post &&
+                        req.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("Bad Request"),
+                })
+                .Verifiable();
+
+            // Act
+            Func<Task> act = async () => await _testableHttpService.PublicPost<object>("", payload, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ArgumentNullException>()
+                    .WithMessage("*Value cannot be null*");
+
+                _handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Never(),
                     ItExpr.Is<HttpRequestMessage>(msg =>
                         msg.Method == HttpMethod.Post &&
                         msg.RequestUri!.ToString() == expectedUrl &&
@@ -474,6 +555,48 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         }
 
         [TestMethod]
+        public async Task PostNonGeneric_WhenUrlIsEmpty_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            var payload = new { Id = 1, Name = "Test" };
+            var cancellationToken = CancellationToken.None;
+
+            _handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Post &&
+                        req.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("Bad Request"),
+                })
+                .Verifiable();
+
+            // Act
+            Func<Task> act = async () => await _testableHttpService.PublicPost("", payload, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ArgumentNullException>()
+                    .WithMessage("*Value cannot be null*");
+
+                _handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Never(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post &&
+                        msg.RequestUri!.ToString() == expectedUrl &&
+                        msg.Content!.Headers.ContentType!.MediaType == "application/json"),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod]
         public async Task Put_WhenResponseIsUnsuccessful_ShouldThrowResponseCodeException()
         {
             // Arrange
@@ -507,6 +630,48 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 _handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Put &&
+                        msg.RequestUri!.ToString() == expectedUrl &&
+                        msg.Content!.Headers.ContentType!.MediaType == "application/json"),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod]
+        public async Task Put_WhenUrlIsEmpty_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            var payload = new { Id = 1, Name = "Test" };
+            var cancellationToken = CancellationToken.None;
+
+            _handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Put &&
+                        req.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("Bad Request"),
+                })
+                .Verifiable();
+
+            // Act
+            Func<Task> act = async () => await _testableHttpService.PublicPut<object>("", payload, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ArgumentNullException>()
+                    .WithMessage("*Value cannot be null*");
+
+                _handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Never(),
                     ItExpr.Is<HttpRequestMessage>(msg =>
                         msg.Method == HttpMethod.Put &&
                         msg.RequestUri!.ToString() == expectedUrl &&
@@ -558,6 +723,48 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         }
 
         [TestMethod]
+        public async Task Put_NonGenericWhenUrlIsEmpty_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            var payload = new { Id = 1, Name = "Test" };
+            var cancellationToken = CancellationToken.None;
+
+            _handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Put &&
+                        req.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("Bad Request"),
+                })
+                .Verifiable();
+
+            // Act
+            Func<Task> act = async () => await _testableHttpService.PublicPut("", payload, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ArgumentNullException>()
+                    .WithMessage("*Value cannot be null*");
+
+                _handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Never(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Put &&
+                        msg.RequestUri!.ToString() == expectedUrl &&
+                        msg.Content!.Headers.ContentType!.MediaType == "application/json"),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod]
         public async Task Delete_WhenResponseIsUnsuccessful_ShouldThrowResponseCodeException()
         {
             // Arrange
@@ -600,6 +807,48 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         }
 
         [TestMethod]
+        public async Task Delete_WhenUrlIsEmpty_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            var payload = new { Id = 1, Name = "Test" };
+            var cancellationToken = CancellationToken.None;
+
+            _handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Delete &&
+                        req.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("Bad Request"),
+                })
+                .Verifiable();
+
+            // Act
+            Func<Task> act = async () => await _testableHttpService.PublicDelete<object>("", payload, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ArgumentNullException>()
+                    .WithMessage("*Value cannot be null*");
+
+                _handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Never(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Delete &&
+                        msg.RequestUri!.ToString() == expectedUrl &&
+                        msg.Content!.Headers.ContentType!.MediaType == "application/json"),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod]
         public async Task DeleteNonGeneric_WhenResponseIsUnsuccessful_ShouldThrowResponseCodeException()
         {
             // Arrange
@@ -633,6 +882,48 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 _handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Delete &&
+                        msg.RequestUri!.ToString() == expectedUrl &&
+                        msg.Content!.Headers.ContentType!.MediaType == "application/json"),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod]
+        public async Task DeleteNonGeneric_WhenUrlIsEmpty_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            var payload = new { Id = 1, Name = "Test" };
+            var cancellationToken = CancellationToken.None;
+
+            _handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Delete &&
+                        req.RequestUri!.ToString() == expectedUrl),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("Bad Request"),
+                })
+                .Verifiable();
+
+            // Act
+            Func<Task> act = async () => await _testableHttpService.PublicDelete("", payload, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ArgumentNullException>()
+                    .WithMessage("*Value cannot be null*");
+
+                _handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Never(),
                     ItExpr.Is<HttpRequestMessage>(msg =>
                         msg.Method == HttpMethod.Delete &&
                         msg.RequestUri!.ToString() == expectedUrl &&
@@ -697,6 +988,32 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithMessage("*endPointName*");
+        }
+
+        [TestMethod]
+        public void Constructor_WhenTrailingSlash_ShouldTrimTrailingSlashFromBaseUrl()
+        {
+            // Arrange
+            _httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+
+            // Act
+            var service = new TestableBaseHttpService(_httpContextAccessorMock.Object, _httpClientFactoryMock.Object, string.Concat(baseUrl, "/"), endPointName);
+
+            // Assert
+            service.BaseUrl.Should().Be($"{baseUrl}/{endPointName}");
+        }
+
+        [TestMethod]
+        public void Constructor_WhenNoTrailingSlash_ShouldNotTrim()
+        {
+            // Arrange
+            _httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+
+            // Act
+            var service = new TestableBaseHttpService(_httpContextAccessorMock.Object, _httpClientFactoryMock.Object, baseUrl, endPointName);
+
+            // Assert
+            service.BaseUrl.Should().Be($"{baseUrl}/{endPointName}");
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using AutoFixture.MSTest;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
@@ -14,6 +17,19 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
     [TestClass]
     public class PaymentsControllerTests
     {
+        private IFixture fixture;
+
+        [TestInitialize]
+        public void Initialize()
+        {
+            fixture = new Fixture().Customize(new AutoMoqCustomization());
+
+            // Configure PaymentServiceOptions with valid values to avoid null references
+            fixture.Customize<PaymentServiceOptions>(c => c.With(x => x.ReturnUrl, "https://example.com/return")
+                                                           .With(x => x.Description, "Test Description")
+                                                           .With(x => x.ErrorUrl, "https://example.com/error"));
+        }
+
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ValidRequest_ReturnsRedirectResponse(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
@@ -40,7 +56,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_NextURlIsNull_LogsInternalServerError(
+        public async Task InitiatePayment_NextUrlIsNull_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
             [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
@@ -65,13 +81,14 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
 
-            ((ObjectResult)result).StatusCode.Should().Be(500);
+            var contentResult = result as ContentResult;
+            contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+            contentResult?.ContentType.Should().Be("text/html");
+            contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/error'");
         }
-
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_InvalidRequest_ReturnsBadRequest(
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller)
         {
             // Arrange
@@ -90,7 +107,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller)
         {
             // Arrange
@@ -113,15 +129,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_ThrowsException_ReturnsInternalServerError(
+        public async Task InitiatePayment_ThrowsException_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             PaymentRequestDto request)
         {
             // Arrange
             var exception = new Exception("Some error");
             var cancellationToken = new CancellationToken();
+            var errorUrl = "https://example.com/error";
 
             paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
 
@@ -131,17 +147,17 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
             {
-                result.Should().BeOfType<ObjectResult>();
-                var objectResult = result as ObjectResult;
-                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-                objectResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(exception.Message);
+                result.Should().BeOfType<ContentResult>();
+                var contentResult = result as ContentResult;
+                contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+                contentResult?.ContentType.Should().Be("text/html");
+                contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
             }
         }
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_ValidGovPayPaymentId_ReturnsOk(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             string govPayPaymentId,
             CompletePaymentRequestDto completeRequest)
@@ -159,7 +175,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_NullGovPayPaymentId_ReturnsBadRequest(
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             CompletePaymentRequestDto completeRequest)
         {
@@ -177,7 +192,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_EmptyGovPayPaymentId_ReturnsBadRequest(
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             CompletePaymentRequestDto completeRequest)
         {
@@ -196,7 +210,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_ThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             string govPayPaymentId,
             CompletePaymentRequestDto completeRequest)
@@ -220,9 +233,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_ThrowsException_ReturnsInternalServerError(
+        public async Task CompletePayment_ThrowsException_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             string govPayPaymentId,
             CompletePaymentRequestDto completeRequest)
@@ -230,6 +242,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Arrange
             var exception = new Exception("Some error");
             var cancellationToken = new CancellationToken();
+            var errorUrl = "https://example.com/error";
 
             paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ThrowsAsync(exception);
 
@@ -239,10 +252,11 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
             {
-                result.Should().BeOfType<ObjectResult>();
-                var objectResult = result as ObjectResult;
-                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-                objectResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(exception.Message);
+                result.Should().BeOfType<ContentResult>();
+                var contentResult = result as ContentResult;
+                contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+                contentResult?.ContentType.Should().Be("text/html");
+                contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
             }
         }
     }
