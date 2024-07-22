@@ -25,5 +25,8 @@
 
         // BaseHttpService exceptions
         public const string ApiResponseError = "Error occurred calling API with error code: {0}. Message: {1}";
+
+        // PaymentsController validation messages
+        public const string AmountMustBeGreaterThanZero = "Amount must be greater than 0";
     }
 }
