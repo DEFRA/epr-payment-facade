@@ -114,6 +114,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
                 updatePaymentRequestDto.Status.Should().Be(0); // Default value for enum, ignored in mapping
                 updatePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
+                updatePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
             }
         }
 
@@ -130,6 +131,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
                 updatePaymentRequestDto.Reference.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.Status.Should().Be(0); // Default value for enum, ignored in mapping
                 updatePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
+                updatePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
             }
         }

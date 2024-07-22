@@ -27,5 +27,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         public PaymentStatus Status { get; set; }
 
         public string? ErrorCode { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }
