@@ -114,6 +114,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
                 updatePaymentRequestDto.Status.Should().Be(0); // Default value for enum, ignored in mapping
                 updatePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
+                updatePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
             }
         }
 
@@ -124,12 +125,13 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
 
             using (new FluentAssertions.Execution.AssertionScope())
             {
-                updatePaymentRequestDto.Id.Should().Be(completePaymentRequestDto.Id);
+                updatePaymentRequestDto.ExternalPaymentId.Should().Be(completePaymentRequestDto.ExternalPaymentId);
                 updatePaymentRequestDto.UpdatedByUserId.Should().Be(completePaymentRequestDto.UpdatedByUserId);
                 updatePaymentRequestDto.UpdatedByOrganisationId.Should().Be(completePaymentRequestDto.UpdatedByOrganisationId);
                 updatePaymentRequestDto.Reference.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.Status.Should().Be(0); // Default value for enum, ignored in mapping
                 updatePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
+                updatePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
             }
         }

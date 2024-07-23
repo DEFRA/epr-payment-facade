@@ -6,7 +6,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
     public class CompletePaymentRequestDto
     {
         [Required(ErrorMessage = "ID is required")]
-        public Guid Id { get; set; }
+        public Guid ExternalPaymentId { get; set; }
 
         [Required(ErrorMessage = "Updated By User ID is required")]
         public Guid UpdatedByUserId { get; set; }

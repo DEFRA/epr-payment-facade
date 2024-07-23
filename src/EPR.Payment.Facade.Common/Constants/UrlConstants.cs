@@ -4,7 +4,7 @@
     {
         // Payments service endpoints
         public const string PaymentsInsert = "payments";
-        public const string PaymentsUpdate = "payments/{paymentId}";
+        public const string PaymentsUpdate = "payments/{externalPaymentId}";
 
         // GovPay service endpoints
         public const string GovPayInitiatePayment = "payments";

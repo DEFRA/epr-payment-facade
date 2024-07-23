@@ -8,7 +8,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
     public class UpdatePaymentRequestDto
     {
         [Required(ErrorMessage = "ID is required")]
-        public Guid Id { get; set; }
+        public Guid ExternalPaymentId { get; set; }
 
         [Required(ErrorMessage = "GovPay Payment ID is required")]
         public string? GovPayPaymentId { get; set; }
@@ -27,5 +27,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         public PaymentStatus Status { get; set; }
 
         public string? ErrorCode { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
     [TestClass]
     public class PaymentsControllerTests
     {
-        private IFixture fixture;
+        private IFixture? fixture;
 
         [TestInitialize]
         public void Initialize()
