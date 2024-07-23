@@ -105,6 +105,54 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_AmountZero_ReturnsBadRequest(PaymentsController controller)
+        {
+            // Arrange
+            var request = new PaymentRequestDto
+            {
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
+                Regulator = "Test Regulator",
+                Reference = "Test Reference",
+                Amount = 0 // Invalid amount
+            };
+
+            var cancellationToken = new CancellationToken();
+
+            // Act
+            var result = await controller.InitiatePayment(request, cancellationToken);
+
+            // Assert
+            result.Should().BeOfType<BadRequestObjectResult>();
+            var badRequestResult = result as BadRequestObjectResult;
+            badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_AmountNegative_ReturnsBadRequest(PaymentsController controller)
+        {
+            // Arrange
+            var request = new PaymentRequestDto
+            {
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
+                Regulator = "Test Regulator",
+                Reference = "Test Reference",
+                Amount = -1 // Invalid amount
+            };
+
+            var cancellationToken = new CancellationToken();
+
+            // Act
+            var result = await controller.InitiatePayment(request, cancellationToken);
+
+            // Assert
+            result.Should().BeOfType<BadRequestObjectResult>();
+            var badRequestResult = result as BadRequestObjectResult;
+            badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+        }
+
+        [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
             PaymentsController controller)

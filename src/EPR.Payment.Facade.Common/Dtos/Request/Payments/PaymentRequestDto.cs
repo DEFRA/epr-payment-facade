@@ -17,6 +17,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         public string? Regulator { get; set; }
 
         [Required(ErrorMessage = "Amount is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Amount must be greater than zero")]
         public int? Amount { get; set; }
     }
 }

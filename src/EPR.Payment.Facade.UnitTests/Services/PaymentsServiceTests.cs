@@ -116,6 +116,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
         [DataRow(100, "REF123", null, "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Organisation ID is required")]
         [DataRow(100, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", null, "Reg123", "User ID is required")]
         [DataRow(100, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", null, "Regulator is required")]
+        [DataRow(0, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Amount must be greater than zero")]
+        [DataRow(-1, "REF123", "d2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "e2719d4e-8f4d-4e89-92c4-bb7e13db9d2b", "Reg123", "Amount must be greater than zero")]
         public async Task InitiatePayment_MissingFields_ThrowsValidationException(
             int? amount, string reference, string organisationId, string userId, string regulator, string expectedMessage)
         {
@@ -799,6 +801,31 @@ namespace EPR.Payment.Facade.UnitTests.Services
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.GovPayResponseInvalid);
         }
 
+        [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_AmountIsZero_ThrowsValidationException(
+            PaymentsService service,
+            PaymentRequestDto request)
+        {
+            // Arrange
+            request.Amount = 0; // Invalid amount
+
+            // Act & Assert
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+                .Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero");
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_AmountIsNegative_ThrowsValidationException(
+            PaymentsService service,
+            PaymentRequestDto request)
+        {
+            // Arrange
+            request.Amount = -10; // Invalid amount
+
+            // Act & Assert
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+                .Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero");
+        }
     }
 }
 

@@ -31,7 +31,7 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(
         Summary = "Initiates a new payment",
-        Description = "Initiates a new payment with mandatory payment request data. In case of an error, redirects to the error URL."
+        Description = "Initiates a new payment with mandatory payment request data. Amount must be greater than 0. In case of an error, redirects to the error URL."
     )]
     [SwaggerResponse(StatusCodes.Status302Found, "Redirects to the payment next URL.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
@@ -42,6 +42,16 @@ public class PaymentsController : ControllerBase
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+
+        if (request.Amount <= 0)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Validation Error",
+                Detail = ExceptionMessages.AmountMustBeGreaterThanZero,
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
         try
