@@ -826,8 +826,6 @@ namespace EPR.Payment.Facade.UnitTests.Services
             await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero");
         }
-
-
     }
 }
 
