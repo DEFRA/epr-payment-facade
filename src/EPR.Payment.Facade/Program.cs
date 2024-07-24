@@ -23,6 +23,7 @@ builder.Services.AddSwaggerGen(setupAction =>
     setupAction.OperationFilter<FeatureGateOperationFilter>();
 });
 
+builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddServiceHealthChecks();
 builder.Services.AddHttpClient("HttpClient")
