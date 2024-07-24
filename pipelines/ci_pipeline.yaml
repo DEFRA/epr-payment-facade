@@ -65,4 +65,4 @@ extends:
     branchName: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), '/', '_') }}
     runNugetTasks: ${{ variables.runNugetTasks }}
     serviceName: $(serviceName)
-    dotnetVersion: ${{ parameters.dotnetVersion }}
+    dotnetVersion: ${{ variables.dotnetVersion }}
