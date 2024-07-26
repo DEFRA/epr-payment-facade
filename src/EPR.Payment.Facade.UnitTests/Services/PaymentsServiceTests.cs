@@ -171,18 +171,52 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
         }
 
-        [TestMethod, AutoMoqData]
-        public async Task CompletePayment_ValidGovPayPaymentId_UpdatesPaymentStatus(
-            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-            PaymentsService service,
-            CompletePaymentRequestDto completeRequest,
-            PaymentStatusResponseDto paymentStatusResponse)
+        [TestMethod]
+        [DataRow("u4g456vpdeamkg72ihjt129io6", "success", true, null, null, PaymentStatus.Success, DisplayName = "CompletePayment_SuccessStatus_UpdatesPaymentStatus")]
+        [DataRow("ubs761va12akse548htbu2oie5", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, DisplayName = "CompletePayment_CardDeclined_UpdatesPaymentStatus")]
+        [DataRow("mpni2094aqjf89q5k2rdveed2o", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, DisplayName = "CompletePayment_CardExpired_UpdatesPaymentStatus")]
+        [DataRow("ke41o2t96h1983os203no7q5so", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, DisplayName = "CompletePayment_InvalidCVC_UpdatesPaymentStatus")]
+        [DataRow("jgpldh7b1i5qmh59ru6ia67386", "error", true, "Payment provider returned an error", "P0050", PaymentStatus.Error, DisplayName = "CompletePayment_GeneralError_UpdatesPaymentStatus")]
+        [DataRow("n9nvasa4782ogtuh19e8mum68r", "failed", true, "Payment was cancelled by the user", "P0030", PaymentStatus.UserCancelled, DisplayName = "CompletePayment_UserCancelled_UpdatesPaymentStatus")]
+        public async Task CompletePayment_UpdatesPaymentStatus(
+            string govPayPaymentId,
+            string status,
+            bool finished,
+            string message,
+            string code,
+            PaymentStatus expectedStatus)
         {
             // Arrange
-            var govPayPaymentId = "12345";
+            var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
+            var httpGovPayServiceMock = fixture.Freeze<Mock<IHttpGovPayService>>();
+            var httpPaymentsServiceMock = fixture.Freeze<Mock<IHttpPaymentsService>>();
+            var loggerMock = fixture.Freeze<Mock<ILogger<PaymentsService>>>();
+            var optionsMock = fixture.Freeze<Mock<IOptions<PaymentServiceOptions>>>();
+
+            optionsMock.Setup(o => o.Value).Returns(new PaymentServiceOptions
+            {
+                ReturnUrl = "https://example.com/return",
+                Description = "Payment description"
+            });
+
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<PaymentRequestMappingProfile>();
+            });
+            var mapper = mapperConfig.CreateMapper();
+
+            var service = new PaymentsService(
+                httpGovPayServiceMock.Object,
+                httpPaymentsServiceMock.Object,
+                loggerMock.Object,
+                optionsMock.Object,
+                mapper);
+
+            var completeRequest = fixture.Create<CompletePaymentRequestDto>();
+            var paymentStatusResponse = fixture.Create<PaymentStatusResponseDto>();
+
             paymentStatusResponse.PaymentId = govPayPaymentId;
-            paymentStatusResponse.State = new State { Status = "success", Finished = true };
+            paymentStatusResponse.State = new State { Status = status, Finished = finished, Message = message, Code = code };
 
             httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(paymentStatusResponse);
@@ -194,74 +228,35 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByUserId = completeRequest.UpdatedByUserId,
                 UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
                 Reference = paymentStatusResponse.Reference,
-                Status = PaymentStatus.Success,
-                ErrorCode = paymentStatusResponse.State.Code,
-                ErrorMessage = paymentStatusResponse.State.Finished ? "Payment finished with errors" : null
+                Status = expectedStatus,
+                ErrorCode = code,
+                ErrorMessage = message
             };
 
             // Act
-            await service.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken());
+            var result = await service.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken());
 
             // Assert
             httpPaymentsServiceMock.Verify(s =>
                 s.UpdatePaymentAsync(
                     completeRequest.ExternalPaymentId,
                     It.Is<UpdatePaymentRequestDto>(r =>
-                        r.Status == PaymentStatus.Success &&
+                        r.Status == expectedStatus &&
                         r.GovPayPaymentId == govPayPaymentId &&
                         r.UpdatedByUserId == completeRequest.UpdatedByUserId &&
                         r.UpdatedByOrganisationId == completeRequest.UpdatedByOrganisationId &&
                         r.Reference == paymentStatusResponse.Reference &&
-                        r.ErrorCode == paymentStatusResponse.State.Code &&
-                        r.ErrorMessage == expectedUpdateRequest.ErrorMessage),
+                        r.ErrorCode == code &&
+                        r.ErrorMessage == message),
                     It.IsAny<CancellationToken>()), Times.Once);
-        }
 
-        [TestMethod, AutoMoqData]
-        public async Task CompletePaymentAsync_FailedStatus_UpdatesPaymentStatus(
-            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-            PaymentsService service,
-            CompletePaymentRequestDto completeRequest,
-            PaymentStatusResponseDto paymentStatusResponse)
-        {
-            // Arrange
-            var govPayPaymentId = "12345";
-            paymentStatusResponse.PaymentId = govPayPaymentId;
-            paymentStatusResponse.State = new State { Status = "failed", Finished = true };
-
-            httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(paymentStatusResponse);
-
-            var expectedUpdateRequest = new UpdatePaymentRequestDto
+            result.Should().BeEquivalentTo(new CompletePaymentResponseDto
             {
-                ExternalPaymentId = completeRequest.ExternalPaymentId,
-                GovPayPaymentId = govPayPaymentId,
-                UpdatedByUserId = completeRequest.UpdatedByUserId,
-                UpdatedByOrganisationId = completeRequest.UpdatedByOrganisationId,
-                Reference = paymentStatusResponse.Reference,
-                Status = PaymentStatus.Failed,
-                ErrorCode = paymentStatusResponse.State.Code,
-                ErrorMessage = paymentStatusResponse.State.Finished ? "Payment finished with errors" : null
-            };
-
-            // Act
-            await service.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken());
-
-            // Assert
-            httpPaymentsServiceMock.Verify(s =>
-                s.UpdatePaymentAsync(
-                    completeRequest.ExternalPaymentId,
-                    It.Is<UpdatePaymentRequestDto>(r =>
-                        r.Status == PaymentStatus.Failed &&
-                        r.GovPayPaymentId == govPayPaymentId &&
-                        r.UpdatedByUserId == completeRequest.UpdatedByUserId &&
-                        r.UpdatedByOrganisationId == completeRequest.UpdatedByOrganisationId &&
-                        r.Reference == paymentStatusResponse.Reference &&
-                        r.ErrorCode == paymentStatusResponse.State.Code &&
-                        r.ErrorMessage == expectedUpdateRequest.ErrorMessage),
-                    It.IsAny<CancellationToken>()), Times.Once);
+                Status = expectedStatus,
+                Message = message
+            });
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_NullGovPayPaymentId_ThrowsArgumentException(
@@ -286,7 +281,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_PaymentStatusNotFound_ThrowsException(
+        public async Task CompletePayment_PaymentStatusNotFound_ThrowsPaymentStatusNotFoundException(
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             PaymentsService service,
             CompletePaymentRequestDto completeRequest)
@@ -302,7 +297,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_PaymentStateNull_ThrowsException(
+        public async Task CompletePayment_PaymentStateNull_ThrowsPaymentStatusNotFoundException(
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             PaymentsService service,
             CompletePaymentRequestDto completeRequest)
@@ -324,7 +319,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_PaymentStatusNull_ThrowsException(
+        public async Task CompletePayment_PaymentStatusNull_ThrowsPaymentStatusNotFoundException(
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             PaymentsService service,
             CompletePaymentRequestDto completeRequest)
@@ -341,8 +336,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .ReturnsAsync(paymentStatusResponse);
 
             // Act & Assert
-            await service.Invoking(async s => await s.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken()))
-                .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.PaymentStatusNotFound);
+            var act = async () => await service.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken());
+            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.PaymentStatusNotFound);
         }
 
         [TestMethod, AutoMoqData]
@@ -356,7 +351,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             // Arrange
             var govPayPaymentId = "12345";
             paymentStatusResponse.PaymentId = govPayPaymentId;
-            paymentStatusResponse.State = new State { Status = "error", Finished = true };
+            paymentStatusResponse.State = new State { Status = "error", Code = "Payment provider returned an error", Finished = true };
 
             httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(paymentStatusResponse);
@@ -369,7 +364,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_StatusUpdateUnexpectedError_ThrowsException(
+        public async Task CompletePayment_StatusUpdateUnexpectedError_ThrowsUnexpectedErrorUpdatingPaymentException(
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
             PaymentsService service,
@@ -379,7 +374,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             // Arrange
             var govPayPaymentId = "12345";
             paymentStatusResponse.PaymentId = govPayPaymentId;
-            paymentStatusResponse.State = new State { Status = "error", Finished = true };
+            paymentStatusResponse.State = new State { Status = "error", Code = "Payment provider returned an error", Finished = true };
 
             httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(paymentStatusResponse);
@@ -392,7 +387,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_ReturnUrlNotConfigured_ThrowsInvalidOperationException(
+        public async Task InitiatePayment_ReturnUrlNotConfigured_ThrowsReturnUrlNotConfiguredException(
             [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
@@ -423,7 +418,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_DescriptionNotConfigured_ThrowsInvalidOperationException(
+        public async Task InitiatePayment_DescriptionNotConfigured_ThrowsDescriptionNotConfiguredException(
             [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
@@ -546,7 +541,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             // Arrange
             var govPayPaymentId = "12345";
             paymentStatusResponse.PaymentId = govPayPaymentId;
-            paymentStatusResponse.State = new State { Status = "error", Finished = true };
+            paymentStatusResponse.State = new State { Status = "error", Finished = true, Code = "P0050" }; // Ensure error code is provided
 
             httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(paymentStatusResponse);
@@ -827,7 +822,93 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero");
         }
 
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_SuccessStatusWithErrorCode_ThrowsException(
+            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            PaymentsService service,
+            CompletePaymentRequestDto completeRequest)
+        {
+            // Arrange
+            var govPayPaymentId = "12345";
+            var paymentStatusResponse = new PaymentStatusResponseDto
+            {
+                PaymentId = govPayPaymentId,
+                State = new State { Status = "success", Finished = true, Code = "SomeErrorCode" }
+            };
 
+            httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(paymentStatusResponse);
+
+            // Act & Assert
+            await service.Invoking(async s => await s.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken()))
+                .Should().ThrowAsync<Exception>()
+                .WithMessage(ExceptionMessages.SuccessStatusWithErrorCode);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_FailedStatusWithEmptyErrorCode_ThrowsException(
+            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            PaymentsService service,
+            CompletePaymentRequestDto completeRequest)
+        {
+            // Arrange
+            var govPayPaymentId = "12345";
+            var paymentStatusResponse = new PaymentStatusResponseDto
+            {
+                PaymentId = govPayPaymentId,
+                State = new State { Status = "failed", Finished = true, Code = null }
+            };
+
+            httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(paymentStatusResponse);
+
+            // Act & Assert
+            await service.Invoking(async s => await s.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken()))
+                .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.FailedStatusWithoutErrorCode);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_ErrorStatusWithEmptyErrorCode_ThrowsException(
+            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            PaymentsService service,
+            CompletePaymentRequestDto completeRequest)
+        {
+            // Arrange
+            var govPayPaymentId = "12345";
+            var paymentStatusResponse = new PaymentStatusResponseDto
+            {
+                PaymentId = govPayPaymentId,
+                State = new State { Status = "error", Finished = true, Code = null }
+            };
+
+            httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(paymentStatusResponse);
+
+            // Act & Assert
+            await service.Invoking(async s => await s.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken()))
+                .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorStatusWithoutErrorCode);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_UnknownStatus_ThrowsException(
+            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            PaymentsService service,
+            CompletePaymentRequestDto completeRequest)
+        {
+            // Arrange
+            var govPayPaymentId = "12345";
+            var paymentStatusResponse = new PaymentStatusResponseDto
+            {
+                PaymentId = govPayPaymentId,
+                State = new State { Status = "unknown_status", Finished = true }
+            };
+
+            httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(paymentStatusResponse);
+
+            // Act & Assert
+            await service.Invoking(async s => await s.CompletePaymentAsync(govPayPaymentId, completeRequest, new CancellationToken()))
+                .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.PaymentStatusNotFound);
+        }
     }
 }
-

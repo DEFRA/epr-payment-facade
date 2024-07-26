@@ -1,4 +1,7 @@
-﻿public class PaymentResponseDto
+﻿namespace EPR.Payment.Facade.Common.Dtos.Response.Payments
 {
-    public string? NextUrl { get; set; }
+    public class PaymentResponseDto
+    {
+        public string? NextUrl { get; set; }
+    }
 }

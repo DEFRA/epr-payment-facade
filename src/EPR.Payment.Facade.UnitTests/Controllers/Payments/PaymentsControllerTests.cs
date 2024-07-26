@@ -4,6 +4,8 @@ using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -212,12 +214,18 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         {
             // Arrange
             var cancellationToken = new CancellationToken();
+            var expectedResponse = new CompletePaymentResponseDto
+            {
+                Status = PaymentStatus.Success,
+                Message = "Payment succeeded"
+            };
+            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
             var result = await controller.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
 
             // Assert
-            result.Should().BeOfType<OkResult>();
+            result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
             paymentsServiceMock.Verify(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken), Times.Once);
         }
 
@@ -306,6 +314,75 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
             }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_MissingExternalPaymentId_ReturnsBadRequest(
+            PaymentsController controller)
+        {
+            // Arrange
+            var govPayPaymentId = "validId";
+            var request = new CompletePaymentRequestDto
+            {
+                // Missing ExternalPaymentId
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
+            };
+            controller.ModelState.AddModelError("ExternalPaymentId", "ExternalPaymentId is required");
+
+            var cancellationToken = new CancellationToken();
+
+            // Act
+            var result = await controller.CompletePayment(govPayPaymentId, request, cancellationToken);
+
+            // Assert
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_MissingUpdatedByUserId_ReturnsBadRequest(
+            PaymentsController controller)
+        {
+            // Arrange
+            var govPayPaymentId = "validId";
+            var request = new CompletePaymentRequestDto
+            {
+                ExternalPaymentId = Guid.NewGuid(),
+                // Missing UpdatedByUserId
+                UpdatedByOrganisationId = Guid.NewGuid()
+            };
+            controller.ModelState.AddModelError("UpdatedByUserId", "UpdatedByUserId is required");
+
+            var cancellationToken = new CancellationToken();
+
+            // Act
+            var result = await controller.CompletePayment(govPayPaymentId, request, cancellationToken);
+
+            // Assert
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_MissingUpdatedByOrganisationId_ReturnsBadRequest(
+            PaymentsController controller)
+        {
+            // Arrange
+            var govPayPaymentId = "validId";
+            var request = new CompletePaymentRequestDto
+            {
+                ExternalPaymentId = Guid.NewGuid(),
+                UpdatedByUserId = Guid.NewGuid(),
+                // Missing UpdatedByOrganisationId
+            };
+            controller.ModelState.AddModelError("UpdatedByOrganisationId", "UpdatedByOrganisationId is required");
+
+            var cancellationToken = new CancellationToken();
+
+            // Act
+            var result = await controller.CompletePayment(govPayPaymentId, request, cancellationToken);
+
+            // Assert
+            result.Should().BeOfType<BadRequestObjectResult>();
         }
     }
 }
