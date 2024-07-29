@@ -68,14 +68,15 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ValidRequest_ReturnsResponse(
-            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
-            PaymentsService service,
-            PaymentRequestDto request,
-            GovPayResponseDto expectedResponse)
+    [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+    [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+    [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
+    PaymentsService service,
+    PaymentRequestDto request,
+    GovPayResponseDto expectedResponse)
         {
             // Arrange
+            var externalPaymentId = Guid.NewGuid();
             expectedResponse.Links = new LinksDto
             {
                 NextUrl = new LinkDto
@@ -83,11 +84,12 @@ namespace EPR.Payment.Facade.UnitTests.Services
                     Href = "https://example.com/response"
                 }
             };
+            expectedResponse.PaymentId = "govPayPaymentId";
 
             httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayRequestDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
             httpPaymentsServiceMock.Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Guid.NewGuid());
+                .ReturnsAsync(externalPaymentId);
             httpPaymentsServiceMock.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>(), It.IsAny<CancellationToken>()));
 
             // Act
@@ -98,6 +100,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 result.Should().NotBeNull();
                 result.NextUrl.Should().Be(expectedResponse.Links?.NextUrl?.Href);
+                result.ExternalPaymentId.Should().Be(externalPaymentId);
+                result.GovPayPaymentId.Should().Be(expectedResponse.PaymentId);
             }
         }
 
