@@ -4,6 +4,7 @@ using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
+using EPR.Payment.Facade.Common.Mappers;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
@@ -45,28 +46,61 @@ public class PaymentsService : IPaymentsService
         return CreatePaymentResponse(govPayResponse);
     }
 
-    public async Task CompletePaymentAsync(string govPayPaymentId, CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
+    public async Task<CompletePaymentResponseDto> CompletePaymentAsync(string govPayPaymentId, CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
+    {
+        ValidateGovPayPaymentId(govPayPaymentId);
+
+        var paymentStatusResponse = await GetPaymentStatusResponseAsync(govPayPaymentId, cancellationToken);
+
+        var status = PaymentStatusMapper.GetPaymentStatus(
+            paymentStatusResponse.State?.Status ?? throw new Exception(ExceptionMessages.PaymentStatusNotFound),
+            paymentStatusResponse.State?.Code
+        );
+
+        var updateRequest = CreateUpdatePaymentRequest(completeRequest, govPayPaymentId, paymentStatusResponse, status);
+
+        await UpdatePaymentAsync(updateRequest, completeRequest.ExternalPaymentId, cancellationToken);
+
+        return CreateCompletePaymentResponse(paymentStatusResponse, status);
+    }
+
+    private void ValidateGovPayPaymentId(string govPayPaymentId)
     {
         if (string.IsNullOrEmpty(govPayPaymentId))
+        {
             throw new ArgumentException(ExceptionMessages.GovPayPaymentIdNull, nameof(govPayPaymentId));
+        }
+    }
 
+    private async Task<PaymentStatusResponseDto> GetPaymentStatusResponseAsync(string govPayPaymentId, CancellationToken cancellationToken)
+    {
         var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId, cancellationToken);
-        if (paymentStatusResponse == null || paymentStatusResponse.State == null)
+        if (paymentStatusResponse?.State == null || paymentStatusResponse.State.Status == null)
+        {
             throw new Exception(ExceptionMessages.PaymentStatusNotFound);
+        }
 
-        var status = GetPaymentStatus(paymentStatusResponse);
+        return paymentStatusResponse;
+    }
 
+    private UpdatePaymentRequestDto CreateUpdatePaymentRequest(CompletePaymentRequestDto completeRequest, string govPayPaymentId, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
+    {
         var updateRequest = _mapper.Map<UpdatePaymentRequestDto>(completeRequest);
         updateRequest.ExternalPaymentId = completeRequest.ExternalPaymentId;
         updateRequest.GovPayPaymentId = govPayPaymentId;
         updateRequest.Status = status;
         updateRequest.Reference = paymentStatusResponse.Reference;
-        updateRequest.ErrorCode = paymentStatusResponse.State.Code;
-        updateRequest.ErrorMessage = paymentStatusResponse.State.Finished ? "Payment finished with errors" : null;
+        updateRequest.ErrorCode = paymentStatusResponse?.State?.Code;
+        updateRequest.ErrorMessage = paymentStatusResponse?.State?.Message;
 
+        return updateRequest;
+    }
+
+    private async Task UpdatePaymentAsync(UpdatePaymentRequestDto updateRequest, Guid externalPaymentId, CancellationToken cancellationToken)
+    {
         try
         {
-            await _httpPaymentsService.UpdatePaymentAsync(completeRequest.ExternalPaymentId, updateRequest, cancellationToken);
+            await _httpPaymentsService.UpdatePaymentAsync(externalPaymentId, updateRequest, cancellationToken);
         }
         catch (ValidationException ex)
         {
@@ -78,6 +112,15 @@ public class PaymentsService : IPaymentsService
             _logger.LogError(ex, LogMessages.UnexpectedErrorUpdatingPayment);
             throw new Exception(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
         }
+    }
+
+    private CompletePaymentResponseDto CreateCompletePaymentResponse(PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
+    {
+        return new CompletePaymentResponseDto
+        {
+            Status = status,
+            Message = paymentStatusResponse?.State?.Message
+        };
     }
 
     private GovPayRequestDto CreateGovPayRequest(PaymentRequestDto request)
@@ -155,17 +198,6 @@ public class PaymentsService : IPaymentsService
             _logger.LogError(ex, LogMessages.UnexpectedErrorInsertingPayment);
             throw new Exception(ExceptionMessages.UnexpectedErrorInsertingPayment, ex);
         }
-    }
-
-    private PaymentStatus GetPaymentStatus(PaymentStatusResponseDto paymentStatusResponse)
-    {
-        return paymentStatusResponse?.State?.Status switch
-        {
-            "success" => PaymentStatus.Success,
-            "failed" => PaymentStatus.Failed,
-            "error" => PaymentStatus.Error,
-            _ => throw new Exception(ExceptionMessages.PaymentStatusNotFound)
-        };
     }
 
     private void ValidateObject(object? obj)

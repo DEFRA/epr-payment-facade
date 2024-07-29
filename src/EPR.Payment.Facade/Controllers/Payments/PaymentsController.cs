@@ -105,9 +105,8 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(
-        Summary = "Completes the payment process",
-        Description = "Completes the payment process for the paymentId requested. In case of an error, redirects to the error URL."
-    )]
+    Summary = "Completes the payment process",
+    Description = "Completes the payment process for the paymentId requested. In case of an error, redirects to the error URL.")]
     [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, redirects to the error URL.")]
@@ -119,10 +118,15 @@ public class PaymentsController : ControllerBase
             return BadRequest(ExceptionMessages.GovPayPaymentIdNull);
         }
 
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         try
         {
-            await _paymentsService.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken);
-            return Ok();
+            var result = await _paymentsService.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken);
+            return Ok(result);
         }
         catch (ValidationException ex)
         {
