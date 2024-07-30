@@ -142,7 +142,13 @@ public class PaymentsService : IPaymentsService
 
     private GovPayRequestDto CreateGovPayRequest(PaymentRequestDto request, Guid externalPaymentId)
     {
-        var returnUrl = $"{_paymentServiceOptions.ReturnUrl}?id={externalPaymentId}";
+        var returnUrl = _paymentServiceOptions.ReturnUrl;
+        if (string.IsNullOrEmpty(returnUrl))
+        {
+            throw new InvalidOperationException(ExceptionMessages.ReturnUrlNotConfigured);
+        }
+        returnUrl = $"{returnUrl}?id={externalPaymentId}";
+
         var description = _paymentServiceOptions.Description ?? throw new InvalidOperationException(ExceptionMessages.DescriptionNotConfigured);
 
         var govPayRequest = _mapper.Map<GovPayRequestDto>(request);
@@ -151,6 +157,7 @@ public class PaymentsService : IPaymentsService
 
         return govPayRequest;
     }
+
 
     private async Task<GovPayResponseDto> InitiateGovPayPaymentAsync(GovPayRequestDto govPayRequest, CancellationToken cancellationToken)
     {

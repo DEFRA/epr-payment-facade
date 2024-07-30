@@ -18,7 +18,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
     [TestClass]
     public class PaymentsControllerTests
     {
-        private IFixture? fixture;
+        private IFixture fixture;
 
         [TestInitialize]
         public void Initialize()
@@ -82,10 +82,14 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
 
-            var contentResult = result as ContentResult;
-            contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
-            contentResult?.ContentType.Should().Be("text/html");
-            contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/error'");
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().BeOfType<ContentResult>();
+                var contentResult = result as ContentResult;
+                contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+                contentResult?.ContentType.Should().Be("text/html");
+                contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/error'");
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -102,7 +106,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                badRequestResult?.Value.Should().BeOfType<SerializableError>();
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -124,9 +133,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
-            var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -148,9 +160,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
-            var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -219,25 +234,36 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
-            paymentsServiceMock.Verify(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken), Times.Once);
+            using (new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
+                paymentsServiceMock.Verify(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken), Times.Once);
+            }
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_NullExternalPaymentId_ReturnsBadRequest(
-                    PaymentsController controller)
+        public async Task CompletePayment_EmptyExternalPaymentId_ReturnsBadRequest(
+            PaymentsController controller)
         {
             // Arrange
-            Guid? externalPaymentId = null;
+            var externalPaymentId = Guid.Empty;
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.CompletePayment(externalPaymentId ?? Guid.Empty, cancellationToken);
+            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
-            var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().Be("ExternalPaymentId cannot be null or empty");
+            using (var scope = new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                var problemDetails = badRequestResult?.Value as ProblemDetails;
+
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Detail.Should().Be("ExternalPaymentId cannot be empty.");
+                problemDetails?.Title.Should().Be("Validation Error");
+                problemDetails?.Status.Should().Be(400);
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -288,6 +314,24 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_EmptyExternalPaymentId_ReturnsBadRequest(
+            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
+            PaymentsController controller)
+        {
+            // Arrange
+            var externalPaymentId = Guid.Empty;
+
+            // Act
+            var result = await controller.CompletePayment(externalPaymentId, CancellationToken.None);
+
+            // Assert
+            using (var scope = new FluentAssertions.Execution.AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>().Which.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be("ExternalPaymentId cannot be empty.");
             }
         }
     }

@@ -113,6 +113,16 @@ public class PaymentsController : ControllerBase
     [FeatureGate("EnablePaymentCompletion")]
     public async Task<IActionResult> CompletePayment(Guid externalPaymentId, CancellationToken cancellationToken)
     {
+        if (externalPaymentId == Guid.Empty)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Validation Error",
+                Detail = "ExternalPaymentId cannot be empty.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
         try
         {
             var result = await _paymentsService.CompletePaymentAsync(externalPaymentId, cancellationToken);
@@ -139,6 +149,7 @@ public class PaymentsController : ControllerBase
             };
         }
     }
+
 
     private string CreateHtmlContent(string nextUrl)
     {
