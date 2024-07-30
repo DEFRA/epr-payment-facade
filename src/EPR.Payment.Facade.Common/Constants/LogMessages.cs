@@ -14,5 +14,9 @@
 
         // Log Messages for PaymentsController
         public const string NextUrlNull = "Next URL is null.";
+
+        // Log Messages for CallbackController
+        public const string PaymentDataNotFound = "Payment data not found in cookies.";
+        public const string ErrorRetrievingPaymentData = "Error occurred while retrieving payment data from cookies.";
     }
 }

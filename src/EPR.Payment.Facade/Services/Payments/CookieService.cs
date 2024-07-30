@@ -28,5 +28,12 @@ namespace EPR.Payment.Facade.Services.Payments
                 SameSite = SameSiteMode.Strict
             });
         }
+
+        public string RetrievePaymentDataCookie(string encryptedPaymentData)
+        {
+            var base64DecodedData = Convert.FromBase64String(encryptedPaymentData);
+            var decryptedPaymentData = _dataProtector.Unprotect(base64DecodedData);
+            return Encoding.UTF8.GetString(decryptedPaymentData);
+        }
     }
 }

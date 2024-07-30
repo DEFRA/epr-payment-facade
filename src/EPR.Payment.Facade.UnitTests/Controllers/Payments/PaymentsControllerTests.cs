@@ -21,15 +21,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
     [TestClass]
     public class PaymentsControllerTests
     {
-        private IFixture? fixture;
+        private IFixture? _fixture;
 
         [TestInitialize]
         public void Initialize()
         {
-            fixture = new Fixture().Customize(new AutoMoqCustomization());
+            _fixture = new Fixture().Customize(new AutoMoqCustomization());
 
             // Configure PaymentServiceOptions with valid values to avoid null references
-            fixture.Customize<PaymentServiceOptions>(c => c.With(x => x.ReturnUrl, "https://example.com/return")
+            _fixture.Customize<PaymentServiceOptions>(c => c.With(x => x.ReturnUrl, "https://example.com/return")
                                                            .With(x => x.Description, "Test Description")
                                                            .With(x => x.ErrorUrl, "https://example.com/error"));
         }
