@@ -288,6 +288,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_PaymentStatusNotFound_ThrowsPaymentStatusNotFoundException(
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
             PaymentsService service)
         {
             // Arrange
@@ -302,11 +303,17 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
 
-            _httpPaymentsServiceMock?.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
+            httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(paymentDetails);
 
+            var paymentStatusResponse = new PaymentStatusResponseDto
+            {
+                PaymentId = govPayPaymentId,
+                State = new State { Status = null }
+            };
+
             httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((PaymentStatusResponseDto?)null);
+                .ReturnsAsync(paymentStatusResponse);
 
             // Act & Assert
             await service.Invoking(async s => await s.CompletePaymentAsync(externalPaymentId, new CancellationToken()))
@@ -1097,5 +1104,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             await service.Invoking(async s => await s.CompletePaymentAsync(externalPaymentId, new CancellationToken()))
                 .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.PaymentStatusNotFound);
         }
+
+
     }
 }
