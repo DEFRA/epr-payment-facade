@@ -30,9 +30,9 @@ variables:
   - name: solutionFolder
     value: src
   - name: projectFolder
-    value: FrontendSchemeRegistration.UI
+    value: EPR.Payment.Facade
   - name: testProjectFolder
-    value: FrontendSchemeRegistration.UI.UnitTests
+    value: EPR.Payment.Facade.Common.UnitTests
   - name: sonarQubeProjectKey
     value: epr-payment-facade
   - name: sonarQubeProjectName
