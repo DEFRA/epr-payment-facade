@@ -7,7 +7,6 @@ using EPR.Payment.Facade.Common.Dtos.Internal.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -37,12 +36,11 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_SetsPaymentDataCookie(
-    [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-    [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
-    [Frozen] Mock<ICookieService> cookieServiceMock,
-    PaymentsController controller,
-    PaymentRequestDto request,
-    PaymentResponseDto expectedResponse)
+            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
+            PaymentsController controller,
+            PaymentRequestDto request,
+            PaymentResponseDto expectedResponse)
         {
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "govPayPaymentId";
@@ -59,22 +57,21 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var base64EncodedData = Convert.ToBase64String(Encoding.UTF8.GetBytes(expectedEncryptedPaymentData));
             var urlEncodedData = Uri.EscapeDataString(base64EncodedData);
 
-            cookieServiceMock.Setup(cs => cs.SetPaymentDataCookie(It.IsAny<HttpResponse>(), It.IsAny<PaymentCookieDataDto>()))
-                             .Callback<HttpResponse, PaymentCookieDataDto>((response, data) =>
-                             {
-                                 response.Cookies.Append("PaymentData", base64EncodedData, new CookieOptions
-                                 {
-                                     HttpOnly = true,
-                                     Secure = true,
-                                     SameSite = SameSiteMode.Strict
-                                 });
-                             });
-
             expectedResponse.ExternalPaymentId = externalPaymentId;
             expectedResponse.GovPayPaymentId = govPayPaymentId;
             expectedResponse.NextUrl = "https://example.com/next";
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(expectedResponse);
+
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse)
+                .Callback<PaymentRequestDto, HttpResponse, CancellationToken>((req, response, ct) =>
+                {
+                    response.Cookies.Append("PaymentData", base64EncodedData, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                });
 
             var httpContext = new DefaultHttpContext();
             controller.ControllerContext = new ControllerContext
@@ -91,14 +88,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Ensure that the Set-Cookie header contains the expected encrypted data
             cookies.Should().Contain("PaymentData=");
             cookies.Should().Contain(urlEncodedData);
-
-            // Verify that SetPaymentDataCookie was called with the correct parameters
-            cookieServiceMock.Verify(cs => cs.SetPaymentDataCookie(It.IsAny<HttpResponse>(),
-                It.Is<PaymentCookieDataDto>(data =>
-                    data.ExternalPaymentId == paymentData.ExternalPaymentId &&
-                    data.UpdatedByUserId == paymentData.UpdatedByUserId &&
-                    data.UpdatedByOrganisationId == paymentData.UpdatedByOrganisationId &&
-                    data.GovPayPaymentId == paymentData.GovPayPaymentId)), Times.Once);
 
             // Verify that the PaymentResponseDto contains the correct values
             expectedResponse.ExternalPaymentId.Should().Be(externalPaymentId);
@@ -122,7 +111,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 NextUrl = "https://example.com/next"
             };
 
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<CancellationToken>()))
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             var httpContext = new DefaultHttpContext();
@@ -135,9 +124,11 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, CancellationToken.None);
 
             // Assert
-            result.Should().BeOfType<RedirectResult>();
-            var redirectResult = result as RedirectResult;
-            redirectResult?.Url.Should().Be("https://example.com/next");
+            result.Should().BeOfType<ContentResult>();
+            var contentResult = result as ContentResult;
+            contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/next'");
+            contentResult?.ContentType.Should().Be("text/html");
+            contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
 
             // Verify that the PaymentResponseDto contains the correct values
             expectedResponse.ExternalPaymentId.Should().Be(externalPaymentId);
@@ -157,7 +148,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Arrange
             var cancellationToken = new CancellationToken();
             expectedResponse.NextUrl = null;
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), cancellationToken)).ReturnsAsync(expectedResponse);
 
             var httpContext = new DefaultHttpContext();
             controller.ControllerContext = new ControllerContext
@@ -259,7 +250,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var validationException = new ValidationException("Validation error");
             var cancellationToken = new CancellationToken();
 
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(invalidRequest, cancellationToken)).ThrowsAsync(validationException);
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(invalidRequest, It.IsAny<HttpResponse>(), cancellationToken)).ThrowsAsync(validationException);
 
             // Act
             var result = await controller.InitiatePayment(invalidRequest, cancellationToken);
@@ -284,7 +275,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
             var errorUrl = "https://example.com/error";
 
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), cancellationToken)).ThrowsAsync(exception);
 
             var httpContext = new DefaultHttpContext();
             controller.ControllerContext = new ControllerContext

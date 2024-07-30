@@ -1,9 +1,7 @@
 ﻿using Asp.Versioning;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Internal.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
@@ -17,15 +15,12 @@ using System.ComponentModel.DataAnnotations;
 public class PaymentsController : ControllerBase
 {
     private readonly IPaymentsService _paymentsService;
-    private readonly ICookieService _cookieService;
     private readonly ILogger<PaymentsController> _logger;
     private readonly string _errorUrl;
 
-
-    public PaymentsController(IPaymentsService paymentsService, ICookieService cookieService, ILogger<PaymentsController> logger, IOptions<PaymentServiceOptions> paymentServiceOptions)
+    public PaymentsController(IPaymentsService paymentsService, ILogger<PaymentsController> logger, IOptions<PaymentServiceOptions> paymentServiceOptions)
     {
         _paymentsService = paymentsService ?? throw new ArgumentNullException(nameof(paymentsService));
-        _cookieService = cookieService ?? throw new ArgumentNullException(nameof(cookieService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _errorUrl = paymentServiceOptions.Value.ErrorUrl ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
     }
@@ -56,23 +51,13 @@ public class PaymentsController : ControllerBase
 
         try
         {
-            var result = await _paymentsService.InitiatePaymentAsync(request, cancellationToken);
+            var result = await _paymentsService.InitiatePaymentAsync(request, Response, cancellationToken); // Pass Response to the service
 
             if (result.NextUrl == null)
             {
                 _logger.LogError(LogMessages.NextUrlNull);
                 return CreateHtmlRedirectResponse(_errorUrl);
             }
-
-            var paymentData = new PaymentCookieDataDto
-            {
-                ExternalPaymentId = result.ExternalPaymentId,
-                UpdatedByUserId = request.UserId!.Value,
-                UpdatedByOrganisationId = request.OrganisationId!.Value,
-                GovPayPaymentId = result.GovPayPaymentId
-            };
-
-            _cookieService.SetPaymentDataCookie(Response, paymentData);
 
             return CreateHtmlRedirectResponse(result.NextUrl);
         }
@@ -169,3 +154,4 @@ public class PaymentsController : ControllerBase
         };
     }
 }
+

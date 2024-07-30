@@ -14,6 +14,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Internal.Payments
         public Guid UpdatedByOrganisationId { get; set; }
 
         [Required(ErrorMessage = "GovPayPaymentId is required")]
-        public string GovPayPaymentId { get; set; }
+        public string? GovPayPaymentId { get; set; }
     }
 }
