@@ -17,8 +17,8 @@
         public const string ErrorUpdatingPayment = "Error occurred while updating payment status.";
         public const string UnexpectedErrorInsertingPayment = "An unexpected error occurred while inserting the payment.";
         public const string UnexpectedErrorUpdatingPayment = "An unexpected error occurred while updating the payment status.";
-        public const string ErrorRetrievingPaymentDetails = "Error occurred while retrieving payment details."; // Existing constant
-        public const string ErrorGettingPaymentDetails = "Error occurred while getting payment details."; // New constant
+        public const string ErrorRetrievingPaymentDetails = "Error occurred while retrieving payment details.";
+        public const string ErrorGettingPaymentDetails = "Error occurred while getting payment details.";
 
         // PaymentsService exceptions
         public const string ReturnUrlNotConfigured = "ReturnUrl is not configured.";

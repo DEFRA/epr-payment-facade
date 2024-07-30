@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using AutoMapper;
+using EPR.Payment.Common.Mapping;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Enums;
 using FluentAssertions;

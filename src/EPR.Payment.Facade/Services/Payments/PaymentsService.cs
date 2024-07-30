@@ -48,9 +48,23 @@ public class PaymentsService : IPaymentsService
 
     public async Task<CompletePaymentResponseDto> CompletePaymentAsync(Guid externalPaymentId, CancellationToken cancellationToken)
     {
+        if (externalPaymentId == Guid.Empty)
+        {
+            throw new ArgumentException("ExternalPaymentId cannot be empty", nameof(externalPaymentId));
+        }
+
         var paymentDetails = await GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
 
         var paymentStatusResponse = await GetPaymentStatusResponseAsync(paymentDetails.GovPayPaymentId, cancellationToken);
+
+        if (paymentStatusResponse.State?.Status == "error" && string.IsNullOrEmpty(paymentStatusResponse.State.Code))
+        {
+            throw new Exception(ExceptionMessages.ErrorStatusWithoutErrorCode);
+        }
+        if (paymentStatusResponse.State?.Status == "failed" && string.IsNullOrEmpty(paymentStatusResponse.State.Code))
+        {
+            throw new Exception(ExceptionMessages.FailedStatusWithoutErrorCode);
+        }
 
         var status = PaymentStatusMapper.GetPaymentStatus(
             paymentStatusResponse.State?.Status ?? throw new Exception(ExceptionMessages.PaymentStatusNotFound),
@@ -63,6 +77,7 @@ public class PaymentsService : IPaymentsService
 
         return CreateCompletePaymentResponse(paymentDetails, paymentStatusResponse, status);
     }
+
 
     private async Task<PaymentDetailsDto> GetPaymentDetailsAsync(Guid externalPaymentId, CancellationToken cancellationToken)
     {
@@ -109,6 +124,7 @@ public class PaymentsService : IPaymentsService
             throw new Exception(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
         }
     }
+
 
     private CompletePaymentResponseDto CreateCompletePaymentResponse(PaymentDetailsDto paymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
     {
