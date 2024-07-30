@@ -55,16 +55,12 @@ public class PaymentsService : IPaymentsService
 
         var paymentDetails = await GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
 
-        var paymentStatusResponse = await GetPaymentStatusResponseAsync(paymentDetails.GovPayPaymentId, cancellationToken);
+        if (string.IsNullOrEmpty(paymentDetails.GovPayPaymentId))
+        {
+            throw new Exception(ExceptionMessages.PaymentStatusNotFound);
+        }
 
-        if (paymentStatusResponse.State?.Status == "error" && string.IsNullOrEmpty(paymentStatusResponse.State.Code))
-        {
-            throw new Exception(ExceptionMessages.ErrorStatusWithoutErrorCode);
-        }
-        if (paymentStatusResponse.State?.Status == "failed" && string.IsNullOrEmpty(paymentStatusResponse.State.Code))
-        {
-            throw new Exception(ExceptionMessages.FailedStatusWithoutErrorCode);
-        }
+        var paymentStatusResponse = await GetPaymentStatusResponseAsync(paymentDetails.GovPayPaymentId, cancellationToken);
 
         var status = PaymentStatusMapper.GetPaymentStatus(
             paymentStatusResponse.State?.Status ?? throw new Exception(ExceptionMessages.PaymentStatusNotFound),
@@ -77,7 +73,6 @@ public class PaymentsService : IPaymentsService
 
         return CreateCompletePaymentResponse(paymentDetails, paymentStatusResponse, status);
     }
-
 
     private async Task<PaymentDetailsDto> GetPaymentDetailsAsync(Guid externalPaymentId, CancellationToken cancellationToken)
     {
@@ -132,7 +127,7 @@ public class PaymentsService : IPaymentsService
         {
             Status = status,
             Message = paymentStatusResponse?.State?.Message,
-            Reference = paymentStatusResponse.Reference,
+            Reference = paymentStatusResponse?.Reference,
             UserId = paymentDetails.UpdatedByUserId,
             OrganisationId = paymentDetails.UpdatedByOrganisationId,
             Regulator = paymentDetails.Regulator,
