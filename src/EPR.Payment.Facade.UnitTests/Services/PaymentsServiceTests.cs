@@ -10,8 +10,10 @@ using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+using EPR.Payment.Facade.Services.Payments.Interfaces;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -27,6 +29,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         private Mock<IHttpPaymentsService>? _httpPaymentsServiceMock;
         private Mock<ILogger<PaymentsService>>? _loggerMock;
         private Mock<IOptions<PaymentServiceOptions>>? _optionsMock;
+        private Mock<ICookieService>? _cookieServiceMock;
         private PaymentsService? _service;
         private IMapper? _mapper;
 
@@ -45,6 +48,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             _httpPaymentsServiceMock = _fixture.Freeze<Mock<IHttpPaymentsService>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<PaymentsService>>>();
             _optionsMock = _fixture.Freeze<Mock<IOptions<PaymentServiceOptions>>>();
+            _cookieServiceMock = _fixture.Freeze<Mock<ICookieService>>();
 
             _optionsMock.Setup(o => o.Value).Returns(new PaymentServiceOptions
             {
@@ -63,7 +67,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 _httpPaymentsServiceMock.Object,
                 _loggerMock.Object,
                 _optionsMock.Object,
-                _mapper);
+                _mapper,
+                _cookieServiceMock.Object);
         }
 
         [TestMethod, AutoMoqData]
@@ -71,42 +76,50 @@ namespace EPR.Payment.Facade.UnitTests.Services
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
+            [Frozen] Mock<ICookieService> cookieServiceMock,
             PaymentsService service,
             PaymentRequestDto request,
             GovPayResponseDto expectedResponse)
         {
             // Arrange
+            var externalPaymentId = Guid.NewGuid();
+            var govPayPaymentId = "govPayPaymentId";
+
+            expectedResponse.PaymentId = govPayPaymentId;
             expectedResponse.Links = new LinksDto
             {
                 NextUrl = new LinkDto
                 {
-                    Href = "https://example.com/response"
+                    Href = "https://example.com/next"
                 }
             };
 
             httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayRequestDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
             httpPaymentsServiceMock.Setup(s => s.InsertPaymentAsync(It.IsAny<InsertPaymentRequestDto>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Guid.NewGuid());
+                .ReturnsAsync(externalPaymentId);
             httpPaymentsServiceMock.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>(), It.IsAny<CancellationToken>()));
 
             // Act
-            var result = await service.InitiatePaymentAsync(request, new CancellationToken());
+            var result = await service.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken());
 
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
             {
                 result.Should().NotBeNull();
                 result.NextUrl.Should().Be(expectedResponse.Links?.NextUrl?.Href);
+                result.ExternalPaymentId.Should().Be(externalPaymentId);
+                result.GovPayPaymentId.Should().Be(govPayPaymentId);
             }
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_NullRequest_ThrowsArgumentNullException(
             PaymentsService service)
         {
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(null!, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(null!, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ArgumentNullException>();
         }
 
@@ -135,7 +148,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             };
 
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, new CancellationToken()))
+            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>();
 
             using (new FluentAssertions.Execution.AssertionScope())
@@ -167,7 +180,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .ThrowsAsync(new ValidationException("Validation error"));
 
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
         }
 
@@ -179,12 +192,12 @@ namespace EPR.Payment.Facade.UnitTests.Services
         [DataRow("jgpldh7b1i5qmh59ru6ia67386", "error", true, "Payment provider returned an error", "P0050", PaymentStatus.Error, DisplayName = "CompletePayment_GeneralError_UpdatesPaymentStatus")]
         [DataRow("n9nvasa4782ogtuh19e8mum68r", "failed", true, "Payment was cancelled by the user", "P0030", PaymentStatus.UserCancelled, DisplayName = "CompletePayment_UserCancelled_UpdatesPaymentStatus")]
         public async Task CompletePayment_UpdatesPaymentStatus(
-            string govPayPaymentId,
-            string status,
-            bool finished,
-            string message,
-            string code,
-            PaymentStatus expectedStatus)
+    string govPayPaymentId,
+    string status,
+    bool finished,
+    string message,
+    string code,
+    PaymentStatus expectedStatus)
         {
             // Arrange
             var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
@@ -192,6 +205,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var httpPaymentsServiceMock = fixture.Freeze<Mock<IHttpPaymentsService>>();
             var loggerMock = fixture.Freeze<Mock<ILogger<PaymentsService>>>();
             var optionsMock = fixture.Freeze<Mock<IOptions<PaymentServiceOptions>>>();
+            var cookieServiceMock = fixture.Freeze<Mock<ICookieService>>();
 
             optionsMock.Setup(o => o.Value).Returns(new PaymentServiceOptions
             {
@@ -210,7 +224,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 httpPaymentsServiceMock.Object,
                 loggerMock.Object,
                 optionsMock.Object,
-                mapper);
+                mapper,
+                cookieServiceMock.Object);
 
             var completeRequest = fixture.Create<CompletePaymentRequestDto>();
             var paymentStatusResponse = fixture.Create<PaymentStatusResponseDto>();
@@ -388,12 +403,13 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ReturnUrlNotConfigured_ThrowsReturnUrlNotConfiguredException(
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
-            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsService>> loggerMock,
-            [Frozen] IMapper mapper,
-            PaymentRequestDto request)
+    [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
+    [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+    [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+    [Frozen] Mock<ILogger<PaymentsService>> loggerMock,
+    [Frozen] Mock<ICookieService> cookieServiceMock,
+    [Frozen] IMapper mapper,
+    PaymentRequestDto request)
         {
             // Arrange: Explicitly create a PaymentServiceOptions object with ReturnUrl set to null
             var paymentServiceOptions = new PaymentServiceOptions { ReturnUrl = null, Description = "Payment description" };
@@ -405,7 +421,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 httpPaymentsServiceMock.Object,
                 loggerMock.Object,
                 optionsMock.Object,
-                mapper);
+                mapper,
+                cookieServiceMock.Object);
 
             // Debug: Check the configuration being returned
             var configuredOptions = optionsMock.Object.Value;
@@ -413,9 +430,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
             Assert.AreEqual("Payment description", configuredOptions.Description);  // Check Description
 
             // Act & Assert: Expect an InvalidOperationException due to missing ReturnUrl
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.ReturnUrlNotConfigured);
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_DescriptionNotConfigured_ThrowsDescriptionNotConfiguredException(
@@ -423,6 +441,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
             [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
             [Frozen] Mock<ILogger<PaymentsService>> loggerMock,
+            [Frozen] Mock<ICookieService> cookieServiceMock,
             [Frozen] IMapper mapper,
             PaymentRequestDto request)
         {
@@ -435,12 +454,14 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 httpPaymentsServiceMock.Object,
                 loggerMock.Object,
                 optionsMock.Object,
-                mapper);
+                mapper,
+                cookieServiceMock.Object);
 
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
-                                .Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.DescriptionNotConfigured);
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
+                .Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.DescriptionNotConfigured);
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_MissingUserId_ThrowsValidationException(
@@ -451,7 +472,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             request.UserId = null;
 
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>().WithMessage("User ID is required");
         }
 
@@ -464,7 +485,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             request.OrganisationId = null;
 
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Organisation ID is required");
         }
 
@@ -477,7 +498,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             request.Amount = null;
 
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Amount is required");
         }
 
@@ -494,7 +515,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .ThrowsAsync(validationException);
 
             // Act & Assert
-            var exception = await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            var exception = await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>();
 
             // Use a flexible matching to ensure the message contains the expected constant message
@@ -520,7 +541,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .ThrowsAsync(unexpectedException);
 
             // Act & Assert
-            var act = async () => await service.InitiatePaymentAsync(request, new CancellationToken());
+            var act = async () => await service.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken());
             await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.UnexpectedErrorInsertingPayment);
 
             // Verify log entry
@@ -533,6 +554,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> paymentServiceOptionsMock,
             [Frozen] Mock<IMapper> mapperMock,
+            [Frozen] Mock<ICookieService> cookieServiceMock,
             Mock<ILogger<PaymentsService>> loggerMock,
             PaymentsService service,
             CompletePaymentRequestDto completeRequest,
@@ -556,7 +578,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 httpPaymentsServiceMock.Object,
                 loggerMock.Object,
                 paymentServiceOptionsMock.Object,
-                mapperMock.Object
+                mapperMock.Object,
+                cookieServiceMock.Object
             );
 
             // Act
@@ -569,15 +592,17 @@ namespace EPR.Payment.Facade.UnitTests.Services
             loggerMock.VerifyLog(LogLevel.Error, LogMessages.UnexpectedErrorUpdatingPayment, Times.Once());
         }
 
+
         [TestMethod, AutoMoqData]
         public async Task InitiatePaymentAsync_UpdatePaymentStatusUnexpectedError_ThrowsAndLogsException(
-            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-            [Frozen] Mock<IMapper> mapperMock,
-            Mock<ILogger<PaymentsService>> loggerMock,
-            PaymentRequestDto request,
-            GovPayResponseDto govPayResponse,
-            CancellationToken cancellationToken)
+    [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+    [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+    [Frozen] Mock<IMapper> mapperMock,
+    [Frozen] Mock<ICookieService> cookieServiceMock,
+    Mock<ILogger<PaymentsService>> loggerMock,
+    PaymentRequestDto request,
+    GovPayResponseDto govPayResponse,
+    CancellationToken cancellationToken)
         {
             // Arrange
             var paymentServiceOptions = Options.Create(new PaymentServiceOptions
@@ -616,11 +641,12 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 httpPaymentsServiceMock.Object,
                 loggerMock.Object,
                 paymentServiceOptions,
-                mapperMock.Object
+                mapperMock.Object,
+                cookieServiceMock.Object
             );
 
             // Act
-            Func<Task> act = async () => await service.InitiatePaymentAsync(request, cancellationToken);
+            Func<Task> act = async () => await service.InitiatePaymentAsync(request, new DefaultHttpContext().Response, cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.UnexpectedErrorUpdatingPayment);
@@ -635,6 +661,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePaymentAsync_GovPayResponsePaymentIdIsNull_ThrowsInvalidOperationException(
@@ -658,7 +685,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             });
 
             // Act
-            Func<Task> act = async () => await service.InitiatePaymentAsync(request, cancellationToken);
+            Func<Task> act = async () => await service.InitiatePaymentAsync(request, new DefaultHttpContext().Response, cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.GovPayResponseInvalid);
@@ -686,7 +713,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             });
 
             // Act
-            Func<Task> act = async () => await service.InitiatePaymentAsync(request, cancellationToken);
+            Func<Task> act = async () => await service.InitiatePaymentAsync(request, new DefaultHttpContext().Response, cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.GovPayResponseInvalid);
@@ -714,13 +741,14 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePaymentAsync_GovPayResponsePaymentIdIsNullOrEmpty_ThrowsInvalidOperationException(
-            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> paymentServiceOptionsMock,
-            [Frozen] Mock<IMapper> mapperMock,
-            Mock<ILogger<PaymentsService>> loggerMock,
-            PaymentsService service,
-            PaymentRequestDto request)
+    [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+    [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+    [Frozen] Mock<IOptions<PaymentServiceOptions>> paymentServiceOptionsMock,
+    [Frozen] Mock<IMapper> mapperMock,
+    [Frozen] Mock<ICookieService> cookieServiceMock,
+    Mock<ILogger<PaymentsService>> loggerMock,
+    PaymentsService service,
+    PaymentRequestDto request)
         {
             // Arrange
             var govPayResponse = new GovPayResponseDto
@@ -742,11 +770,12 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 httpPaymentsServiceMock.Object,
                 loggerMock.Object,
                 paymentServiceOptionsMock.Object,
-                mapperMock.Object
+                mapperMock.Object,
+                cookieServiceMock.Object
             );
 
             // Act
-            Func<Task> act = async () => await service.InitiatePaymentAsync(request, new CancellationToken());
+            Func<Task> act = async () => await service.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken());
 
             // Assert
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.GovPayResponseInvalid);
@@ -756,12 +785,14 @@ namespace EPR.Payment.Facade.UnitTests.Services
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.GovPayResponseInvalid);
         }
 
+
         [TestMethod, AutoMoqData]
         public async Task InitiatePaymentAsync_GovPayResponsePaymentIdIsEmpty_ThrowsInvalidOperationException(
-            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
-            PaymentRequestDto request)
+    [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+    [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+    [Frozen] Mock<IOptions<PaymentServiceOptions>> optionsMock,
+    [Frozen] Mock<ICookieService> cookieServiceMock,
+    PaymentRequestDto request)
         {
             // Arrange
             var govPayResponse = new GovPayResponseDto { PaymentId = string.Empty }; // Simulate empty PaymentId
@@ -787,14 +818,16 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 httpPaymentsServiceMock.Object,
                 Mock.Of<ILogger<PaymentsService>>(),
                 optionsMock.Object,
-                mapper);
+                mapper,
+                cookieServiceMock.Object);
 
             // Act
-            Func<Task> act = async () => await service.InitiatePaymentAsync(request, CancellationToken.None);
+            Func<Task> act = async () => await service.InitiatePaymentAsync(request, new DefaultHttpContext().Response, CancellationToken.None);
 
             // Assert
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.GovPayResponseInvalid);
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_AmountIsZero_ThrowsValidationException(
@@ -805,7 +838,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             request.Amount = 0; // Invalid amount
 
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero");
         }
 
@@ -818,7 +851,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             request.Amount = -10; // Invalid amount
 
             // Act & Assert
-            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
+            await service.Invoking(async s => await s.InitiatePaymentAsync(request, new DefaultHttpContext().Response, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero");
         }
 

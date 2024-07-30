@@ -3,6 +3,7 @@ using AutoFixture.AutoMoq;
 using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
+using EPR.Payment.Facade.Common.Dtos.Internal.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace EPR.Payment.Facade.UnitTests.Controllers
 {
@@ -33,29 +35,107 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_ValidRequest_ReturnsRedirectResponse(
+        public async Task InitiatePayment_SetsPaymentDataCookie(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
             PaymentsController controller,
             PaymentRequestDto request,
             PaymentResponseDto expectedResponse)
         {
-            // Arrange
-            var cancellationToken = new CancellationToken();
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
+            var externalPaymentId = Guid.NewGuid();
+            var govPayPaymentId = "govPayPaymentId";
+
+            var paymentData = new PaymentCookieDataDto
+            {
+                ExternalPaymentId = externalPaymentId,
+                UpdatedByUserId = request.UserId!.Value,
+                UpdatedByOrganisationId = request.OrganisationId!.Value,
+                GovPayPaymentId = govPayPaymentId
+            };
+
+            var expectedEncryptedPaymentData = "mock-encrypted-data";
+            var base64EncodedData = Convert.ToBase64String(Encoding.UTF8.GetBytes(expectedEncryptedPaymentData));
+            var urlEncodedData = Uri.EscapeDataString(base64EncodedData);
+
+            expectedResponse.ExternalPaymentId = externalPaymentId;
+            expectedResponse.GovPayPaymentId = govPayPaymentId;
+            expectedResponse.NextUrl = "https://example.com/next";
+
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse)
+                .Callback<PaymentRequestDto, HttpResponse, CancellationToken>((req, response, ct) =>
+                {
+                    response.Cookies.Append("PaymentData", base64EncodedData, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                });
+
+            var httpContext = new DefaultHttpContext();
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
 
             // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
+            var result = await controller.InitiatePayment(request, CancellationToken.None);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
-            {
-                result.Should().BeOfType<ContentResult>();
-                var contentResult = result as ContentResult;
-                contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
-                contentResult?.ContentType.Should().Be("text/html");
-                contentResult?.Content.Should().Contain($"window.location.href = '{expectedResponse.NextUrl}'");
-            }
+            var cookies = controller.HttpContext.Response.Headers["Set-Cookie"].ToString();
+
+            // Ensure that the Set-Cookie header contains the expected encrypted data
+            cookies.Should().Contain("PaymentData=");
+            cookies.Should().Contain(urlEncodedData);
+
+            // Verify that the PaymentResponseDto contains the correct values
+            expectedResponse.ExternalPaymentId.Should().Be(externalPaymentId);
+            expectedResponse.GovPayPaymentId.Should().Be(govPayPaymentId);
+            expectedResponse.NextUrl.Should().Be("https://example.com/next");
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task InitiatePayment_ValidRequest_ReturnsCorrectFields(
+            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
+            PaymentsController controller,
+            PaymentRequestDto request)
+        {
+            // Arrange
+            var externalPaymentId = Guid.NewGuid();
+            var govPayPaymentId = "govPayPaymentId";
+            var expectedResponse = new PaymentResponseDto
+            {
+                ExternalPaymentId = externalPaymentId,
+                GovPayPaymentId = govPayPaymentId,
+                NextUrl = "https://example.com/next"
+            };
+
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            var httpContext = new DefaultHttpContext();
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            // Act
+            var result = await controller.InitiatePayment(request, CancellationToken.None);
+
+            // Assert
+            result.Should().BeOfType<ContentResult>();
+            var contentResult = result as ContentResult;
+            contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/next'");
+            contentResult?.ContentType.Should().Be("text/html");
+            contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+            // Verify that the PaymentResponseDto contains the correct values
+            expectedResponse.ExternalPaymentId.Should().Be(externalPaymentId);
+            expectedResponse.GovPayPaymentId.Should().Be(govPayPaymentId);
+            expectedResponse.NextUrl.Should().Be("https://example.com/next");
+        }
+
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_NextUrlIsNull_ReturnsErrorUrl(
@@ -68,20 +148,26 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Arrange
             var cancellationToken = new CancellationToken();
             expectedResponse.NextUrl = null;
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), cancellationToken)).ReturnsAsync(expectedResponse);
+
+            var httpContext = new DefaultHttpContext();
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
 
             // Act
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
             loggerMock.Verify(
-            x => x.Log(
-                It.Is<LogLevel>(l => l == LogLevel.Error),
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(LogMessages.NextUrlNull)),
-                It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
-            Times.Once);
+                x => x.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Error),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(LogMessages.NextUrlNull)),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+                Times.Once);
 
             var contentResult = result as ContentResult;
             contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -164,7 +250,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var validationException = new ValidationException("Validation error");
             var cancellationToken = new CancellationToken();
 
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(invalidRequest, cancellationToken)).ThrowsAsync(validationException);
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(invalidRequest, It.IsAny<HttpResponse>(), cancellationToken)).ThrowsAsync(validationException);
 
             // Act
             var result = await controller.InitiatePayment(invalidRequest, cancellationToken);
@@ -189,7 +275,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
             var errorUrl = "https://example.com/error";
 
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
+            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, It.IsAny<HttpResponse>(), cancellationToken)).ThrowsAsync(exception);
+
+            var httpContext = new DefaultHttpContext();
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
 
             // Act
             var result = await controller.InitiatePayment(request, cancellationToken);
@@ -204,6 +296,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
             }
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_ValidGovPayPaymentId_ReturnsOk(
@@ -243,7 +336,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>();
             var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().Be("GovPayPaymentId cannot be null or empty");
+            badRequestResult?.Value.Should().Be(ExceptionMessages.GovPayPaymentIdNull);
         }
 
         [TestMethod, AutoMoqData]
@@ -260,7 +353,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>();
             var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().Be("GovPayPaymentId cannot be null or empty");
+            badRequestResult?.Value.Should().Be(ExceptionMessages.GovPayPaymentIdNull);
         }
 
         [TestMethod, AutoMoqData]
@@ -301,6 +394,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var errorUrl = "https://example.com/error";
 
             paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ThrowsAsync(exception);
+
+            var httpContext = new DefaultHttpContext();
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
 
             // Act
             var result = await controller.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
