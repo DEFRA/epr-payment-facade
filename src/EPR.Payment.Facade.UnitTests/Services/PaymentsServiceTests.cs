@@ -241,8 +241,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -268,8 +268,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Status = expectedStatus,
                 Message = message,
                 Reference = paymentStatusResponse.Reference,
-                UserId = paymentDetails.UserId,
-                OrganisationId = paymentDetails.OrganisationId,
+                UserId = paymentDetails.UpdatedByUserId,
+                OrganisationId = paymentDetails.UpdatedByOrganisationId,
                 Regulator = paymentDetails.Regulator,
                 Amount = paymentDetails.Amount
             });
@@ -298,8 +298,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -326,8 +326,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             var paymentStatusResponse = new PaymentStatusResponseDto
@@ -360,8 +360,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             var paymentStatusResponse = new PaymentStatusResponseDto
@@ -398,8 +398,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -432,8 +432,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -607,8 +607,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -786,8 +786,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -927,8 +927,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -959,8 +959,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -990,8 +990,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -1021,8 +1021,8 @@ namespace EPR.Payment.Facade.UnitTests.Services
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid()
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
             };
 
             _httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))

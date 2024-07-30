@@ -117,8 +117,8 @@ public class PaymentsService : IPaymentsService
             Status = status,
             Message = paymentStatusResponse?.State?.Message,
             Reference = paymentStatusResponse.Reference,
-            UserId = paymentDetails.UserId,
-            OrganisationId = paymentDetails.OrganisationId,
+            UserId = paymentDetails.UpdatedByUserId,
+            OrganisationId = paymentDetails.UpdatedByOrganisationId,
             Regulator = paymentDetails.Regulator,
             Amount = paymentDetails.Amount
         };

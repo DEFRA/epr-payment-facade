@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 
 namespace EPR.Payment.Common.Mapping
 {
@@ -29,6 +30,16 @@ namespace EPR.Payment.Common.Mapping
                 .ForMember(dest => dest.UpdatedByUserId, opt => opt.MapFrom(src => src.UserId!.Value))
                 .ForMember(dest => dest.ErrorCode, opt => opt.Ignore())
                 .ForMember(dest => dest.ErrorMessage, opt => opt.Ignore());
+
+            CreateMap<PaymentDetailsDto, UpdatePaymentRequestDto>()
+                .ForMember(dest => dest.UpdatedByUserId, opt => opt.MapFrom(src => src.UpdatedByUserId))
+                .ForMember(dest => dest.UpdatedByOrganisationId, opt => opt.MapFrom(src => src.UpdatedByOrganisationId))
+                .ForMember(dest => dest.ExternalPaymentId, opt => opt.MapFrom(src => src.ExternalPaymentId))
+                .ForMember(dest => dest.Reference, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.ErrorCode, opt => opt.Ignore())
+                .ForMember(dest => dest.ErrorMessage, opt => opt.Ignore())
+                .ForMember(dest => dest.GovPayPaymentId, opt => opt.Ignore());
         }
     }
 }
