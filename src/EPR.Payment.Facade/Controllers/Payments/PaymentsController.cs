@@ -100,32 +100,22 @@ public class PaymentsController : ControllerBase
         }
     }
 
-    [HttpPost("{govPayPaymentId}/complete")]
+    [HttpPost("{externalPaymentId}/complete")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(
     Summary = "Completes the payment process",
-    Description = "Completes the payment process for the paymentId requested. In case of an error, redirects to the error URL.")]
+    Description = "Completes the payment process for the externalPaymentId requested. In case of an error, redirects to the error URL.")]
     [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, redirects to the error URL.")]
     [FeatureGate("EnablePaymentCompletion")]
-    public async Task<IActionResult> CompletePayment(string? govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
+    public async Task<IActionResult> CompletePayment(Guid externalPaymentId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(govPayPaymentId))
-        {
-            return BadRequest(ExceptionMessages.GovPayPaymentIdNull);
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         try
         {
-            var result = await _paymentsService.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken);
+            var result = await _paymentsService.CompletePaymentAsync(externalPaymentId, cancellationToken);
             return Ok(result);
         }
         catch (ValidationException ex)

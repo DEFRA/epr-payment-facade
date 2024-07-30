@@ -5,7 +5,6 @@ using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -206,78 +205,55 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_ValidGovPayPaymentId_ReturnsOk(
+        public async Task CompletePayment_ValidExternalPaymentId_ReturnsOk(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
             PaymentsController controller,
-            string govPayPaymentId,
-            CompletePaymentRequestDto completeRequest)
+            Guid externalPaymentId,
+            CompletePaymentResponseDto expectedResponse)
         {
             // Arrange
             var cancellationToken = new CancellationToken();
-            var expectedResponse = new CompletePaymentResponseDto
-            {
-                Status = PaymentStatus.Success,
-                Message = "Payment succeeded"
-            };
-            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ReturnsAsync(expectedResponse);
+            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
+            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
             result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
-            paymentsServiceMock.Verify(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken), Times.Once);
+            paymentsServiceMock.Verify(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken), Times.Once);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_NullGovPayPaymentId_ReturnsBadRequest(
-            PaymentsController controller,
-            CompletePaymentRequestDto completeRequest)
+        public async Task CompletePayment_NullExternalPaymentId_ReturnsBadRequest(
+                    PaymentsController controller)
         {
             // Arrange
+            Guid? externalPaymentId = null;
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.CompletePayment(null, completeRequest, cancellationToken);
+            var result = await controller.CompletePayment(externalPaymentId ?? Guid.Empty, cancellationToken);
 
             // Assert
             result.Should().BeOfType<BadRequestObjectResult>();
             var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().Be("GovPayPaymentId cannot be null or empty");
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CompletePayment_EmptyGovPayPaymentId_ReturnsBadRequest(
-            PaymentsController controller,
-            CompletePaymentRequestDto completeRequest)
-        {
-            // Arrange
-            var cancellationToken = new CancellationToken();
-
-            // Act
-            var result = await controller.CompletePayment(string.Empty, completeRequest, cancellationToken);
-
-            // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
-            var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().Be("GovPayPaymentId cannot be null or empty");
+            badRequestResult?.Value.Should().Be("ExternalPaymentId cannot be null or empty");
         }
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_ThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
             PaymentsController controller,
-            string govPayPaymentId,
-            CompletePaymentRequestDto completeRequest)
+            Guid externalPaymentId)
         {
             // Arrange
             var validationException = new ValidationException("Validation error");
             var cancellationToken = new CancellationToken();
 
-            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ThrowsAsync(validationException);
+            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
+            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
@@ -292,18 +268,17 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task CompletePayment_ThrowsException_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
             PaymentsController controller,
-            string govPayPaymentId,
-            CompletePaymentRequestDto completeRequest)
+            Guid externalPaymentId)
         {
             // Arrange
             var exception = new Exception("Some error");
             var cancellationToken = new CancellationToken();
             var errorUrl = "https://example.com/error";
 
-            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken)).ThrowsAsync(exception);
+            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await controller.CompletePayment(govPayPaymentId, completeRequest, cancellationToken);
+            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new FluentAssertions.Execution.AssertionScope())
@@ -314,75 +289,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
             }
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CompletePayment_MissingExternalPaymentId_ReturnsBadRequest(
-            PaymentsController controller)
-        {
-            // Arrange
-            var govPayPaymentId = "validId";
-            var request = new CompletePaymentRequestDto
-            {
-                // Missing ExternalPaymentId
-                UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
-            };
-            controller.ModelState.AddModelError("ExternalPaymentId", "ExternalPaymentId is required");
-
-            var cancellationToken = new CancellationToken();
-
-            // Act
-            var result = await controller.CompletePayment(govPayPaymentId, request, cancellationToken);
-
-            // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CompletePayment_MissingUpdatedByUserId_ReturnsBadRequest(
-            PaymentsController controller)
-        {
-            // Arrange
-            var govPayPaymentId = "validId";
-            var request = new CompletePaymentRequestDto
-            {
-                ExternalPaymentId = Guid.NewGuid(),
-                // Missing UpdatedByUserId
-                UpdatedByOrganisationId = Guid.NewGuid()
-            };
-            controller.ModelState.AddModelError("UpdatedByUserId", "UpdatedByUserId is required");
-
-            var cancellationToken = new CancellationToken();
-
-            // Act
-            var result = await controller.CompletePayment(govPayPaymentId, request, cancellationToken);
-
-            // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CompletePayment_MissingUpdatedByOrganisationId_ReturnsBadRequest(
-            PaymentsController controller)
-        {
-            // Arrange
-            var govPayPaymentId = "validId";
-            var request = new CompletePaymentRequestDto
-            {
-                ExternalPaymentId = Guid.NewGuid(),
-                UpdatedByUserId = Guid.NewGuid(),
-                // Missing UpdatedByOrganisationId
-            };
-            controller.ModelState.AddModelError("UpdatedByOrganisationId", "UpdatedByOrganisationId is required");
-
-            var cancellationToken = new CancellationToken();
-
-            // Act
-            var result = await controller.CompletePayment(govPayPaymentId, request, cancellationToken);
-
-            // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
         }
     }
 }

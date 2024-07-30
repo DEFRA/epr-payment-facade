@@ -1,7 +1,8 @@
-﻿using AutoMapper;
+﻿using AutoFixture;
+using AutoMapper;
 using EPR.Payment.Common.Mapping;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
+using EPR.Payment.Facade.Common.Enums;
 using FluentAssertions;
 
 namespace EPR.Payment.Facade.Common.UnitTests.Mappings
@@ -20,7 +21,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
             _mapper = config.CreateMapper();
         }
 
-        [TestMethod, AutoMoqData]
+        [TestMethod]
         public void AutoMapper_Configuration_IsValid()
         {
             var config = new MapperConfiguration(cfg =>
@@ -32,39 +33,43 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
             configAction.Should().NotThrow();
         }
 
-        [TestMethod, AutoMoqData]
-        public void PaymentRequestDto_To_GovPayPaymentRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
+        [TestMethod]
+        public void PaymentRequestDto_To_GovPayRequestDto_Mapping_IsValid()
         {
-            var govPayPaymentRequestDto = _mapper.Map<GovPayRequestDto>(paymentRequestDto);
+            var fixture = new Fixture();
+            var paymentRequestDto = fixture.Create<PaymentRequestDto>();
+            var govPayRequestDto = _mapper.Map<GovPayRequestDto>(paymentRequestDto);
 
             using (new FluentAssertions.Execution.AssertionScope())
             {
                 if (paymentRequestDto.Amount.HasValue)
                 {
-                    govPayPaymentRequestDto.Amount.Should().Be(paymentRequestDto.Amount.Value);
+                    govPayRequestDto.Amount.Should().Be(paymentRequestDto.Amount.Value);
                 }
 
-                govPayPaymentRequestDto.Reference.Should().Be(paymentRequestDto.Reference);
+                govPayRequestDto.Reference.Should().Be(paymentRequestDto.Reference);
 
                 if (paymentRequestDto.OrganisationId.HasValue)
                 {
-                    govPayPaymentRequestDto.OrganisationId.Should().Be(paymentRequestDto.OrganisationId.Value);
+                    govPayRequestDto.OrganisationId.Should().Be(paymentRequestDto.OrganisationId.Value);
                 }
 
                 if (paymentRequestDto.UserId.HasValue)
                 {
-                    govPayPaymentRequestDto.UserId.Should().Be(paymentRequestDto.UserId.Value);
+                    govPayRequestDto.UserId.Should().Be(paymentRequestDto.UserId.Value);
                 }
 
-                govPayPaymentRequestDto.Regulator.Should().Be(paymentRequestDto.Regulator);
-                govPayPaymentRequestDto.return_url.Should().BeNull(); // Ignored in mapping
-                govPayPaymentRequestDto.Description.Should().BeNull(); // Ignored in mapping
+                govPayRequestDto.Regulator.Should().Be(paymentRequestDto.Regulator);
+                govPayRequestDto.return_url.Should().BeNull(); // Ignored in mapping
+                govPayRequestDto.Description.Should().BeNull(); // Ignored in mapping
             }
         }
 
-        [TestMethod, AutoMoqData]
-        public void PaymentRequestDto_To_InsertPaymentRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
+        [TestMethod]
+        public void PaymentRequestDto_To_InsertPaymentRequestDto_Mapping_IsValid()
         {
+            var fixture = new Fixture();
+            var paymentRequestDto = fixture.Create<PaymentRequestDto>();
             var insertPaymentRequestDto = _mapper.Map<InsertPaymentRequestDto>(paymentRequestDto);
 
             using (new FluentAssertions.Execution.AssertionScope())
@@ -88,13 +93,15 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
 
                 insertPaymentRequestDto.Regulator.Should().Be(paymentRequestDto.Regulator);
                 insertPaymentRequestDto.ReasonForPayment.Should().BeNull(); // Ignored in mapping
-                insertPaymentRequestDto.Status.Should().Be(0); // Default value for enum, ignored in mapping
+                insertPaymentRequestDto.Status.Should().Be(PaymentStatus.Initiated); // Default value for enum, ignored in mapping
             }
         }
 
-        [TestMethod, AutoMoqData]
-        public void PaymentRequestDto_To_UpdatePaymentRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
+        [TestMethod]
+        public void PaymentRequestDto_To_UpdatePaymentRequestDto_Mapping_IsValid()
         {
+            var fixture = new Fixture();
+            var paymentRequestDto = fixture.Create<PaymentRequestDto>();
             var updatePaymentRequestDto = _mapper.Map<UpdatePaymentRequestDto>(paymentRequestDto);
 
             using (new FluentAssertions.Execution.AssertionScope())
@@ -111,28 +118,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
                     updatePaymentRequestDto.UpdatedByUserId.Should().Be(paymentRequestDto.UserId.Value);
                 }
 
-                updatePaymentRequestDto.Status.Should().Be(0); // Default value for enum, ignored in mapping
+                updatePaymentRequestDto.Status.Should().Be(PaymentStatus.InProgress); // Default value for enum, ignored in mapping
                 updatePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
                 updatePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
-            }
-        }
-
-        [TestMethod, AutoMoqData]
-        public void CompletePaymentRequestDto_To_UpdatePaymentRequestDto_Mapping_IsValid(CompletePaymentRequestDto completePaymentRequestDto)
-        {
-            var updatePaymentRequestDto = _mapper.Map<UpdatePaymentRequestDto>(completePaymentRequestDto);
-
-            using (new FluentAssertions.Execution.AssertionScope())
-            {
-                updatePaymentRequestDto.ExternalPaymentId.Should().Be(completePaymentRequestDto.ExternalPaymentId);
-                updatePaymentRequestDto.UpdatedByUserId.Should().Be(completePaymentRequestDto.UpdatedByUserId);
-                updatePaymentRequestDto.UpdatedByOrganisationId.Should().Be(completePaymentRequestDto.UpdatedByOrganisationId);
-                updatePaymentRequestDto.Reference.Should().BeNull(); // Ignored in mapping
-                updatePaymentRequestDto.Status.Should().Be(0); // Default value for enum, ignored in mapping
-                updatePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
-                updatePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
-                updatePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
             }
         }
     }
