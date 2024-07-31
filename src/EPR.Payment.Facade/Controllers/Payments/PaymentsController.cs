@@ -30,8 +30,8 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(
-    Summary = "Initiates a new payment",
-    Description = "Initiates a new payment with mandatory payment request data. Amount must be greater than 0. In case of an error, redirects to the error URL."
+        Summary = "Initiates a new payment",
+        Description = "Initiates a new payment with mandatory payment request data. Amount must be greater than 0. In case of an error, redirects to the error URL."
     )]
     [SwaggerResponse(StatusCodes.Status302Found, "Redirects to the payment next URL.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
@@ -46,30 +46,57 @@ public class PaymentsController : ControllerBase
 
         if (request.Amount <= 0)
         {
-            return BadRequest(CreateValidationProblemDetail(ExceptionMessages.AmountMustBeGreaterThanZero));
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Validation Error",
+                Detail = ExceptionMessages.AmountMustBeGreaterThanZero,
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
         try
         {
-            var result = await _paymentsService.InitiatePaymentAsync(request, Response, cancellationToken); // Pass Response to the service
+            var result = await _paymentsService.InitiatePaymentAsync(request, cancellationToken);
 
             if (result.NextUrl == null)
             {
                 _logger.LogError(LogMessages.NextUrlNull);
-                return CreateHtmlRedirectResponse(_errorUrl);
+                return new ContentResult
+                {
+                    Content = CreateHtmlContent(_errorUrl),
+                    ContentType = "text/html",
+                    StatusCode = StatusCodes.Status200OK
+                };
             }
 
-            return CreateHtmlRedirectResponse(result.NextUrl);
+            var htmlContent = CreateHtmlContent(result.NextUrl);
+
+            return new ContentResult
+            {
+                Content = htmlContent,
+                ContentType = "text/html",
+                StatusCode = StatusCodes.Status200OK
+            };
         }
         catch (ValidationException ex)
         {
             _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiatePayment));
-            return BadRequest(CreateValidationProblemDetail(ex.Message));
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Validation Error",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiatePayment));
-            return CreateHtmlRedirectResponse(_errorUrl);
+            return new ContentResult
+            {
+                Content = CreateHtmlContent(_errorUrl),
+                ContentType = "text/html",
+                StatusCode = StatusCodes.Status200OK
+            };
         }
     }
 
@@ -78,8 +105,8 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [SwaggerOperation(
-        Summary = "Completes the payment process",
-        Description = "Completes the payment process for the paymentId requested. In case of an error, redirects to the error URL.")]
+    Summary = "Completes the payment process",
+    Description = "Completes the payment process for the paymentId requested. In case of an error, redirects to the error URL.")]
     [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, redirects to the error URL.")]
@@ -114,44 +141,31 @@ public class PaymentsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.ErrorOccured, nameof(CompletePayment));
-            return CreateHtmlRedirectResponse(_errorUrl);
+            return new ContentResult
+            {
+                Content = CreateHtmlContent(_errorUrl),
+                ContentType = "text/html",
+                StatusCode = StatusCodes.Status200OK
+            };
         }
     }
 
-    private ProblemDetails CreateValidationProblemDetail(string detail)
+    private string CreateHtmlContent(string nextUrl)
     {
-        return new ProblemDetails
-        {
-            Title = "Validation Error",
-            Detail = detail,
-            Status = StatusCodes.Status400BadRequest
-        };
-    }
-
-    private IActionResult CreateHtmlRedirectResponse(string nextUrl)
-    {
-        var htmlContent = $@"
-            <!DOCTYPE html>
-            <html lang=""en"">
-            <head>
-                <meta charset=""UTF-8"">
-                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-                <title>Redirecting...</title>
-                <script>
-                    window.location.href = '{nextUrl}';
-                </script>
-            </head>
-            <body>
-                Redirecting to payment page...
-            </body>
-            </html>";
-
-        return new ContentResult
-        {
-            Content = htmlContent,
-            ContentType = "text/html",
-            StatusCode = StatusCodes.Status200OK
-        };
+        return $@"
+    <!DOCTYPE html>
+    <html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Redirecting...</title>
+        <script>
+            window.location.href = '{nextUrl}';
+        </script>
+    </head>
+    <body>
+        Redirecting to payment page...
+    </body>
+    </html>";
     }
 }
-
