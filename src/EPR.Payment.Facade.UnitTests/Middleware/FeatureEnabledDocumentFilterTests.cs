@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -71,7 +72,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             _filter.Apply(swaggerDoc, context);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 swaggerDoc.Paths.Should().NotContainKey("/test");
                 _output.ToString().Should().Contain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
@@ -117,7 +118,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             _filter.Apply(swaggerDoc, context);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 swaggerDoc.Paths.Should().ContainKey("/test");
                 _output.ToString().Should().NotContain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
@@ -163,7 +164,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             _filter.Apply(swaggerDoc, context);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 swaggerDoc.Paths.Should().NotContainKey("/test");
                 _output.ToString().Should().Contain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
@@ -207,7 +208,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             _filter.Apply(swaggerDoc, context);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 swaggerDoc.Paths.Should().ContainKey("/test");
                 _output.ToString().Should().NotContain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");
@@ -253,7 +254,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             _filter.Apply(swaggerDoc, context);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 swaggerDoc.Paths.Should().ContainKey("/test");
                 _output.ToString().Should().NotContain("Removing path '/test' from Swagger documentation because the feature gate is disabled.");

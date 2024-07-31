@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
@@ -26,16 +27,16 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status302Found)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ContentResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
     [SwaggerOperation(
         Summary = "Initiates a new payment",
         Description = "Initiates a new payment with mandatory payment request data. Amount must be greater than 0. In case of an error, redirects to the error URL."
     )]
-    [SwaggerResponse(StatusCodes.Status302Found, "Redirects to the payment next URL.")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Returns an HTML content result with a redirect script.", typeof(ContentResult))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, redirects to the error URL.")]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, returns an HTML content result with a redirect script to the error URL.", typeof(ContentResult))]
     [FeatureGate("EnablePaymentInitiation")]
     public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request, CancellationToken cancellationToken)
     {
@@ -100,32 +101,32 @@ public class PaymentsController : ControllerBase
         }
     }
 
-    [HttpPost("{govPayPaymentId}/complete")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPost("{externalPaymentId}/complete")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompletePaymentResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
     [SwaggerOperation(
-    Summary = "Completes the payment process",
-    Description = "Completes the payment process for the paymentId requested. In case of an error, redirects to the error URL.")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.")]
-    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, redirects to the error URL.")]
+        Summary = "Completes the payment process",
+        Description = "Completes the payment process for the externalPaymentId requested. In case of an error, redirects to the error URL.")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.", typeof(CompletePaymentResponseDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, returns an HTML content result with a redirect script to the error URL.", typeof(ContentResult))]
     [FeatureGate("EnablePaymentCompletion")]
-    public async Task<IActionResult> CompletePayment(string? govPayPaymentId, [FromBody] CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
+    public async Task<IActionResult> CompletePayment(Guid externalPaymentId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(govPayPaymentId))
+        if (externalPaymentId == Guid.Empty)
         {
-            return BadRequest(ExceptionMessages.GovPayPaymentIdNull);
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Validation Error",
+                Detail = "ExternalPaymentId cannot be empty.",
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
         try
         {
-            var result = await _paymentsService.CompletePaymentAsync(govPayPaymentId, completeRequest, cancellationToken);
+            var result = await _paymentsService.CompletePaymentAsync(externalPaymentId, cancellationToken);
             return Ok(result);
         }
         catch (ValidationException ex)
