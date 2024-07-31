@@ -76,18 +76,33 @@ public class PaymentsService : IPaymentsService
 
     private async Task<PaymentDetailsDto> GetPaymentDetailsAsync(Guid externalPaymentId, CancellationToken cancellationToken)
     {
-        return await _httpPaymentsService.GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
+        try
+        {
+            return await _httpPaymentsService.GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ExceptionMessages.ErrorGettingPaymentDetails);
+            throw new Exception(ExceptionMessages.ErrorRetrievingPaymentDetails, ex);
+        }
     }
 
     private async Task<PaymentStatusResponseDto> GetPaymentStatusResponseAsync(string govPayPaymentId, CancellationToken cancellationToken)
     {
-        var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId, cancellationToken);
-        if (paymentStatusResponse?.State == null || paymentStatusResponse.State.Status == null)
+        try
         {
-            throw new Exception(ExceptionMessages.PaymentStatusNotFound);
+            var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId, cancellationToken);
+            if (paymentStatusResponse?.State == null || paymentStatusResponse.State.Status == null)
+            {
+                throw new Exception(ExceptionMessages.PaymentStatusNotFound);
+            }
+            return paymentStatusResponse;
         }
-
-        return paymentStatusResponse;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ExceptionMessages.ErrorRetrievingPaymentStatus);
+            throw new Exception(ExceptionMessages.ErrorRetrievingPaymentStatus, ex);
+        }
     }
 
     private UpdatePaymentRequestDto CreateUpdatePaymentRequest(PaymentDetailsDto paymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)

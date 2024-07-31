@@ -317,8 +317,9 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Act & Assert
             await service.Invoking(async s => await s.CompletePaymentAsync(externalPaymentId, new CancellationToken()))
-                .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.PaymentStatusNotFound);
+                .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentStatus);
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_PaymentStateNull_ThrowsPaymentStatusNotFoundException(
@@ -1059,9 +1060,9 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_GovPayPaymentIdIsNull_ThrowsException(
-    [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
-    [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
-    PaymentsService service)
+            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+            PaymentsService service)
         {
             // Arrange
             var externalPaymentId = Guid.NewGuid();
@@ -1091,7 +1092,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var externalPaymentId = Guid.NewGuid();
             var paymentDetails = new PaymentDetailsDto
             {
-                GovPayPaymentId = string.Empty, // Simulating an empty GovPayPaymentId
+                GovPayPaymentId = string.Empty,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
                 UpdatedByOrganisationId = Guid.NewGuid()
@@ -1105,6 +1106,74 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.PaymentStatusNotFound);
         }
 
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_GetPaymentDetailsThrowsException_LogsAndThrowsException(
+            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> loggerMock,
+            PaymentsService service)
+        {
+            // Arrange
+            var externalPaymentId = Guid.NewGuid();
+            var expectedException = new Exception(ExceptionMessages.ErrorGettingPaymentDetails);
+
+            httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(expectedException);
+
+            // Act & Assert
+            var act = async () => await service.CompletePaymentAsync(externalPaymentId, new CancellationToken());
+            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentDetails);
+
+            // Verify that the error was logged
+            loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.ErrorGettingPaymentDetails)),
+                    expectedException,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CompletePayment_GetPaymentStatusThrowsException_LogsAndThrowsException(
+            [Frozen] Mock<IHttpGovPayService> httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> httpPaymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> loggerMock,
+            PaymentsService service)
+        {
+            // Arrange
+            var externalPaymentId = Guid.NewGuid();
+            var govPayPaymentId = "12345";
+            var expectedException = new Exception(ExceptionMessages.ErrorRetrievingPaymentStatus);
+
+            var paymentDetails = new PaymentDetailsDto
+            {
+                GovPayPaymentId = govPayPaymentId,
+                ExternalPaymentId = externalPaymentId,
+                UpdatedByUserId = Guid.NewGuid(),
+                UpdatedByOrganisationId = Guid.NewGuid()
+            };
+
+            httpPaymentsServiceMock.Setup(s => s.GetPaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(paymentDetails);
+            httpGovPayServiceMock.Setup(s => s.GetPaymentStatusAsync(govPayPaymentId, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(expectedException);
+
+            // Act & Assert
+            var act = async () => await service.CompletePaymentAsync(externalPaymentId, new CancellationToken());
+            await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentStatus);
+
+            // Verify that the error was logged
+            loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.ErrorRetrievingPaymentStatus)),
+                    expectedException,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
 
     }
 }
