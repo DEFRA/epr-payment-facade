@@ -4,8 +4,6 @@ using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
-using EPR.Payment.Facade.Services.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using System.Security.Authentication;
@@ -36,15 +34,8 @@ builder.Services.AddHttpClient("HttpClient")
             SslProtocols = SslProtocols.Tls12
         };
     });
-
-// Add Data Protection Services
-builder.Services.AddDataProtection();
-
 builder.Services.AddFacadeDependencies(builder.Configuration);
 builder.Services.AddDependencies();
-
-// Register ICookieService
-builder.Services.AddScoped<ICookieService, CookieService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(PaymentRequestMappingProfile));

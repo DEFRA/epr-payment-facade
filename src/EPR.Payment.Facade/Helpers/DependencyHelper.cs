@@ -17,7 +17,6 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<ServicesConfiguration>(configuration.GetSection(ServicesConfiguration.SectionName));
 
             services.AddScoped<IPaymentServiceHealthService, PaymentServiceHealthService>();
-            services.AddScoped<ICookieService, CookieService>();
 
             RegisterHttpService<IHttpPaymentServiceHealthCheckService, HttpPaymentServiceHealthCheckService>(
                 services, nameof(ServicesConfiguration.PaymentService), "health");

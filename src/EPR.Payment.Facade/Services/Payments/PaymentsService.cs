@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Internal.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.Mappers;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,25 +16,22 @@ public class PaymentsService : IPaymentsService
     private readonly ILogger<PaymentsService> _logger;
     private readonly PaymentServiceOptions _paymentServiceOptions;
     private readonly IMapper _mapper;
-    private readonly ICookieService _cookieService;
 
     public PaymentsService(
         IHttpGovPayService httpGovPayService,
         IHttpPaymentsService httpPaymentsService,
         ILogger<PaymentsService> logger,
         IOptions<PaymentServiceOptions> paymentServiceOptions,
-        IMapper mapper,
-        ICookieService cookieService)
+        IMapper mapper)
     {
         _httpGovPayService = httpGovPayService ?? throw new ArgumentNullException(nameof(httpGovPayService));
         _httpPaymentsService = httpPaymentsService ?? throw new ArgumentNullException(nameof(httpPaymentsService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _paymentServiceOptions = paymentServiceOptions.Value ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _cookieService = cookieService ?? throw new ArgumentNullException(nameof(cookieService));
     }
 
-    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, HttpResponse response, CancellationToken cancellationToken) // Add HttpResponse parameter
+    public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken)
     {
         ValidateObject(request);
 
@@ -48,17 +43,7 @@ public class PaymentsService : IPaymentsService
 
         await UpdatePaymentStatusAsync(externalPaymentId, request, govPayResponse.PaymentId!, cancellationToken);
 
-        var paymentData = new PaymentCookieDataDto
-        {
-            ExternalPaymentId = externalPaymentId,
-            UpdatedByUserId = request.UserId!.Value,
-            UpdatedByOrganisationId = request.OrganisationId!.Value,
-            GovPayPaymentId = govPayResponse.PaymentId!
-        };
-
-        _cookieService.SetPaymentDataCookie(response, paymentData);
-
-        return CreatePaymentResponse(govPayResponse, externalPaymentId);
+        return CreatePaymentResponse(govPayResponse);
     }
 
     public async Task<CompletePaymentResponseDto> CompletePaymentAsync(string govPayPaymentId, CompletePaymentRequestDto completeRequest, CancellationToken cancellationToken)
@@ -185,13 +170,11 @@ public class PaymentsService : IPaymentsService
         }
     }
 
-    private PaymentResponseDto CreatePaymentResponse(GovPayResponseDto govPayResponse, Guid externalPaymentId)
+    private PaymentResponseDto CreatePaymentResponse(GovPayResponseDto govPayResponse)
     {
         return new PaymentResponseDto
         {
-            NextUrl = govPayResponse.Links?.NextUrl?.Href,
-            ExternalPaymentId = externalPaymentId,
-            GovPayPaymentId = govPayResponse.PaymentId!
+            NextUrl = govPayResponse.Links?.NextUrl?.Href
         };
     }
 
