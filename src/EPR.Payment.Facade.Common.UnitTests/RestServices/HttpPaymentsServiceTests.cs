@@ -93,7 +93,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var result = await httpPaymentsService.InsertPaymentAsync(_insertPaymentRequestDto, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().Be(_paymentId);
                 handlerMock.Protected().Verify(

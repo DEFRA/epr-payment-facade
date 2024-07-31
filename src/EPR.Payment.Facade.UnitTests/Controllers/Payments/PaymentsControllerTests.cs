@@ -1,12 +1,10 @@
-﻿using AutoFixture;
-using AutoFixture.AutoMoq;
-using AutoFixture.MSTest;
-using EPR.Payment.Facade.Common.Configuration;
+﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,19 +16,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
     [TestClass]
     public class PaymentsControllerTests
     {
-        private IFixture? _fixture;
-
-        [TestInitialize]
-        public void Initialize()
-        {
-            _fixture = new Fixture().Customize(new AutoMoqCustomization());
-
-            // Configure PaymentServiceOptions with valid values to avoid null references
-            _fixture.Customize<PaymentServiceOptions>(c => c.With(x => x.ReturnUrl, "https://example.com/return")
-                                                           .With(x => x.Description, "Test Description")
-                                                           .With(x => x.ErrorUrl, "https://example.com/error"));
-        }
-
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ValidRequest_ReturnsRedirectResponse(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
@@ -46,7 +31,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<ContentResult>();
                 var contentResult = result as ContentResult;
@@ -82,7 +67,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
 
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<ContentResult>();
                 var contentResult = result as ContentResult;
@@ -106,7 +91,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
@@ -133,7 +118,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
@@ -160,7 +145,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
@@ -184,7 +169,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(invalidRequest, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
@@ -209,7 +194,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<ContentResult>();
                 var contentResult = result as ContentResult;
@@ -234,7 +219,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
                 paymentsServiceMock.Verify(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken), Times.Once);
@@ -253,7 +238,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
-            using (var scope = new FluentAssertions.Execution.AssertionScope())
+            using (var scope = new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
@@ -282,7 +267,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
@@ -307,7 +292,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().BeOfType<ContentResult>();
                 var contentResult = result as ContentResult;
@@ -329,7 +314,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.CompletePayment(externalPaymentId, CancellationToken.None);
 
             // Assert
-            using (var scope = new FluentAssertions.Execution.AssertionScope())
+            using (var scope = new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>().Which.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be("ExternalPaymentId cannot be empty.");
             }

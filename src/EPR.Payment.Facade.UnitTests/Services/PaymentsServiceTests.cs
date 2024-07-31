@@ -12,6 +12,7 @@ using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -96,7 +97,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var result = await service.InitiatePaymentAsync(request, new CancellationToken());
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().NotBeNull();
                 result.NextUrl.Should().Be(expectedResponse.Links?.NextUrl?.Href);
@@ -145,7 +146,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>();
 
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 exception.Which.Message.Should().Contain(expectedMessage);
             }
@@ -572,7 +573,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 .Should().ThrowAsync<ValidationException>();
 
             // Use a flexible matching to ensure the message contains the expected constant message
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 exception.Which.Message.Should().Match($"*{ExceptionMessages.ErrorInsertingPayment}*");
             }

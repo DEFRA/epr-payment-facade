@@ -1,9 +1,10 @@
-﻿using AutoFixture;
-using AutoMapper;
+﻿using AutoMapper;
 using EPR.Payment.Common.Mapping;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Enums;
+using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 
 namespace EPR.Payment.Facade.Common.UnitTests.Mappings
 {
@@ -21,7 +22,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
             _mapper = config.CreateMapper();
         }
 
-        [TestMethod]
+        [TestMethod, AutoMoqData]
         public void AutoMapper_Configuration_IsValid()
         {
             var config = new MapperConfiguration(cfg =>
@@ -33,14 +34,12 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
             configAction.Should().NotThrow();
         }
 
-        [TestMethod]
-        public void PaymentRequestDto_To_GovPayRequestDto_Mapping_IsValid()
+        [TestMethod, AutoMoqData]
+        public void PaymentRequestDto_To_GovPayRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
         {
-            var fixture = new Fixture();
-            var paymentRequestDto = fixture.Create<PaymentRequestDto>();
             var govPayRequestDto = _mapper.Map<GovPayRequestDto>(paymentRequestDto);
 
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 if (paymentRequestDto.Amount.HasValue)
                 {
@@ -65,14 +64,12 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
             }
         }
 
-        [TestMethod]
-        public void PaymentRequestDto_To_InsertPaymentRequestDto_Mapping_IsValid()
+        [TestMethod, AutoMoqData]
+        public void PaymentRequestDto_To_InsertPaymentRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
         {
-            var fixture = new Fixture();
-            var paymentRequestDto = fixture.Create<PaymentRequestDto>();
             var insertPaymentRequestDto = _mapper.Map<InsertPaymentRequestDto>(paymentRequestDto);
 
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 if (paymentRequestDto.Amount.HasValue)
                 {
@@ -97,14 +94,12 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
             }
         }
 
-        [TestMethod]
-        public void PaymentRequestDto_To_UpdatePaymentRequestDto_Mapping_IsValid()
+        [TestMethod, AutoMoqData]
+        public void PaymentRequestDto_To_UpdatePaymentRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
         {
-            var fixture = new Fixture();
-            var paymentRequestDto = fixture.Create<PaymentRequestDto>();
             var updatePaymentRequestDto = _mapper.Map<UpdatePaymentRequestDto>(paymentRequestDto);
 
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 updatePaymentRequestDto.Reference.Should().Be(paymentRequestDto.Reference);
 
