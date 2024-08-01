@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Execution;
 using System.Net;
 
 namespace EPR.Payment.Facade.Common.Exceptions.Tests
@@ -17,7 +18,7 @@ namespace EPR.Payment.Facade.Common.Exceptions.Tests
             var exception = new ResponseCodeException(statusCode, message);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 exception.StatusCode.Should().Be(statusCode);
                 exception.Message.Should().Be(message);
@@ -34,7 +35,7 @@ namespace EPR.Payment.Facade.Common.Exceptions.Tests
             var exception = new ResponseCodeException(statusCode);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 exception.StatusCode.Should().Be(statusCode);
                 exception.Message.Should().Be("Exception of type 'EPR.Payment.Facade.Common.Exceptions.ResponseCodeException' was thrown.");

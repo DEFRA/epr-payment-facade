@@ -66,7 +66,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         {
             // Arrange
             handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), 
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
                        ItExpr.IsAny<CancellationToken>())
                        .ReturnsAsync(new HttpResponseMessage
                        {
@@ -81,7 +81,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().NotBeNull();
                 result.PaymentId.Should().Be(_expectedResponse!.PaymentId);
@@ -119,7 +119,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Func<Task> act = async () => await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
-            using(new AssertionScope())
+            using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInitiatingPayment);
 
@@ -141,7 +141,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         {
             // Arrange
             handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), 
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
                        ItExpr.IsAny<CancellationToken>())
                        .ReturnsAsync(new HttpResponseMessage
                        {
@@ -189,7 +189,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Func<Task> act = async () => await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
-            using(new AssertionScope())
+            using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentStatus);
                 handlerMock.Protected().Verify(

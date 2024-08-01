@@ -1,4 +1,5 @@
 ﻿using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.HealthCheck;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
@@ -10,7 +11,7 @@ namespace EPR.Payment.Facade.UnitTests.HealthCheck
     [TestClass]
     public class PaymentsFacadeHealthCheckTests : HealthChecksTestsBase
     {
-        [TestMethod, Common.UnitTests.TestHelpers.AutoMoqData]
+        [TestMethod, AutoMoqData]
         public async Task CheckHealthAsync_ValidQueryResult_ReturnsHealthyStatus(
         [Frozen] Mock<IPaymentServiceHealthService> paymentServiceHealthService,
         HealthCheckContext healthCheckContext,
@@ -23,7 +24,7 @@ namespace EPR.Payment.Facade.UnitTests.HealthCheck
             actual.Status.Should().Be(HealthStatus.Healthy);
         }
 
-        [TestMethod, Common.UnitTests.TestHelpers.AutoMoqData]
+        [TestMethod, AutoMoqData]
         public async Task CheckHealthAsync_NotValidQueryResult_ReturnsUnHealthyStatus(
             [Frozen] Mock<IPaymentServiceHealthService> paymentServiceHealthService,
             HealthCheckContext healthCheckContext,

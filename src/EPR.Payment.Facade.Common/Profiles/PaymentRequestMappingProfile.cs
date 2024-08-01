@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+using EPR.Payment.Facade.Common.Enums;
 
 namespace EPR.Payment.Common.Mapping
 {
@@ -24,13 +26,16 @@ namespace EPR.Payment.Common.Mapping
             CreateMap<PaymentRequestDto, UpdatePaymentRequestDto>()
                 .ForMember(dest => dest.ExternalPaymentId, opt => opt.Ignore())
                 .ForMember(dest => dest.GovPayPaymentId, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => PaymentStatus.InProgress))
                 .ForMember(dest => dest.UpdatedByOrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))
                 .ForMember(dest => dest.UpdatedByUserId, opt => opt.MapFrom(src => src.UserId!.Value))
                 .ForMember(dest => dest.ErrorCode, opt => opt.Ignore())
                 .ForMember(dest => dest.ErrorMessage, opt => opt.Ignore());
 
-            CreateMap<CompletePaymentRequestDto, UpdatePaymentRequestDto>()
+            CreateMap<PaymentDetailsDto, UpdatePaymentRequestDto>()
+                .ForMember(dest => dest.UpdatedByUserId, opt => opt.MapFrom(src => src.UpdatedByUserId))
+                .ForMember(dest => dest.UpdatedByOrganisationId, opt => opt.MapFrom(src => src.UpdatedByOrganisationId))
+                .ForMember(dest => dest.ExternalPaymentId, opt => opt.MapFrom(src => src.ExternalPaymentId))
                 .ForMember(dest => dest.Reference, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.ErrorCode, opt => opt.Ignore())

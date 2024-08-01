@@ -5,6 +5,7 @@ using EPR.Payment.Facade.Helpers;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +56,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             var serviceProvider = _services?.BuildServiceProvider();
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 var paymentHealthService = serviceProvider?.GetService<IPaymentServiceHealthService>();
                 paymentHealthService.Should().NotBeNull();
