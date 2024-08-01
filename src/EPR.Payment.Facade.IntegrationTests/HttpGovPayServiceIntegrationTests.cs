@@ -3,6 +3,7 @@ using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.RESTServices;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +58,7 @@ namespace EPR.Payment.Facade.IntegrationTests
             var response = await service.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 response.Should().NotBeNull();
                 response.PaymentId.Should().NotBeNullOrEmpty();

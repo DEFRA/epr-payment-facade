@@ -1,6 +1,7 @@
 ﻿using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Moq;
 
 namespace EPR.Payment.Facade.UnitTests.Services.Payments
@@ -40,7 +41,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             var result = await _service.GetHealthAsync(CancellationToken.None);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 result.Should().Be(response);
                 _httpPaymentServiceHealthCheckServiceMock.Verify(service => service.GetHealthAsync(It.IsAny<CancellationToken>()), Times.Once);

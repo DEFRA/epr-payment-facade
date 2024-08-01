@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.UnitTests.HealthCheck;
+using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using Moq;
 
@@ -10,7 +11,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
     [TestClass]
     public class PaymentServiceHealthServiceTests : HealthChecksTestsBase
     {
-        [TestMethod, Common.UnitTests.TestHelpers.AutoMoqData]
+        [TestMethod, AutoMoqData]
         public async Task GetHealthAsync_ValidQueryResult_ReturnsHttpStatusOK(
             [Frozen] Mock<IHttpPaymentServiceHealthCheckService> httpPaymentServiceHealthCheckService,
             PaymentServiceHealthService paymentServiceHealthService)
@@ -25,7 +26,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             actual.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         }
 
-        [TestMethod, Common.UnitTests.TestHelpers.AutoMoqData]
+        [TestMethod, AutoMoqData]
         public async Task GetHealthAsync_ValidQueryResult_ReturnsHttpStatusBasRequest(
             [Frozen] Mock<IHttpPaymentServiceHealthCheckService> httpPaymentServiceHealthCheckService,
             PaymentServiceHealthService paymentServiceHealthService)

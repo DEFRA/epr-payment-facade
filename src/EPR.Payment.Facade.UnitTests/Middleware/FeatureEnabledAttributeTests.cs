@@ -1,6 +1,7 @@
 ﻿using EPR.Payment.Facade.Helpers;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 
 namespace EPR.Payment.Facade.UnitTests.Middleware
 {
@@ -29,7 +30,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             ) as AttributeUsageAttribute;
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 attributeUsage.Should().NotBeNull();
                 attributeUsage!.ValidOn.Should().Be(AttributeTargets.Class | AttributeTargets.Method);
@@ -47,7 +48,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             var attribute = Attribute.GetCustomAttribute(type, typeof(FeatureEnabledAttribute)) as FeatureEnabledAttribute;
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 attribute.Should().NotBeNull();
                 attribute!.FeatureName.Should().Be("ClassFeature");
@@ -64,7 +65,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             var attribute = Attribute.GetCustomAttribute(method!, typeof(FeatureEnabledAttribute)) as FeatureEnabledAttribute;
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 attribute.Should().NotBeNull();
                 attribute!.FeatureName.Should().Be("MethodFeature");

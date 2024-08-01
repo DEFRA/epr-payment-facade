@@ -17,11 +17,16 @@
         public const string ErrorUpdatingPayment = "Error occurred while updating payment status.";
         public const string UnexpectedErrorInsertingPayment = "An unexpected error occurred while inserting the payment.";
         public const string UnexpectedErrorUpdatingPayment = "An unexpected error occurred while updating the payment status.";
+        public const string ErrorRetrievingPaymentDetails = "Error occurred while retrieving payment details.";
+        public const string ErrorGettingPaymentDetails = "Error occurred while getting payment details.";
 
         // PaymentsService exceptions
         public const string ReturnUrlNotConfigured = "ReturnUrl is not configured.";
         public const string DescriptionNotConfigured = "Description is not configured.";
         public const string GovPayPaymentIdNull = "GovPayPaymentId cannot be null or empty";
+        public const string SuccessStatusWithErrorCode = "Error code should be null or empty for a success status.";
+        public const string FailedStatusWithoutErrorCode = "Error code cannot be null or empty for a failed status.";
+        public const string ErrorStatusWithoutErrorCode = "Error code cannot be null or empty for an error status.";
 
         // BaseHttpService exceptions
         public const string ApiResponseError = "Error occurred calling API with error code: {0}. Message: {1}";

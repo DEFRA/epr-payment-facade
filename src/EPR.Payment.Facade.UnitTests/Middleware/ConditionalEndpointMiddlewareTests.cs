@@ -1,5 +1,6 @@
 ﻿using EPR.Payment.Facade.Helpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Logging;
@@ -102,7 +103,7 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
             await _middleware.InvokeAsync(context);
 
             // Assert
-            using (new FluentAssertions.Execution.AssertionScope())
+            using (new AssertionScope())
             {
                 context.Response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
                 _nextMock.Verify(next => next(It.IsAny<HttpContext>()), Times.Never);
