@@ -18,9 +18,9 @@ RUN dotnet tool install dotnet-ef --version 6.* --tool-path "/root/.dotnet/tools
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
 WORKDIR /src
-COPY [""EPR.Payment.Facade/EPR.Payment.Facade.csproj", "EPR.Payment.Facade/"]
+COPY ["EPR.Payment.Facade/EPR.Payment.Facade.csproj", "EPR.Payment.Facade/"]
 COPY ["EPR.Payment.Facade.Common/EPR.Payment.Facade.Common.csproj", "EPR.Payment.Facade.Common/"]
-RUN dotnet restore ""EPR.Payment.Facade/EPR.Payment.Facade.csproj"
+RUN dotnet restore "EPR.Payment.Facade/EPR.Payment.Facade.csproj"
 
 COPY --chown=dotnet:dotnet EPR.Payment.Facade/. ./EPR.Payment.Facade/.
 COPY --chown=dotnet:dotnet EPR.Payment.Facade.Common/. ./EPR.Payment.Facade.Common/.
