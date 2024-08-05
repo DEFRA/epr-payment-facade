@@ -26,3 +26,5 @@ appsettings.Test.json
 /node_modules
 /bin/Debug
 /obj
+/src/EPR.Payment.Facade/appsettings.Development.json
+/src/EPR.Payment.Facade.IntegrationTests/appsettings.json
