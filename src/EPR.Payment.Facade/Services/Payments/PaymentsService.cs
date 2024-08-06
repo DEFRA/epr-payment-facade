@@ -146,7 +146,8 @@ public class PaymentsService : IPaymentsService
             UserId = paymentDetails.UpdatedByUserId,
             OrganisationId = paymentDetails.UpdatedByOrganisationId,
             Regulator = paymentDetails.Regulator,
-            Amount = paymentDetails.Amount
+            Amount = paymentDetails.Amount,
+            Email = paymentStatusResponse?.Email
         };
     }
 
