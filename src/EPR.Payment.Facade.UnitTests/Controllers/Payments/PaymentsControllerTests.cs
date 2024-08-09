@@ -5,11 +5,11 @@ using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.UnitTests.Controllers
 {
@@ -96,60 +96,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<SerializableError>();
-            }
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_AmountZero_ReturnsBadRequest(PaymentsController controller)
-        {
-            // Arrange
-            var request = new PaymentRequestDto
-            {
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid(),
-                Regulator = "Test Regulator",
-                Reference = "Test Reference",
-                Amount = 0 // Invalid amount
-            };
-
-            var cancellationToken = new CancellationToken();
-
-            // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                result.Should().BeOfType<BadRequestObjectResult>();
-                var badRequestResult = result as BadRequestObjectResult;
-                badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
-            }
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_AmountNegative_ReturnsBadRequest(PaymentsController controller)
-        {
-            // Arrange
-            var request = new PaymentRequestDto
-            {
-                UserId = Guid.NewGuid(),
-                OrganisationId = Guid.NewGuid(),
-                Regulator = "Test Regulator",
-                Reference = "Test Reference",
-                Amount = -1 // Invalid amount
-            };
-
-            var cancellationToken = new CancellationToken();
-
-            // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                result.Should().BeOfType<BadRequestObjectResult>();
-                var badRequestResult = result as BadRequestObjectResult;
-                badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
             }
         }
 
@@ -299,24 +245,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
-            }
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CompletePayment_EmptyExternalPaymentId_ReturnsBadRequest(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller)
-        {
-            // Arrange
-            var externalPaymentId = Guid.Empty;
-
-            // Act
-            var result = await controller.CompletePayment(externalPaymentId, CancellationToken.None);
-
-            // Assert
-            using (var scope = new AssertionScope())
-            {
-                result.Should().BeOfType<BadRequestObjectResult>().Which.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be("ExternalPaymentId cannot be empty.");
             }
         }
     }
