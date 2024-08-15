@@ -3,31 +3,34 @@ using Microsoft.FeatureManagement.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-public class FeatureGateOperationFilter : IOperationFilter
+namespace EPR.Payment.Facade.Helpers
 {
-    private readonly IFeatureManager _featureManager;
-
-    public FeatureGateOperationFilter(IFeatureManager featureManager)
+    public class FeatureGateOperationFilter : IOperationFilter
     {
-        _featureManager = featureManager;
-    }
+        private readonly IFeatureManager _featureManager;
 
-    public void Apply(OpenApiOperation operation, OperationFilterContext context)
-    {
-        var featureGateAttributes = context.MethodInfo.GetCustomAttributes(typeof(FeatureGateAttribute), false) as FeatureGateAttribute[];
-
-        if (featureGateAttributes != null)
+        public FeatureGateOperationFilter(IFeatureManager featureManager)
         {
-            foreach (var featureGateAttribute in featureGateAttributes)
-            {
-                foreach (var featureName in featureGateAttribute.Features)
-                {
-                    var featureEnabled = _featureManager.IsEnabledAsync(featureName).Result;
+            _featureManager = featureManager;
+        }
 
-                    if (!featureEnabled)
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            var featureGateAttributes = context.MethodInfo.GetCustomAttributes(typeof(FeatureGateAttribute), false) as FeatureGateAttribute[];
+
+            if (featureGateAttributes != null)
+            {
+                foreach (var featureGateAttribute in featureGateAttributes)
+                {
+                    foreach (var featureName in featureGateAttribute.Features)
                     {
-                        operation.Deprecated = true;
-                        operation.Description += " (This feature is currently disabled)";
+                        var featureEnabled = _featureManager.IsEnabledAsync(featureName).Result;
+
+                        if (!featureEnabled)
+                        {
+                            operation.Deprecated = true;
+                            operation.Description += " (This feature is currently disabled)";
+                        }
                     }
                 }
             }

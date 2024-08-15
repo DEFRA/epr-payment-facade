@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
+using EPR.Payment.Facade.Helpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Mvc;
@@ -27,10 +28,9 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
             _featureManagerMock = fixture.Freeze<Mock<IFeatureManager>>();
-            var loggerMock = fixture.Freeze<Mock<ILogger<FeatureEnabledDocumentFilter>>>();
             _output = new StringWriter();
             Console.SetOut(_output);
-            _filter = new FeatureEnabledDocumentFilter(_featureManagerMock.Object, loggerMock.Object);
+            _filter = new FeatureEnabledDocumentFilter(_featureManagerMock.Object);
         }
 
         [TestMethod]
