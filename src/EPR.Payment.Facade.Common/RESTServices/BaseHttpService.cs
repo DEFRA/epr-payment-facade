@@ -57,7 +57,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http POST returning the specified object
         /// </summary>
-        protected async Task<T> Post<T>(string url, object? payload, CancellationToken cancellationToken)
+        protected virtual async Task<T> Post<T>(string url, object? payload, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));

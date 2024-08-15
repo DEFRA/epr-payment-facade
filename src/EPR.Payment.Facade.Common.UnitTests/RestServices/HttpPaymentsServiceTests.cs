@@ -3,6 +3,7 @@ using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
@@ -125,7 +126,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorInsertingPayment);
+                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorInsertingPayment);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
@@ -190,7 +191,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorUpdatingPayment);
+                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorUpdatingPayment);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
@@ -266,7 +267,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<Exception>().WithMessage(ExceptionMessages.ErrorGettingPaymentDetails);
+                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorGettingPaymentDetails);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),

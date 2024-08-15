@@ -5,10 +5,12 @@ using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Helpers
 {
-    public static class ExtensionMethods
+    [ExcludeFromCodeCoverage]
+    public static class DependencyHelper
     {
         public static IServiceCollection AddFacadeDependencies(
             this IServiceCollection services,
@@ -71,7 +73,8 @@ namespace EPR.Payment.Facade.Helpers
                 Url = serviceConfig?.Url,
                 EndPointName = endPointName,
                 BearerToken = serviceConfig?.BearerToken,
-                HttpClientName = serviceConfig?.HttpClientName
+                HttpClientName = serviceConfig?.HttpClientName,
+                Retries = serviceConfig?.Retries
             });
         }
 
