@@ -306,7 +306,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorRetrievingPaymentStatus);
                 handlerMock.Protected().Verify(
                     "SendAsync",
-                    Times.Exactly(4),
+                    Times.Once(),
                     ItExpr.Is<HttpRequestMessage>(msg =>
                         msg.Method == HttpMethod.Get),
                     ItExpr.IsAny<CancellationToken>());
