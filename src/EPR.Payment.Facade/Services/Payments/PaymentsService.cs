@@ -7,7 +7,7 @@ using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Common.Mappers;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.Extensions.Options;
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 public class PaymentsService : IPaymentsService
 {
@@ -16,25 +16,32 @@ public class PaymentsService : IPaymentsService
     private readonly ILogger<PaymentsService> _logger;
     private readonly PaymentServiceOptions _paymentServiceOptions;
     private readonly IMapper _mapper;
+    private readonly IValidator<PaymentRequestDto> _paymentRequestDtoValidator;
 
     public PaymentsService(
         IHttpGovPayService httpGovPayService,
         IHttpPaymentsService httpPaymentsService,
         ILogger<PaymentsService> logger,
         IOptions<PaymentServiceOptions> paymentServiceOptions,
-        IMapper mapper)
+        IMapper mapper,
+        IValidator<PaymentRequestDto> paymentRequestDtoValidator)
     {
         _httpGovPayService = httpGovPayService ?? throw new ArgumentNullException(nameof(httpGovPayService));
         _httpPaymentsService = httpPaymentsService ?? throw new ArgumentNullException(nameof(httpPaymentsService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _paymentServiceOptions = paymentServiceOptions.Value ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _paymentRequestDtoValidator = paymentRequestDtoValidator ?? throw new ArgumentNullException(nameof(paymentRequestDtoValidator));
     }
 
     public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken)
     {
-        ValidateObject(request);
+        var validatorResult = await _paymentRequestDtoValidator.ValidateAsync(request);
 
+        if (!validatorResult.IsValid)
+        {
+            throw new ValidationException(validatorResult.Errors.Aggregate("", (current, error) => current + $"\n{error.PropertyName} : {error.ErrorMessage}"));
+        }
         var externalPaymentId = await InsertPaymentAsync(request, cancellationToken);
 
         var govPayRequest = CreateGovPayRequest(request, externalPaymentId);
@@ -233,11 +240,5 @@ public class PaymentsService : IPaymentsService
             _logger.LogError(ex, LogMessages.UnexpectedErrorInsertingPayment);
             throw new Exception(ExceptionMessages.UnexpectedErrorInsertingPayment, ex);
         }
-    }
-
-    private void ValidateObject(object? obj)
-    {
-        var context = new ValidationContext(obj!, serviceProvider: null, items: null);
-        Validator.ValidateObject(obj!, context, validateAllProperties: true);
     }
 }

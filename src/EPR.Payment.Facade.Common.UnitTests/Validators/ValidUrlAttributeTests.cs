@@ -1,7 +1,7 @@
 ﻿using EPR.Payment.Facade.Common.Validators;
 using FluentAssertions;
 
-namespace EPR.Payment.Facade.UnitTests.Validators
+namespace EPR.Payment.Facade.Common.UnitTests.Validators
 {
     [TestClass]
     public class ValidUrlAttributeTests

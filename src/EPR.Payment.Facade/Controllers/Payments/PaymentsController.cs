@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 [ApiVersion(1)]
 [ApiController]
@@ -43,16 +43,6 @@ public class PaymentsController : ControllerBase
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
-        }
-
-        if (request.Amount <= 0)
-        {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Validation Error",
-                Detail = ExceptionMessages.AmountMustBeGreaterThanZero,
-                Status = StatusCodes.Status400BadRequest
-            });
         }
 
         try
