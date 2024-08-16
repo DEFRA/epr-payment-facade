@@ -7,9 +7,9 @@ namespace EPR.Payment.Facade.Helpers
 {
     public class ConditionalEndpointMiddleware
     {
-        private readonly RequestDelegate _next;
-        private readonly IFeatureManager _featureManager;
-        private readonly ILogger<ConditionalEndpointMiddleware> _logger;
+        private readonly RequestDelegate _next = null!;
+        private readonly IFeatureManager _featureManager = null!;
+        private readonly ILogger<ConditionalEndpointMiddleware> _logger = null!;
 
         public ConditionalEndpointMiddleware(RequestDelegate next, IFeatureManager featureManager, ILogger<ConditionalEndpointMiddleware> logger)
         {
@@ -26,7 +26,8 @@ namespace EPR.Payment.Facade.Helpers
                 var controllerActionDescriptor = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
                 if (controllerActionDescriptor != null)
                 {
-                    _logger.LogInformation($"Evaluating feature gate for {controllerActionDescriptor.ControllerName}.{controllerActionDescriptor.ActionName}");
+                    _logger.LogInformation("Evaluating feature gate for {ControllerName}.{ActionName}", 
+                        controllerActionDescriptor.ControllerName, controllerActionDescriptor.ActionName);
 
                     var featureAttributes = controllerActionDescriptor.ControllerTypeInfo
                         .GetCustomAttributes<FeatureGateAttribute>(true)
@@ -38,11 +39,11 @@ namespace EPR.Payment.Facade.Helpers
                         foreach (var featureName in featureAttribute.Features)
                         {
                             var isEnabled = await _featureManager.IsEnabledAsync(featureName);
-                            _logger.LogInformation($"Feature '{featureName}' is enabled: {isEnabled}");
+                            _logger.LogInformation("Feature '{FeatureName}' is enabled: {IsEnabled}", featureName, isEnabled);
 
                             if (!isEnabled)
                             {
-                                _logger.LogInformation($"Feature '{featureName}' is disabled. Returning 404.");
+                                _logger.LogInformation("Feature '{FeatureName}' is disabled. Returning 404.", featureName);
                                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                                 await context.Response.WriteAsync("Feature not available.");
                                 return;

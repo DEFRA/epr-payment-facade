@@ -11,8 +11,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
     public class HttpPaymentsService : BaseHttpService, IHttpPaymentsService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _httpClientName;
+        private readonly IHttpClientFactory _httpClientFactory = null!;
+        private readonly string _httpClientName = null!;
 
         public HttpPaymentsService(
             IHttpContextAccessor httpContextAccessor,
@@ -27,7 +27,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             _httpClientName = config.Value.HttpClientName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceHttpClientNameMissing);
         }
 
-        public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest, CancellationToken cancellationToken)
+        public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.PaymentsInsert;
             try
@@ -41,9 +41,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
         }
 
-        public async Task UpdatePaymentAsync(Guid externalPaymentId, UpdatePaymentRequestDto paymentStatusUpdateRequest, CancellationToken cancellationToken)
+        public async Task UpdatePaymentAsync(Guid id, UpdatePaymentRequestDto paymentStatusUpdateRequest, CancellationToken cancellationToken = default)
         {
-            var url = UrlConstants.PaymentsUpdate.Replace("{externalPaymentId}", externalPaymentId.ToString());
+            var url = UrlConstants.PaymentsUpdate.Replace("{externalPaymentId}", id.ToString());
             try
             {
                 await Put(url, paymentStatusUpdateRequest, cancellationToken);
@@ -54,7 +54,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
         }
 
-        public async Task<PaymentDetailsDto> GetPaymentDetailsAsync(Guid externalPaymentId, CancellationToken cancellationToken)
+        public async Task<PaymentDetailsDto> GetPaymentDetailsAsync(Guid externalPaymentId, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.GetPaymentDetails.Replace("{externalPaymentId}", externalPaymentId.ToString());
             try

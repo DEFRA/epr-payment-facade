@@ -4,6 +4,7 @@ using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
+using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.Mappers;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
@@ -34,7 +35,7 @@ namespace EPR.Payment.Facade.Services.Payments
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken)
+        public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken = default)
         {
             ValidateObject(request);
 
@@ -49,7 +50,7 @@ namespace EPR.Payment.Facade.Services.Payments
             return CreatePaymentResponse(govPayResponse);
         }
 
-        public async Task<CompletePaymentResponseDto> CompletePaymentAsync(Guid externalPaymentId, CancellationToken cancellationToken)
+        public async Task<CompletePaymentResponseDto> CompletePaymentAsync(Guid externalPaymentId, CancellationToken cancellationToken = default)
         {
             if (externalPaymentId == Guid.Empty)
             {
@@ -60,13 +61,13 @@ namespace EPR.Payment.Facade.Services.Payments
 
             if (string.IsNullOrEmpty(paymentDetails.GovPayPaymentId))
             {
-                throw new Exception(ExceptionMessages.PaymentStatusNotFound);
+                throw new ServiceException(ExceptionMessages.PaymentStatusNotFound);
             }
 
             var paymentStatusResponse = await GetPaymentStatusResponseAsync(paymentDetails.GovPayPaymentId, cancellationToken);
 
             var status = PaymentStatusMapper.GetPaymentStatus(
-                paymentStatusResponse.State?.Status ?? throw new Exception(ExceptionMessages.PaymentStatusNotFound),
+                paymentStatusResponse.State?.Status ?? throw new ServiceException(ExceptionMessages.PaymentStatusNotFound),
                 paymentStatusResponse.State?.Code
             );
 
@@ -86,7 +87,7 @@ namespace EPR.Payment.Facade.Services.Payments
             catch (Exception ex)
             {
                 _logger.LogError(ex, ExceptionMessages.ErrorGettingPaymentDetails);
-                throw new Exception(ExceptionMessages.ErrorRetrievingPaymentDetails, ex);
+                throw new ServiceException(ExceptionMessages.ErrorRetrievingPaymentDetails, ex);
             }
         }
 
@@ -97,14 +98,14 @@ namespace EPR.Payment.Facade.Services.Payments
                 var paymentStatusResponse = await _httpGovPayService.GetPaymentStatusAsync(govPayPaymentId, cancellationToken);
                 if (paymentStatusResponse?.State == null || paymentStatusResponse.State.Status == null)
                 {
-                    throw new Exception(ExceptionMessages.PaymentStatusNotFound);
+                    throw new ServiceException(ExceptionMessages.PaymentStatusNotFound);
                 }
                 return paymentStatusResponse;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ExceptionMessages.ErrorRetrievingPaymentStatus);
-                throw new Exception(ExceptionMessages.ErrorRetrievingPaymentStatus, ex);
+                throw new ServiceException(ExceptionMessages.ErrorRetrievingPaymentStatus, ex);
             }
         }
 
@@ -114,8 +115,8 @@ namespace EPR.Payment.Facade.Services.Payments
             updateRequest.GovPayPaymentId = paymentDetails.GovPayPaymentId;
             updateRequest.Status = status;
             updateRequest.Reference = paymentStatusResponse.Reference;
-            updateRequest.ErrorCode = paymentStatusResponse?.State?.Code;
-            updateRequest.ErrorMessage = paymentStatusResponse?.State?.Message;
+            updateRequest.ErrorCode = paymentStatusResponse.State?.Code;
+            updateRequest.ErrorMessage = paymentStatusResponse.State?.Message;
 
             return updateRequest;
         }
@@ -129,12 +130,12 @@ namespace EPR.Payment.Facade.Services.Payments
             catch (ValidationException ex)
             {
                 _logger.LogError(ex, LogMessages.ValidationErrorUpdatingPayment);
-                throw;
+                throw new ServiceException(ex.Message, ex);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.UnexpectedErrorUpdatingPayment);
-                throw new Exception(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
+                throw new ServiceException(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
             }
         }
 
@@ -199,12 +200,12 @@ namespace EPR.Payment.Facade.Services.Payments
             catch (ValidationException ex)
             {
                 _logger.LogError(ex, LogMessages.ValidationErrorUpdatingPayment);
-                throw;
+                throw new ServiceException(ex.Message, ex);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.UnexpectedErrorUpdatingPayment);
-                throw new Exception(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
+                throw new ServiceException(ExceptionMessages.UnexpectedErrorUpdatingPayment, ex);
             }
         }
 
@@ -229,12 +230,12 @@ namespace EPR.Payment.Facade.Services.Payments
             catch (ValidationException ex)
             {
                 _logger.LogError(ex, LogMessages.ValidationErrorInsertingPayment);
-                throw;
+                throw new ServiceException(ex.Message, ex);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.UnexpectedErrorInsertingPayment);
-                throw new Exception(ExceptionMessages.UnexpectedErrorInsertingPayment, ex);
+                throw new ServiceException(ExceptionMessages.UnexpectedErrorInsertingPayment, ex);
             }
         }
 

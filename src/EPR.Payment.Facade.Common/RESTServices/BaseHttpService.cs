@@ -13,7 +13,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         protected readonly HttpClient _httpClient;
         protected IHttpContextAccessor _httpContextAccessor;
 
-        public BaseHttpService(
+        protected BaseHttpService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
             string baseUrl,
@@ -33,7 +33,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
-            if (_baseUrl.EndsWith("/"))
+            if (_baseUrl.EndsWith('/'))
                 _baseUrl = _baseUrl.TrimEnd('/');
 
             _baseUrl = $"{_baseUrl}/{endPointName}";
@@ -54,16 +54,20 @@ namespace EPR.Payment.Facade.Common.RESTServices
             return await Send<T>(CreateMessage(url, null, HttpMethod.Get), cancellationToken);
         }
 
+        private string ReturnUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentNullException(nameof(url));
+
+            return $"{_baseUrl}/{url}/";
+        }
+
         /// <summary>
         /// Performs an Http POST returning the specified object
         /// </summary>
         protected virtual async Task<T> Post<T>(string url, object? payload, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
-
-            url = $"{_baseUrl}/{url}/";
-
+            url = ReturnUrl(url);
             return await Send<T>(CreateMessage(url, payload, HttpMethod.Post), cancellationToken);
         }
 
@@ -72,11 +76,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task Post(string url, object? payload, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
-
-            url = $"{_baseUrl}/{url}/";
-
+            url = ReturnUrl(url);
             await Send(CreateMessage(url, payload, HttpMethod.Post), cancellationToken);
         }
 
@@ -85,11 +85,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task<T> Put<T>(string url, object? payload, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
-
-            url = $"{_baseUrl}/{url}/";
-
+            url = ReturnUrl(url);
             return await Send<T>(CreateMessage(url, payload, HttpMethod.Put), cancellationToken);
         }
 
@@ -98,11 +94,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task Put(string url, object? payload, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
-
-            url = $"{_baseUrl}/{url}/";
-
+            url = ReturnUrl(url);
             await Send(CreateMessage(url, payload, HttpMethod.Put), cancellationToken);
         }
 
@@ -111,11 +103,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task<T> Delete<T>(string url, object? payload, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
-
-            url = $"{_baseUrl}/{url}/";
-
+            url = ReturnUrl(url);
             return await Send<T>(CreateMessage(url, payload, HttpMethod.Delete), cancellationToken);
         }
 
@@ -124,11 +112,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task Delete(string url, object? payload, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
-
-            url = $"{_baseUrl}/{url}/";
-
+            url = ReturnUrl(url);
             await Send(CreateMessage(url, payload, HttpMethod.Delete), cancellationToken);
         }
 
@@ -192,7 +176,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
                 _httpContextAccessor.HttpContext.Response.StatusCode = (int)response.StatusCode;
                 // for now we don't know how we're going to handle errors specifically,
                 // so we'll just throw an error with the error code
-                throw new Exception($"Error occurred calling API with error code: {response.StatusCode}. Message: {response.ReasonPhrase}");
+                throw new ServiceException($"Error occurred calling API with error code: {response.StatusCode}. Message: {response.ReasonPhrase}");
             }
         }
 

@@ -15,7 +15,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
     {
         private readonly string? _bearerToken;
         private readonly AsyncRetryPolicy<GovPayResponseDto> _retryPolicy;
-        private readonly AsyncRetryPolicy<PaymentStatusResponseDto?> _statusRetryPolicy;
 
         public HttpGovPayService(
             IHttpContextAccessor httpContextAccessor,
@@ -41,7 +40,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                     });
         }
 
-        public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayRequestDto paymentRequestDto, CancellationToken cancellationToken)
+        public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayRequestDto paymentRequestDto, CancellationToken cancellationToken = default)
         {
             if (_bearerToken != null)
             {
@@ -67,7 +66,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
         }
 
-        public async Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId, CancellationToken cancellationToken)
+        public async Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId, CancellationToken cancellationToken = default)
         {
             if (_bearerToken != null)
             {

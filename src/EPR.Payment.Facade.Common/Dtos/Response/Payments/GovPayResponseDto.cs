@@ -31,9 +31,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Payments
         [JsonProperty("refund_summary")]
         public RefundSummaryDto? RefundSummary { get; set; }
 
-        [JsonProperty("settlement_summary")]
-        public SettlementSummaryDto? SettlementSummary { get; set; }
-
         [JsonProperty("delayed_capture")]
         public bool DelayedCapture { get; set; }
 
@@ -69,11 +66,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Payments
 
         [JsonProperty("amount_submitted")]
         public int AmountSubmitted { get; set; }
-    }
-
-    public class SettlementSummaryDto
-    {
-        // Define properties as needed, if any
     }
 
     public class LinksDto
