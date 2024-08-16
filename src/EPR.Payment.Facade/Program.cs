@@ -4,6 +4,8 @@ using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
+using EPR.Payment.Facade.Validations;
+using FluentValidation.AspNetCore;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using System.Security.Authentication;
@@ -12,6 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddFluentValidation(fv =>
+{
+    fv.RegisterValidatorsFromAssemblyContaining<PaymentRequestDtoValidator>();
+    fv.AutomaticValidationEnabled = false;
+});
 builder.Services.Configure<PaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
 
 builder.Services.AddEndpointsApiExplorer();
