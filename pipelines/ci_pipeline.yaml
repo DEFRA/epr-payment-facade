@@ -22,6 +22,12 @@ parameters:
   values:
   - 'SonarQube'
   - 'SonarQubeLatest'
+  - name: 
+    value: True
+  - name: runAutomationTests #will let us toggle automation tests on or off
+  displayName: run Automation Tests
+  type: boolean
+  value: True
 
 pool: DEFRA-COMMON-ubuntu2004-SSV3
 
@@ -68,4 +74,4 @@ extends:
     runNugetTasks: ${{ variables.runNugetTasks }}
     serviceName: $(serviceName)
     dotnetVersion: ${{ variables.dotnetVersion }}
-    runAutomationTests: ${{ variables.runAutomationTests }}
+    runAutomationTests: ${{ parameters.runAutomationTests }}
