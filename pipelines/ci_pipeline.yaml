@@ -25,7 +25,7 @@ parameters:
 - name: runAutomationTests #will let us toggle automation tests on or off
   displayName: run Automation Tests
   type: boolean
-  value: True
+  default: true
 
 pool: DEFRA-COMMON-ubuntu2004-SSV3
 
