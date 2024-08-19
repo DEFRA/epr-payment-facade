@@ -22,12 +22,10 @@ parameters:
   values:
   - 'SonarQube'
   - 'SonarQubeLatest'
-  - name: 
-    value: True
-  - name: runAutomationTests #will let us toggle automation tests on or off
-    displayName: run Automation Tests
-    type: boolean
-    value: True
+- name: runAutomationTests #will let us toggle automation tests on or off
+  displayName: run Automation Tests
+  type: boolean
+  value: True
 
 pool: DEFRA-COMMON-ubuntu2004-SSV3
 
