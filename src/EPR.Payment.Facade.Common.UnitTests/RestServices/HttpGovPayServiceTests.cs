@@ -534,52 +534,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             act.Should().Throw<ArgumentNullException>().WithMessage("*config*");
         }
 
-        //[TestMethod, AutoMoqData]
-        //public async Task InitiatePaymentAsync_WhenTokenIsNotNull_ShouldSetBearerToken(
-        //    [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
-        //    [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-        //    [Frozen] GovPayResponseDto _mockResponse,
-        //    [Frozen] HttpClient _httpClient,
-        //    [Frozen] Service _serviceConfig,
-        //    [Frozen] IOptions<Service> _configOptions)
-        //{
-        //    // Arrange
-        //    _configOptions = Options.Create(_serviceConfig);
-        //    _configOptions.Value.EndPointName = "null!";
-        //    _mockResponse.PaymentId = "12345";
-        //    var postMethodCallCount = 0;
-        //    var service = new Mock<HttpGovPayService>(
-        //        _httpContextAccessorMock.Object,
-        //        _httpClientFactoryMock.Object,
-        //        _configOptions)
-        //    {
-        //        CallBase = true // Use actual implementation for non-mocked methods
-        //    };
-
-        //    service.Protected()
-        //   .Setup<Task<GovPayResponseDto>>("Post",
-        //        [typeof(GovPayResponseDto)], true, ItExpr.IsAny<string>(), ItExpr.IsAny<Object?>(), ItExpr.IsAny<CancellationToken>())
-        //   .Callback(() => postMethodCallCount++)
-        //   .ReturnsAsync(() =>
-        //   {
-        //       return _mockResponse;
-        //   });
-
-        //    _httpClientFactoryMock = new Mock<IHttpClientFactory>();
-        //    _httpClient = new HttpClient();
-        //    _httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(_httpClient);
-
-
-        //    // Act
-        //    await service.Object.InitiatePaymentAsync(new GovPayRequestDto());
-
-        //    // Assert
-        //    _httpClient.DefaultRequestHeaders.Authorization.Should().NotBeNull();
-        //    _httpClient.DefaultRequestHeaders.Authorization!.Scheme.Should().Be("Bearer");
-        //    _httpClient.DefaultRequestHeaders.Authorization.Parameter.Should().Be("valid_token");
-
-        //}
-
         [TestMethod, AutoMoqData]
         public async Task InitiatePaymentAsync_WhenTokenIsNotNull_ShouldSetAuthorizationHeader(
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
