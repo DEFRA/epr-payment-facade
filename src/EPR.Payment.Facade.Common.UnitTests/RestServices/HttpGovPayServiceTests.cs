@@ -15,6 +15,7 @@ using Moq.Protected;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
@@ -186,6 +187,130 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                    .ReturnsAsync(() =>
                    {
                        if (postMethodCallCount < 3) throw _mockException; // Throw exception on the first two calls
+                       return _mockResponse; // Return mockResponse on the third call
+                   });
+
+            // Act
+            var result = await service.Object.GetPaymentStatusAsync(_paymentId, _cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeEquivalentTo(_mockResponse);
+                postMethodCallCount.Should().Be(3); // Retries twice, succeeds on third attempt
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetPaymentStatusAsync_WhenResponseStatusIsNull_ShouldRetryOnFailure(
+           [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
+           [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
+           [Frozen] CancellationToken _cancellationToken,
+           [Frozen] HttpRequestException _mockException,
+           [Frozen] PaymentStatusResponseDto _mockResponse,
+           string _paymentId)
+        {
+            // Arrange
+            _mockResponse.PaymentId = _paymentId;
+            var postMethodCallCount = 0;
+            var service = new Mock<HttpGovPayService>(
+                _httpContextAccessorMock.Object,
+                _httpClientFactoryMock.Object,
+                _configMock!.Object)
+            {
+                CallBase = true // Use actual implementation for non-mocked methods
+            };
+
+            service.Protected()
+                   .Setup<Task<PaymentStatusResponseDto>>("Get",
+                        [typeof(PaymentStatusResponseDto)], true, ItExpr.IsAny<string>(), ItExpr.IsAny<CancellationToken>(), ItExpr.IsAny<bool>())
+                   .Callback(() => postMethodCallCount++)
+                   .ReturnsAsync(() =>
+                   {
+                       if (postMethodCallCount < 3)
+                           return new PaymentStatusResponseDto() { State = new State() { Status = null } }; // Throw exception on the first two calls
+                       return _mockResponse; // Return mockResponse on the third call
+                   });
+
+            // Act
+            var result = await service.Object.GetPaymentStatusAsync(_paymentId, _cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeEquivalentTo(_mockResponse);
+                postMethodCallCount.Should().Be(3); // Retries twice, succeeds on third attempt
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetPaymentStatusAsync_WhenResponseStatusIsEmpty_ShouldRetryOnFailure(
+           [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
+           [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
+           [Frozen] CancellationToken _cancellationToken,
+           [Frozen] HttpRequestException _mockException,
+           [Frozen] PaymentStatusResponseDto _mockResponse,
+           string _paymentId)
+        {
+            // Arrange
+            _mockResponse.PaymentId = _paymentId;
+            var postMethodCallCount = 0;
+            var service = new Mock<HttpGovPayService>(
+                _httpContextAccessorMock.Object,
+                _httpClientFactoryMock.Object,
+                _configMock!.Object)
+            {
+                CallBase = true // Use actual implementation for non-mocked methods
+            };
+
+            service.Protected()
+                   .Setup<Task<PaymentStatusResponseDto>>("Get",
+                        [typeof(PaymentStatusResponseDto)], true, ItExpr.IsAny<string>(), ItExpr.IsAny<CancellationToken>(), ItExpr.IsAny<bool>())
+                   .Callback(() => postMethodCallCount++)
+                   .ReturnsAsync(() =>
+                   {
+                       if (postMethodCallCount < 3)
+                           return new PaymentStatusResponseDto() { State = new State() { Status = string.Empty } }; // Throw exception on the first two calls
+                       return _mockResponse; // Return mockResponse on the third call
+                   });
+
+            // Act
+            var result = await service.Object.GetPaymentStatusAsync(_paymentId, _cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeEquivalentTo(_mockResponse);
+                postMethodCallCount.Should().Be(3); // Retries twice, succeeds on third attempt
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetPaymentStatusAsync__WhenResponseIsNull_ShouldRetryOnFailure(
+           [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
+           [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
+           [Frozen] CancellationToken _cancellationToken,
+           [Frozen] PaymentStatusResponseDto _mockResponse,
+           string _paymentId)
+        {
+            // Arrange
+            _mockResponse.PaymentId = _paymentId;
+            var postMethodCallCount = 0;
+            var service = new Mock<HttpGovPayService>(
+                _httpContextAccessorMock.Object,
+                _httpClientFactoryMock.Object,
+                _configMock!.Object)
+            {
+                CallBase = true // Use actual implementation for non-mocked methods
+            };
+
+            service.Protected()
+                   .Setup<Task<PaymentStatusResponseDto>>("Get",
+                        [typeof(PaymentStatusResponseDto)], true, ItExpr.IsAny<string>(), ItExpr.IsAny<CancellationToken>(), ItExpr.IsAny<bool>())
+                   .Callback(() => postMethodCallCount++)
+                   .ReturnsAsync(() =>
+                   {
+                       if (postMethodCallCount < 3) return null!;
                        return _mockResponse; // Return mockResponse on the third call
                    });
 
