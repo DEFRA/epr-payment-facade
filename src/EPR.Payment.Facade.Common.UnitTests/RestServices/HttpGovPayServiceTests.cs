@@ -3,6 +3,7 @@ using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
@@ -14,8 +15,6 @@ using Moq;
 using Moq.Protected;
 using Newtonsoft.Json;
 using System.Net;
-using System.Net.Http;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
