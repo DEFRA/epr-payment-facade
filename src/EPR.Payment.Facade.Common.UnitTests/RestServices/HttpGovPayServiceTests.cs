@@ -278,8 +278,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                     ItExpr.Is<HttpRequestMessage>(msg =>
                         msg.Method == HttpMethod.Get),
                     ItExpr.IsAny<CancellationToken>());
-
-            };
+            }
         }
 
         [TestMethod, AutoMoqData]

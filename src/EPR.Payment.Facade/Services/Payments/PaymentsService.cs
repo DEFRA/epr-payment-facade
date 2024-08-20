@@ -20,7 +20,7 @@ namespace EPR.Payment.Facade.Services.Payments
         private readonly ILogger<PaymentsService> _logger;
         private readonly PaymentServiceOptions _paymentServiceOptions;
         private readonly IMapper _mapper;
-    private readonly IValidator<PaymentRequestDto> _paymentRequestDtoValidator;
+        private readonly IValidator<PaymentRequestDto> _paymentRequestDtoValidator;
 
         public PaymentsService(
             IHttpGovPayService httpGovPayService,
@@ -40,37 +40,45 @@ namespace EPR.Payment.Facade.Services.Payments
 
         public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken = default)
         {
-        var validatorResult = await _paymentRequestDtoValidator.ValidateAsync(request);
+            var validatorResult = await _paymentRequestDtoValidator.ValidateAsync(request);
 
-        if (!validatorResult.IsValid)
-        {
-            throw new ValidationException(validatorResult.Errors.Aggregate("", (current, error) => current + $"\n{error.PropertyName} : {error.ErrorMessage}"));
-        }
+            if (!validatorResult.IsValid)
+            {
+                throw new ValidationException(validatorResult.Errors.Aggregate("", (current, error) => current + $"\n{error.PropertyName} : {error.ErrorMessage}"));
+            }
+
             var externalPaymentId = await InsertPaymentAsync(request, cancellationToken);
 
             var govPayRequest = CreateGovPayRequest(request, externalPaymentId);
 
             var govPayResponse = await InitiateGovPayPaymentAsync(govPayRequest, cancellationToken);
+            if (govPayResponse?.PaymentId == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            await UpdatePaymentStatusAsync(externalPaymentId, request, govPayResponse.PaymentId!, cancellationToken);
+            await UpdatePaymentStatusAsync(externalPaymentId, request, govPayResponse.PaymentId, cancellationToken);
 
             return CreatePaymentResponse(govPayResponse);
         }
 
-        public async Task<CompletePaymentResponseDto> CompletePaymentAsync(Guid externalPaymentId, CancellationToken cancellationToken = default)
+        public Task<CompletePaymentResponseDto> CompletePaymentAsync(Guid externalPaymentId, CancellationToken cancellationToken = default)
         {
             if (externalPaymentId == Guid.Empty)
             {
                 throw new ArgumentException("ExternalPaymentId cannot be empty", nameof(externalPaymentId));
             }
 
-            var paymentDetails = await GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
+            return this.CompletePaymentInternalAsync(externalPaymentId, cancellationToken);
+        }
 
+        private async Task<CompletePaymentResponseDto> CompletePaymentInternalAsync(Guid externalPaymentId, CancellationToken cancellationToken = default)
+        {
+            var paymentDetails = await GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
             if (string.IsNullOrEmpty(paymentDetails.GovPayPaymentId))
             {
                 throw new ServiceException(ExceptionMessages.PaymentStatusNotFound);
             }
-
             var paymentStatusResponse = await GetPaymentStatusResponseAsync(paymentDetails.GovPayPaymentId, cancellationToken);
 
             var status = PaymentStatusMapper.GetPaymentStatus(

@@ -44,7 +44,8 @@ namespace EPR.Payment.Facade.Helpers
             {
                 Trace.TraceInformation($"Registering service {typeof(TImplementation).Name} for {configName}");
 
-                var instance = Activator.CreateInstance(typeof(TImplementation),
+                var instance = Activator.CreateInstance(
+                    typeof(TImplementation),
                     s.GetRequiredService<IHttpContextAccessor>(),
                     s.GetRequiredService<IHttpClientFactory>(),
                     serviceOptions);

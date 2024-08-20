@@ -124,7 +124,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpGovPayService");
         }
 
-        [TestMethod,AutoMoqData]
+        [TestMethod, AutoMoqData]
         public void Constructor_WhenHttpPaymentsServiceIsNull_ShouldThrowArgumentNullException(
             [Frozen] PaymentServiceOptions _paymentServiceOptions,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
@@ -199,7 +199,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             act.Should().Throw<ArgumentNullException>().WithParameterName("paymentServiceOptions");
         }
 
-        [TestMethod,AutoMoqData]
+        [TestMethod, AutoMoqData]
         public void Constructor_WhenMapperIsNull_ShouldThrowArgumentNullException(
             [Frozen] PaymentServiceOptions _paymentServiceOptions,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
@@ -224,7 +224,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             act.Should().Throw<ArgumentNullException>().WithParameterName("mapper");
         }
 
-        [TestMethod,AutoMoqData]
+        [TestMethod, AutoMoqData]
         public void Constructor_WhenPaymentRequestDtoValidatorIsNull_ShouldThrowArgumentNullException(
             [Frozen] PaymentServiceOptions _paymentServiceOptions,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
@@ -271,7 +271,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             _httpPaymentsServiceMock.Setup(s => s.UpdatePaymentAsync(It.IsAny<Guid>(), It.IsAny<UpdatePaymentRequestDto>(), It.IsAny<CancellationToken>()));
 
 
-            var request = _fixture.Build<PaymentRequestDto>().With(d => d.UserId, new Guid()).With(x => x.OrganisationId, new Guid()).With(x => x.Regulator, RegulatorConstants.GBENG).Create();
+            var request = _fixture.Build<PaymentRequestDto>().With(d => d.UserId, Guid.Empty).With(x => x.OrganisationId, Guid.Empty).With(x => x.Regulator, RegulatorConstants.GBENG).Create();
             _paymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
 
             // Act
@@ -314,10 +314,10 @@ namespace EPR.Payment.Facade.UnitTests.Services
             _paymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult(validationFailures));
 
             // Act & Assert
-            var exception = await _service.Invoking(async s => await s!.InitiatePaymentAsync(request, new CancellationToken()))
+            await this._service.Invoking(async s => await s!.InitiatePaymentAsync(request, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>();
         }
-
+        
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_StatusUpdateValidationFails_ThrowsValidationException(
             PaymentRequestDto request,
@@ -376,7 +376,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 Description = "Payment description"
             });
 
-            var mapperConfig = new MapperConfiguration(cfg =>
+            _ = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<PaymentRequestMappingProfile>();
             });
@@ -812,7 +812,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         {
             // Arrange
             _paymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
-            var paymentServiceOptions = Options.Create(new PaymentServiceOptions
+            _ = Options.Create(new PaymentServiceOptions
             {
                 ReturnUrl = "https://example.com/return",
                 Description = "Payment description"

@@ -107,9 +107,15 @@ namespace EPR.Payment.Facade.UnitTests.Middleware
         public class TestController
         {
             [FeatureGate("TestFeature")]
-            public void FeatureGatedMethod() { }
+            public void FeatureGatedMethod()
+            {
+                // Method intentionally left empty.
+            }
 
-            public void NoFeatureGateMethod() { }
+            public void NoFeatureGateMethod()
+            {
+                // Method intentionally left empty.
+            }
         }
     }
 }

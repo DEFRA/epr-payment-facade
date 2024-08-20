@@ -39,10 +39,11 @@ namespace EPR.Payment.Facade.UnitTests
 
         private class NullScope : IDisposable
         {
-            public static NullScope Instance { get; } = new NullScope();
+            public static NullScope Instance { get; } = new();
 
             public void Dispose()
             {
+                // Method intentionally left empty.
             }
         }
     }

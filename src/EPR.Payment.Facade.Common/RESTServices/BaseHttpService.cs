@@ -49,7 +49,8 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected async Task<T> Get<T>(string url, CancellationToken cancellationToken, bool includeTrailingSlash = true)
         {
-            url = string.IsNullOrEmpty(url) && !includeTrailingSlash ? _baseUrl : includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
+            var trailingSLash = includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
+            url = string.IsNullOrEmpty(url) && !includeTrailingSlash ? _baseUrl : trailingSLash;
 
             return await Send<T>(CreateMessage(url, null, HttpMethod.Get), cancellationToken);
         }
@@ -192,7 +193,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         {
             try
             {
-                var val = JToken.Parse(stringValue);
+                _ = JToken.Parse(stringValue);
                 return true;
             }
             catch

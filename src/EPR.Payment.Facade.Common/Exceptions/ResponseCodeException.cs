@@ -2,20 +2,19 @@
 
 namespace EPR.Payment.Facade.Common.Exceptions
 {
+    [Serializable]
     public class ResponseCodeException : Exception
     {
-        public HttpStatusCode StatusCode { get; set; }
-
-        public ResponseCodeException(
-            HttpStatusCode statusCode,
-            string message) : base(message)
+        public ResponseCodeException(HttpStatusCode statusCode, string message) : base(message)
         {
-            StatusCode = statusCode;
+            this.StatusCode = statusCode;
         }
 
         public ResponseCodeException(HttpStatusCode statusCode)
         {
-            StatusCode = statusCode;
+            this.StatusCode = statusCode;
         }
+
+        public HttpStatusCode StatusCode { get; set; }
     }
 }

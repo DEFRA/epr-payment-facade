@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
-using System.Net;
 
 namespace EPR.Payment.Facade.Common.Exceptions.Tests
 {

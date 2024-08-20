@@ -3,58 +3,38 @@ using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using System.Reflection;
 
-namespace EPR.Payment.Facade.Helpers
+namespace EPR.Payment.Facade.Helpers;
+
+public class ConditionalEndpointMiddleware(RequestDelegate next, IFeatureManager featureManager, ILogger<ConditionalEndpointMiddleware> logger)
 {
-    public class ConditionalEndpointMiddleware
+    public async Task InvokeAsync(HttpContext context)
     {
-        private readonly RequestDelegate _next = null!;
-        private readonly IFeatureManager _featureManager = null!;
-        private readonly ILogger<ConditionalEndpointMiddleware> _logger = null!;
-
-        public ConditionalEndpointMiddleware(RequestDelegate next, IFeatureManager featureManager, ILogger<ConditionalEndpointMiddleware> logger)
+        var endpoint = context.GetEndpoint();
+        var controllerActionDescriptor = endpoint?.Metadata.GetMetadata<ControllerActionDescriptor>();
+        if (controllerActionDescriptor != null)
         {
-            _next = next;
-            _featureManager = featureManager;
-            _logger = logger;
-        }
+            logger.LogInformation("Evaluating feature gate for {ControllerName}.{ActionName}",
+                controllerActionDescriptor.ControllerName, controllerActionDescriptor.ActionName);
 
-        public async Task InvokeAsync(HttpContext context)
-        {
-            var endpoint = context.GetEndpoint();
-            if (endpoint != null)
+            var featureAttributes = controllerActionDescriptor.ControllerTypeInfo
+                .GetCustomAttributes<FeatureGateAttribute>(true)
+                .Union(controllerActionDescriptor.MethodInfo.GetCustomAttributes<FeatureGateAttribute>(true))
+                .ToList();
+
+            foreach (var featureName in featureAttributes.SelectMany(featureAttribute => featureAttribute.Features))
             {
-                var controllerActionDescriptor = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
-                if (controllerActionDescriptor != null)
-                {
-                    _logger.LogInformation("Evaluating feature gate for {ControllerName}.{ActionName}", 
-                        controllerActionDescriptor.ControllerName, controllerActionDescriptor.ActionName);
+                var isEnabled = await featureManager.IsEnabledAsync(featureName);
+                logger.LogInformation("Feature '{FeatureName}' is enabled: {IsEnabled}", featureName, isEnabled);
 
-                    var featureAttributes = controllerActionDescriptor.ControllerTypeInfo
-                        .GetCustomAttributes<FeatureGateAttribute>(true)
-                        .Union(controllerActionDescriptor.MethodInfo.GetCustomAttributes<FeatureGateAttribute>(true))
-                        .ToList();
-
-                    foreach (var featureAttribute in featureAttributes)
-                    {
-                        foreach (var featureName in featureAttribute.Features)
-                        {
-                            var isEnabled = await _featureManager.IsEnabledAsync(featureName);
-                            _logger.LogInformation("Feature '{FeatureName}' is enabled: {IsEnabled}", featureName, isEnabled);
-
-                            if (!isEnabled)
-                            {
-                                _logger.LogInformation("Feature '{FeatureName}' is disabled. Returning 404.", featureName);
-                                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                                await context.Response.WriteAsync("Feature not available.");
-                                return;
-                            }
-                        }
-                    }
-                }
+                if (isEnabled) continue;
+                logger.LogInformation("Feature '{FeatureName}' is disabled. Returning 404.", featureName);
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync("Feature not available.");
+                return;
             }
-
-            await _next(context);
         }
 
+        await next(context);
     }
+
 }
