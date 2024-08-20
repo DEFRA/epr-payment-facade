@@ -1,5 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Enums;
+using EPR.Payment.Facade.Common.Exceptions;
 
 namespace EPR.Payment.Facade.Common.Mappers
 {
@@ -12,13 +13,13 @@ namespace EPR.Payment.Facade.Common.Mappers
                 case "success":
                     if (!string.IsNullOrEmpty(errorCode))
                     {
-                        throw new Exception(ExceptionMessages.SuccessStatusWithErrorCode);
+                        throw new ServiceException(ExceptionMessages.SuccessStatusWithErrorCode);
                     }
                     return PaymentStatus.Success;
                 case "failed":
                     if (string.IsNullOrEmpty(errorCode))
                     {
-                        throw new Exception(ExceptionMessages.FailedStatusWithoutErrorCode);
+                        throw new ServiceException(ExceptionMessages.FailedStatusWithoutErrorCode);
                     }
                     return errorCode switch
                     {
@@ -28,11 +29,11 @@ namespace EPR.Payment.Facade.Common.Mappers
                 case "error":
                     if (string.IsNullOrEmpty(errorCode))
                     {
-                        throw new Exception(ExceptionMessages.ErrorStatusWithoutErrorCode);
+                        throw new ServiceException(ExceptionMessages.ErrorStatusWithoutErrorCode);
                     }
                     return PaymentStatus.Error;
                 default:
-                    throw new Exception(ExceptionMessages.PaymentStatusNotFound);
+                    throw new ServiceException(ExceptionMessages.PaymentStatusNotFound);
             }
         }
     }

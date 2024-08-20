@@ -9,7 +9,9 @@ using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 using EPR.Payment.Facade.Common.Enums;
+using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -69,6 +71,182 @@ namespace EPR.Payment.Facade.UnitTests.Services
                 _optionsMock.Object,
                 _mapper,
                 _paymentRequestDtoMock.Object);
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_WhenAllDependenciesAreNotNull_ShouldCreateInstance(
+            [Frozen] PaymentServiceOptions _paymentServiceOptions,
+            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> _httpPaymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> _loggerMock,
+            [Frozen] Mock<IMapper> _mapperMock,
+            [Frozen] Mock<IValidator<PaymentRequestDto>> _paymentRequestDtoValidatorMock)
+        {
+            // Arrange
+            _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_paymentServiceOptions);
+
+            // Act
+            var service = new PaymentsService(
+                _httpGovPayServiceMock.Object,
+                _httpPaymentsServiceMock.Object,
+                _loggerMock.Object,
+                _paymentServiceOptionsMock.Object,
+                _mapperMock.Object,
+                _paymentRequestDtoValidatorMock.Object);
+
+            // Assert
+            service.Should().NotBeNull();
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_WhenHttpGovPayServiceIsNull_ShouldThrowArgumentNullException(
+            [Frozen] PaymentServiceOptions _paymentServiceOptions,
+            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
+            [Frozen] Mock<IHttpPaymentsService> _httpPaymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> _loggerMock,
+            [Frozen] Mock<IMapper> _mapperMock,
+            [Frozen] Mock<IValidator<PaymentRequestDto>> _paymentRequestDtoValidatorMock)
+        {
+            // Arrange
+            _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_paymentServiceOptions);
+
+            // Act
+            Action act = () => new PaymentsService(
+                null!,
+                _httpPaymentsServiceMock.Object,
+                _loggerMock.Object,
+                _paymentServiceOptionsMock.Object,
+                _mapperMock.Object,
+                _paymentRequestDtoValidatorMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpGovPayService");
+        }
+
+        [TestMethod,AutoMoqData]
+        public void Constructor_WhenHttpPaymentsServiceIsNull_ShouldThrowArgumentNullException(
+            [Frozen] PaymentServiceOptions _paymentServiceOptions,
+            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> _loggerMock,
+            [Frozen] Mock<IMapper> _mapperMock,
+            [Frozen] Mock<IValidator<PaymentRequestDto>> _paymentRequestDtoValidatorMock)
+        {
+            // Arrange
+            _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_paymentServiceOptions);
+
+            // Act
+            Action act = () => new PaymentsService(
+                _httpGovPayServiceMock.Object,
+                null!,
+                _loggerMock.Object,
+                _paymentServiceOptionsMock.Object,
+                _mapperMock.Object,
+                _paymentRequestDtoValidatorMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpPaymentsService");
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_WhenLoggerIsNull_ShouldThrowArgumentNullException(
+            [Frozen] PaymentServiceOptions _paymentServiceOptions,
+            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> _httpPaymentsServiceMock,
+            [Frozen] Mock<IMapper> _mapperMock,
+            [Frozen] Mock<IValidator<PaymentRequestDto>> _paymentRequestDtoValidatorMock)
+        {
+            // Arrange
+            _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_paymentServiceOptions);
+
+            // Act
+            Action act = () => new PaymentsService(
+                _httpGovPayServiceMock.Object,
+                _httpPaymentsServiceMock.Object,
+                null!,
+                _paymentServiceOptionsMock.Object,
+                _mapperMock.Object,
+                _paymentRequestDtoValidatorMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_WhenPaymentServiceOptionsIsNull_ShouldThrowArgumentNullException(
+            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> _httpPaymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> _loggerMock,
+            [Frozen] Mock<IMapper> _mapperMock,
+            [Frozen] Mock<IValidator<PaymentRequestDto>> _paymentRequestDtoValidatorMock)
+        {
+            // Arrange
+            _paymentServiceOptionsMock.Setup(x => x.Value).Returns((PaymentServiceOptions)null!);
+
+            // Act
+            Action act = () => new PaymentsService(
+                _httpGovPayServiceMock.Object,
+                _httpPaymentsServiceMock.Object,
+                _loggerMock.Object,
+                _paymentServiceOptionsMock.Object,
+                _mapperMock.Object,
+                _paymentRequestDtoValidatorMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("paymentServiceOptions");
+        }
+
+        [TestMethod,AutoMoqData]
+        public void Constructor_WhenMapperIsNull_ShouldThrowArgumentNullException(
+            [Frozen] PaymentServiceOptions _paymentServiceOptions,
+            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> _httpPaymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> _loggerMock,
+            [Frozen] Mock<IValidator<PaymentRequestDto>> _paymentRequestDtoValidatorMock)
+        {
+            // Arrange
+            _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_paymentServiceOptions);
+
+            // Act
+            Action act = () => new PaymentsService(
+                _httpGovPayServiceMock.Object,
+                _httpPaymentsServiceMock.Object,
+                _loggerMock.Object,
+                _paymentServiceOptionsMock.Object,
+                null!,
+                _paymentRequestDtoValidatorMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("mapper");
+        }
+
+        [TestMethod,AutoMoqData]
+        public void Constructor_WhenPaymentRequestDtoValidatorIsNull_ShouldThrowArgumentNullException(
+            [Frozen] PaymentServiceOptions _paymentServiceOptions,
+            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<IHttpPaymentsService> _httpPaymentsServiceMock,
+            [Frozen] Mock<ILogger<PaymentsService>> _loggerMock,
+            [Frozen] Mock<IMapper> _mapperMock)
+        {
+            // Arrange
+            _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_paymentServiceOptions);
+
+            // Act
+            Action act = () => new PaymentsService(
+                _httpGovPayServiceMock.Object,
+                _httpPaymentsServiceMock.Object,
+                _loggerMock.Object,
+                _paymentServiceOptionsMock.Object,
+                _mapperMock.Object,
+                null!);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("paymentRequestDtoValidator");
         }
 
         [TestMethod, AutoMoqData]
@@ -167,7 +345,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Act & Assert
             await _service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
-                .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
+                .Should().ThrowAsync<ServiceException>().WithMessage("Validation error");
 
             // Verify that the return_url contains the correct id
             _httpGovPayServiceMock.Verify(s =>
@@ -387,7 +565,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Act & Assert
             await _service.Invoking(async s => await s.CompletePaymentAsync(externalPaymentId, new CancellationToken()))
-                .Should().ThrowAsync<ValidationException>().WithMessage("Validation error");
+                .Should().ThrowAsync<ServiceException>().WithMessage("Validation error");
         }
 
 
@@ -426,7 +604,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ReturnUrlNotConfigured_ThrowsReturnUrlNotConfiguredException(
             PaymentRequestDto request)
-        { 
+        {
             // Arrange
             _paymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
 
@@ -540,7 +718,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
 
             // Act & Assert
             var exception = await _service.Invoking(async s => await s.InitiatePaymentAsync(request, new CancellationToken()))
-                .Should().ThrowAsync<ValidationException>();
+                .Should().ThrowAsync<ServiceException>();
 
             // Use a flexible matching to ensure the message contains the expected constant message
             using (new AssertionScope())

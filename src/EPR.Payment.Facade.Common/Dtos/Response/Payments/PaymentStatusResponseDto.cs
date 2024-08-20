@@ -38,9 +38,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Payments
         [JsonProperty("refund_summary")]
         public RefundSummary? RefundSummary { get; set; }
 
-        [JsonProperty("settlement_summary")]
-        public SettlementSummary? SettlementSummary { get; set; }
-
         [JsonProperty("card_details")]
         public CardDetails? CardDetails { get; set; }
 

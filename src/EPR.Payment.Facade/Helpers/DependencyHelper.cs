@@ -5,10 +5,12 @@ using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Helpers
 {
-    public static class ExtensionMethods
+    [ExcludeFromCodeCoverage]
+    public static class DependencyHelper
     {
         public static IServiceCollection AddFacadeDependencies(
             this IServiceCollection services,
@@ -40,14 +42,14 @@ namespace EPR.Payment.Facade.Helpers
 
             services.AddScoped<TInterface>(s =>
             {
-                Trace.WriteLine($"Registering service {typeof(TImplementation).Name} for {configName}");
+                Trace.TraceInformation($"Registering service {typeof(TImplementation).Name} for {configName}");
 
                 var instance = Activator.CreateInstance(typeof(TImplementation),
                     s.GetRequiredService<IHttpContextAccessor>(),
                     s.GetRequiredService<IHttpClientFactory>(),
                     serviceOptions);
 
-                Trace.WriteLine(instance == null ? $"Failed to create instance of {typeof(TImplementation).Name}" : $"Successfully created instance of {typeof(TImplementation).Name}");
+                Trace.TraceError(instance == null ? $"Failed to create instance of {typeof(TImplementation).Name}" : $"Successfully created instance of {typeof(TImplementation).Name}");
 
                 return instance == null
                     ? throw new InvalidOperationException($"Failed to create instance of {typeof(TImplementation).Name}")
@@ -71,7 +73,8 @@ namespace EPR.Payment.Facade.Helpers
                 Url = serviceConfig?.Url,
                 EndPointName = endPointName,
                 BearerToken = serviceConfig?.BearerToken,
-                HttpClientName = serviceConfig?.HttpClientName
+                HttpClientName = serviceConfig?.HttpClientName,
+                Retries = serviceConfig?.Retries
             });
         }
 

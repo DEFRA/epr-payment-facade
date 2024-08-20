@@ -28,3 +28,4 @@ appsettings.Test.json
 /obj
 /src/EPR.Payment.Facade/appsettings.Development.json
 /src/EPR.Payment.Facade.IntegrationTests/appsettings.json
+/src/TestResults

@@ -17,26 +17,26 @@ namespace EPR.Payment.Facade.Validations
         {
             RuleFor(x => x.UserId)
                 .NotNull()
-                .WithMessage(string.Format(InvalidUserIdErrorMessage, nameof(PaymentRequestDto.UserId)));
+                .WithMessage(InvalidUserIdErrorMessage);
             RuleFor(x => x.OrganisationId)
                 .NotNull()
-                .WithMessage(string.Format(InvalidOrganisationIdErrorMessage, nameof(PaymentRequestDto.OrganisationId)));
+                .WithMessage(InvalidOrganisationIdErrorMessage);
             RuleFor(x => x.Reference)
                 .NotEmpty()
-                .WithMessage(string.Format(InvalidReferenceErrorMessage, nameof(PaymentRequestDto.Reference)));
+                .WithMessage(InvalidReferenceErrorMessage);
             RuleFor(x => x.Amount)
                 .NotNull()
                 .GreaterThan(0)
-                .WithMessage(string.Format(InvalidAmountErrorMessage, nameof(PaymentRequestDto.Amount)));
+                .WithMessage(InvalidAmountErrorMessage);
             RuleFor(x => x.Regulator)
                 .NotEmpty()
-                .WithMessage(string.Format(InvalidRegulatorNullErrorMessage, nameof(PaymentRequestDto.Regulator)));
+                .WithMessage(InvalidRegulatorNullErrorMessage);
             RuleFor(x => x.Regulator)
                 .Must(text => text == RegulatorConstants.GBENG || text == RegulatorConstants.GBSCT || text == RegulatorConstants.GBWLS || text == RegulatorConstants.GBNIR)
-                .WithMessage(string.Format(InvalidRegulatorErrorMessage, nameof(PaymentRequestDto.Regulator)));
+                .WithMessage(InvalidRegulatorErrorMessage);
             RuleFor(x => x.Regulator)
                 .Must(text => text == RegulatorConstants.GBENG)
-                .WithMessage(string.Format(InvalidRegulatorNotENGErrorMessage, nameof(PaymentRequestDto.Regulator)))
+                .WithMessage(InvalidRegulatorNotENGErrorMessage)
                 .When(x=> string.Equals(x.Regulator, RegulatorConstants.GBSCT, StringComparison.Ordinal) 
                        || string.Equals(x.Regulator, RegulatorConstants.GBWLS, StringComparison.Ordinal) 
                        || string.Equals(x.Regulator, RegulatorConstants.GBNIR, StringComparison.Ordinal));

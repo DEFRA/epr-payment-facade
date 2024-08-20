@@ -2,9 +2,11 @@
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
+using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Common.Mapping
 {
+    [ExcludeFromCodeCoverage]
     public class PaymentRequestMappingProfile : Profile
     {
         public PaymentRequestMappingProfile()

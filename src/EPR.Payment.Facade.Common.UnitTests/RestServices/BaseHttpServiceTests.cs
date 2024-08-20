@@ -540,7 +540,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<Exception>()
+                await act.Should().ThrowAsync<ServiceException>()
                     .WithMessage("*Bad Request*");
 
                 _handlerMock.Protected().Verify(
@@ -708,7 +708,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<Exception>()
+                await act.Should().ThrowAsync<ServiceException>()
                     .WithMessage("*Bad Request*");
 
                 _handlerMock.Protected().Verify(
@@ -876,7 +876,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<Exception>()
+                await act.Should().ThrowAsync<ServiceException>()
                     .WithMessage("*Bad Request*");
 
                 _handlerMock.Protected().Verify(

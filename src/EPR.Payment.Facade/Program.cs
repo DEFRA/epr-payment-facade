@@ -85,10 +85,10 @@ bool enablePaymentInitiation = await featureManager.IsEnabledAsync("EnablePaymen
 bool enablePaymentStatus = await featureManager.IsEnabledAsync("EnablePaymentStatus");
 bool enablePaymentStatusInsert = await featureManager.IsEnabledAsync("EnablePaymentStatusInsert");
 
-logger.LogInformation($"EnablePaymentsFeature: {enablePaymentsFeature}");
-logger.LogInformation($"EnablePaymentInitiation: {enablePaymentInitiation}");
-logger.LogInformation($"EnablePaymentStatus: {enablePaymentStatus}");
-logger.LogInformation($"EnablePaymentStatusInsert: {enablePaymentStatusInsert}");
+logger.LogInformation("EnablePaymentsFeature: {EnablePaymentsFeature}", enablePaymentsFeature);
+logger.LogInformation("EnablePaymentInitiation: {EnablePaymentInitiation}", enablePaymentInitiation);
+logger.LogInformation("EnablePaymentStatus: {EnablePaymentStatus}", enablePaymentStatus);
+logger.LogInformation("EnablePaymentStatusInsert: {EnablePaymentStatusInsert}", enablePaymentStatusInsert);
 
 if (app.Environment.IsDevelopment())
 {
@@ -111,4 +111,4 @@ app.UseMiddleware<ConditionalEndpointMiddleware>();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

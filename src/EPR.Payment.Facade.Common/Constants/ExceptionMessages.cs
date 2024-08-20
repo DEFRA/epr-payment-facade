@@ -2,6 +2,7 @@
 {
     public static class ExceptionMessages
     {
+
         // HttpGovPayService exceptions
         public const string BearerTokenNull = "Bearer token is null. Unable to initiate payment.";
         public const string GovPayResponseInvalid = "GovPay response does not contain a valid PaymentId.";

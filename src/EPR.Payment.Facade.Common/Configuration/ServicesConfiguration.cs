@@ -17,5 +17,6 @@ namespace EPR.Payment.Facade.Common.Configuration
         public string? EndPointName { get; set; }
         public string? BearerToken { get; set; }
         public string? HttpClientName { get; set; }
+        public int? Retries { get; set; }
     }
 }
