@@ -18,33 +18,6 @@ namespace EPR.Payment.Facade.UnitTests.Validations
         }
 
         [TestMethod]
-        public void Validate_ShouldHaveError_WhenProducerTypeIsEmpty()
-        {
-            // Arrange
-            var request = new ProducerRegistrationFeesRequestDto
-            {
-                ProducerType = string.Empty,
-                NumberOfSubsidiaries = 10,
-                Regulator = "GB-ENG",
-                IsOnlineMarketplace = false,
-                PayBaseFee = true
-            };
-
-            // Act
-            var result = _validator.TestValidate(request);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldHaveValidationErrorFor(x => x.ProducerType)
-                    .WithErrorMessage(ValidationMessages.ProducerTypeRequired);
-
-                result.ShouldHaveValidationErrorFor(x => x.ProducerType)
-                    .WithErrorMessage(ValidationMessages.ProducerTypeInvalid);
-            }
-        }
-
-        [TestMethod]
         public void Validate_ShouldHaveError_WhenProducerTypeIsInvalid()
         {
             // Arrange
@@ -53,8 +26,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations
                 ProducerType = "X",
                 NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
-                IsOnlineMarketplace = false,
-                PayBaseFee = true
+                IsOnlineMarketplace = false
             };
 
             // Act
@@ -77,8 +49,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations
                 ProducerType = "L",
                 NumberOfSubsidiaries = 101,
                 Regulator = "GB-ENG",
-                IsOnlineMarketplace = false,
-                PayBaseFee = true
+                IsOnlineMarketplace = false
             };
 
             // Act
@@ -101,8 +72,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations
                 ProducerType = "L",
                 NumberOfSubsidiaries = 10,
                 Regulator = string.Empty,
-                IsOnlineMarketplace = false,
-                PayBaseFee = true
+                IsOnlineMarketplace = false
             };
 
             // Act
@@ -117,7 +87,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_WhenRequestIsValid()
+        public void Validate_ShouldNotHaveError_WhenRequestIsValid_WithProducerType()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
@@ -125,8 +95,31 @@ namespace EPR.Payment.Facade.UnitTests.Validations
                 ProducerType = "L",
                 NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
-                IsOnlineMarketplace = false,
-                PayBaseFee = true
+                IsOnlineMarketplace = false
+            };
+
+            // Act
+            var result = _validator.TestValidate(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
+                result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
+                result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
+            }
+        }
+
+        [TestMethod]
+        public void Validate_ShouldNotHaveError_WhenProducerTypeIsEmpty()
+        {
+            // Arrange
+            var request = new ProducerRegistrationFeesRequestDto
+            {
+                ProducerType = string.Empty, // No base fee required
+                NumberOfSubsidiaries = 10,
+                Regulator = "GB-ENG",
+                IsOnlineMarketplace = false
             };
 
             // Act
