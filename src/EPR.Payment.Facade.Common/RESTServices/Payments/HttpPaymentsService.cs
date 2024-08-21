@@ -11,9 +11,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
     public class HttpPaymentsService : BaseHttpService, IHttpPaymentsService
     {
-        private readonly IHttpClientFactory _httpClientFactory = null!;
-        private readonly string _httpClientName = null!;
-
         public HttpPaymentsService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
@@ -23,8 +20,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                 config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceEndPointNameMissing))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _httpClientName = config.Value.HttpClientName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceHttpClientNameMissing);
         }
 
         public async Task<Guid> InsertPaymentAsync(InsertPaymentRequestDto paymentStatusInsertRequest, CancellationToken cancellationToken = default)

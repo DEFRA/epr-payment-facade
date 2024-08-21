@@ -11,9 +11,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
 {
     public class HttpRegistrationFeesService : BaseHttpService, IHttpRegistrationFeesService
     {
-        private readonly IHttpClientFactory _httpClientFactory = null!;
-        private readonly string _httpClientName = null!;
-
         public HttpRegistrationFeesService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
@@ -23,16 +20,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
                 config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _httpClientName = config.Value.HttpClientName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceHttpClientNameMissing);
         }
 
-        public async Task<RegistrationFeeResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeeRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<RegistrationFeesResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.CalculateProducerRegistrationFees;
             try
             {
-                var response = await Post<RegistrationFeeResponseDto>(url, request, cancellationToken);
+                var response = await Post<RegistrationFeesResponseDto>(url, request, cancellationToken);
                 return response;
             }
             catch (Exception ex)

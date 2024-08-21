@@ -5,6 +5,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces
 {
     public interface IHttpRegistrationFeesService
     {
-        Task<RegistrationFeeResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeeRequestDto request, CancellationToken cancellationToken = default);
+        Task<RegistrationFeesResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeesRequestDto request, CancellationToken cancellationToken = default);
     }
 }

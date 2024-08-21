@@ -5,6 +5,6 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Interfaces
 {
     public interface IRegistrationFeesService
     {
-        Task<RegistrationFeeResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeeRequestDto request);
+        Task<RegistrationFeesResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeesRequestDto request);
     }
 }
