@@ -17,6 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidation(fv =>
 {
     fv.RegisterValidatorsFromAssemblyContaining<PaymentRequestDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<ProducerRegistrationFeesRequestDtoValidator>();
     fv.AutomaticValidationEnabled = false;
 });
 builder.Services.Configure<PaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
