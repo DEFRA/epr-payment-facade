@@ -10,6 +10,10 @@ using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using System.Security.Authentication;
 
+using Swashbuckle.AspNetCore.Filters;
+using EPR.Payment.Facade.Examples;
+using Microsoft.Extensions.Options;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -28,8 +32,11 @@ builder.Services.AddSwaggerGen(setupAction =>
     setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v1" });
     setupAction.DocumentFilter<FeatureEnabledDocumentFilter>();
     setupAction.OperationFilter<FeatureGateOperationFilter>();
+    setupAction.IncludeXmlComments(Path.Combine(System.AppContext.BaseDirectory, "EPR.Payment.Facade.xml"));
+    setupAction.ExampleFilters();
 });
 
+builder.Services.AddSwaggerExamplesFromAssemblyOf<CalculateRegistrationFeeResponseExample>();
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddServiceHealthChecks();
