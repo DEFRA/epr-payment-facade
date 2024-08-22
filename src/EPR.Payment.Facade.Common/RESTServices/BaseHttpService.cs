@@ -47,7 +47,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// <summary>
         /// Performs an Http GET returning the specified object
         /// </summary>
-        protected async Task<T> Get<T>(string url, CancellationToken cancellationToken, bool includeTrailingSlash = true)
+        protected virtual async Task<T> Get<T>(string url, CancellationToken cancellationToken, bool includeTrailingSlash = true)
         {
             url = string.IsNullOrEmpty(url) && !includeTrailingSlash ? _baseUrl : includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
 
