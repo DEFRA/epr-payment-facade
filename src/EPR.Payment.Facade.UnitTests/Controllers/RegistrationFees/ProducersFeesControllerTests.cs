@@ -167,7 +167,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
                 problemDetails.Should().NotBeNull();
                 problemDetails?.Title.Should().Be("Unexpected Error");
-                problemDetails?.Detail.Should().Be("An unexpected error occurred while calculating the fees.");
+                problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErrorCalculatingFees);
             }
         }
 
