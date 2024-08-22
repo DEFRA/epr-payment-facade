@@ -3,7 +3,6 @@
     public static class ValidationMessages
     {
         // Producer Registration Fee Validation Messages
-        public const string ProducerTypeRequired = "ProducerType is required.";
         public const string ProducerTypeInvalid = "ProducerType must be 'L' for Large or 'S' for Small.";
         public const string NumberOfSubsidiariesRange = "Number of subsidiaries must be between 0 and 100.";
 

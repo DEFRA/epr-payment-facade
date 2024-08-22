@@ -9,8 +9,8 @@ namespace EPR.Payment.Facade.Validations
         public ProducerRegistrationFeesRequestDtoValidator()
         {
             RuleFor(x => x.ProducerType)
-                .NotEmpty().WithMessage(ValidationMessages.ProducerTypeRequired)
-                .Matches("^(L|S)$").WithMessage(ValidationMessages.ProducerTypeInvalid);
+                .Must(pt => string.IsNullOrEmpty(pt) || pt == "L" || pt == "S")
+                .WithMessage(ValidationMessages.ProducerTypeInvalid);
 
             RuleFor(x => x.NumberOfSubsidiaries)
                 .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.NumberOfSubsidiariesRange)
