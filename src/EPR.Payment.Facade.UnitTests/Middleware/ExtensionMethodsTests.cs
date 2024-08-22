@@ -45,7 +45,10 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.EndPointName)}", "govpay" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.BearerToken)}", "BearerTokenValue" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Retries)}", "3" }
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Retries)}", "3" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.RegistrationFeesService)}:{nameof(Service.Url)}", "https://registration.fees.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.RegistrationFeesService)}:{nameof(Service.EndPointName)}", "fees" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.RegistrationFeesService)}:{nameof(Service.HttpClientName)}", "RegistrationFeesClient" }
             };
 
             var configurationBuilder = new ConfigurationBuilder()
