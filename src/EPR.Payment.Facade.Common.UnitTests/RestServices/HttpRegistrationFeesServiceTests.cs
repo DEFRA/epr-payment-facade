@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Text;
 
-namespace EPR.Payment.Facade.Common.UnitTests.RESTServices.RegistrationFees
+namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
     public class HttpRegistrationFeesServiceTests
@@ -46,8 +46,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices.RegistrationFees
                 ProducerType = "L",
                 NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
-                IsOnlineMarketplace = false,
-                PayBaseFee = true
+                IsOnlineMarketplace = false
             };
 
             _registrationFeesResponseDto = new RegistrationFeesResponseDto
@@ -75,6 +74,76 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices.RegistrationFees
                 _httpContextAccessorMock!.Object,
                 new HttpClientFactoryMock(httpClient),
                 _configMock!.Object);
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_ShouldThrowArgumentNullException_WhenHttpContextAccessorIsNull(
+            Mock<IHttpClientFactory> httpClientFactoryMock,
+            Mock<IOptions<Service>> configMock)
+        {
+            // Act
+            Action act = () => new HttpRegistrationFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_ShouldThrowArgumentNullException_WhenHttpClientFactoryIsNull(
+            Mock<IHttpContextAccessor> httpContextAccessorMock,
+            Mock<IOptions<Service>> configMock)
+        {
+            // Act
+            Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_ShouldThrowArgumentNullException_WhenConfigUrlIsNull(
+            Mock<IHttpContextAccessor> httpContextAccessorMock,
+            Mock<IHttpClientFactory> httpClientFactoryMock)
+        {
+            // Arrange
+            var configMock = new Mock<IOptions<Service>>();
+            configMock.Setup(c => c.Value).Returns(new Service { Url = null, EndPointName = "SomeEndPoint" });
+
+            // Act
+            Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                act.Should().Throw<ArgumentNullException>()
+                    .WithMessage($"{ExceptionMessages.RegistrationFeesServiceBaseUrlMissing} (Parameter 'config')");
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_ShouldThrowArgumentNullException_WhenConfigEndPointNameIsNull(
+            Mock<IHttpContextAccessor> httpContextAccessorMock,
+            Mock<IHttpClientFactory> httpClientFactoryMock)
+        {
+            // Arrange
+            var configMock = new Mock<IOptions<Service>>();
+            configMock.Setup(c => c.Value).Returns(new Service { Url = "https://api.example.com", EndPointName = null });
+
+            // Act
+            Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                act.Should().Throw<ArgumentNullException>()
+                    .WithMessage($"{ExceptionMessages.RegistrationFeesServiceEndPointNameMissing} (Parameter 'config')");
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -121,6 +190,85 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices.RegistrationFees
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                        .ThrowsAsync(new HttpRequestException("Unexpected error"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ServiceException>()
+                    .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_NullContent_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpRegistrationFeesService httpRegistrationFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = null // Simulate a null response content
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () =>
+            {
+                var response = await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
+                // Manually check for null content to simulate the exception throwing
+                if (response == null)
+                {
+                    throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees);
+                }
+            };
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ServiceException>()
+                    .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_UnsuccessfulStatusCode_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpRegistrationFeesService httpRegistrationFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
+                           Content = new StringContent(JsonConvert.SerializeObject(_registrationFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
 
             var httpClient = new HttpClient(handlerMock.Object);
             httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);

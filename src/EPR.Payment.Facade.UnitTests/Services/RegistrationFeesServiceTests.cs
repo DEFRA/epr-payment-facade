@@ -115,7 +115,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
                     x => x.Log(
                         LogLevel.Error,
                         It.IsAny<EventId>(),
-                        It.Is<It.IsAnyType>((v, t) => v.ToString().Contains(ExceptionMessages.UnexpectedErrorCalculatingProducerFees)),
+                        It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingProducerFees)),
                         exception,
                         It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                     Times.Once);
