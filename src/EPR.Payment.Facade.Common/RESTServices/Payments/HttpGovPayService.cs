@@ -14,7 +14,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
     public class HttpGovPayService : BaseHttpService, IHttpGovPayService
     {
         private readonly string? _bearerToken;
-        private readonly AsyncRetryPolicy<GovPayResponseDto> _retryPolicy;
+        private readonly AsyncRetryPolicy<GovPayResponseDto> _paymentRetryPolicy;
+        private readonly AsyncRetryPolicy<PaymentStatusResponseDto> _statusRetryPolicy;
 
         public HttpGovPayService(
             IHttpContextAccessor httpContextAccessor,
@@ -29,9 +30,20 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 
             // Define the retry policy for InitiatePaymentAsync
             int retries = config.Value.Retries ?? 1;
-            _retryPolicy = Policy<GovPayResponseDto>
+            _paymentRetryPolicy = Policy<GovPayResponseDto>
                 .Handle<HttpRequestException>()
                 .OrResult(result => string.IsNullOrEmpty(result.PaymentId)) // Retry if the PaymentId is empty
+                .WaitAndRetryAsync(retries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    (result, timeSpan, retryCount, context) =>
+                    {
+                        // Log or handle the retry attempt here
+                        // Use _logger if available
+                    });
+
+            // Define the retry policy for GetPaymentStatusAsync
+            _statusRetryPolicy = Policy<PaymentStatusResponseDto>
+                .Handle<HttpRequestException>()
+                .OrResult(result => result == null || string.IsNullOrEmpty(result.State?.Status)) // Retry if the response is null or status is empty
                 .WaitAndRetryAsync(retries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     (result, timeSpan, retryCount, context) =>
                     {
@@ -55,7 +67,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             try
             {
                 // Use the retry policy when calling the Post method
-                return await _retryPolicy.ExecuteAsync(async () =>
+                return await _paymentRetryPolicy.ExecuteAsync(async () =>
                 {
                     return await Post<GovPayResponseDto>(url, paymentRequestDto, cancellationToken);
                 });
@@ -80,7 +92,11 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             var url = UrlConstants.GovPayGetPaymentStatus.Replace("{paymentId}", paymentId);
             try
             {
-                    return await Get<PaymentStatusResponseDto?>(url, cancellationToken);
+                // Use the retry policy when calling the Get method
+                return await _statusRetryPolicy.ExecuteAsync(async () =>
+                {
+                    return await Get<PaymentStatusResponseDto>(url, cancellationToken);
+                });
             }
             catch (Exception ex)
             {
