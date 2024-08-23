@@ -14,5 +14,8 @@
 
         // Log Messages for PaymentsController
         public const string NextUrlNull = "Next URL is null.";
+
+        // Log Messages for RegistrationFeesService
+        public const string ErrorOccuredWhileCalculatingProducerFees = "An error occurred while calculating producer fees in {0} request";
     }
 }
