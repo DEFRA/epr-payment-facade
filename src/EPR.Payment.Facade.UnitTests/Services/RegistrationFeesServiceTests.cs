@@ -8,7 +8,6 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees;
 using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
-using FluentAssertions.Execution;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -36,7 +35,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_ShouldThrowArgumentNullException_WhenHttpRegistrationFeesServiceIsNull(
+        public void Constructor_HttpRegistrationFeesServiceIsNull_ShouldThrowArgumentNullException(
             ILogger<RegistrationFeesService> logger)
         {
             // Act
@@ -47,7 +46,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_ShouldThrowArgumentNullException_WhenLoggerIsNull(
+        public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
             IHttpRegistrationFeesService httpRegistrationFeesService)
         {
             // Act
@@ -58,22 +57,19 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_ShouldThrowArgumentNullException_WhenRequestIsNull(
+        public async Task CalculateProducerFeesAsync_RequestIsNull_ShouldThrowArgumentNullException(
             RegistrationFeesService service)
         {
             // Act
             Func<Task> act = () => service.CalculateProducerFeesAsync(null!);
 
             // Assert
-            using (new AssertionScope())
-            {
-                await act.Should().ThrowAsync<ArgumentNullException>()
-                    .WithMessage($"{ExceptionMessages.ErrorCalculatingProducerFees} (Parameter 'request')");
-            }
+            await act.Should().ThrowAsync<ArgumentNullException>()
+                .WithMessage($"{ExceptionMessages.ErrorCalculatingProducerFees} (Parameter 'request')");
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_ShouldReturnResponse_WhenRequestIsValid(
+        public async Task CalculateProducerFeesAsync_RequestIsValid_ShouldReturnResponse(
             RegistrationFeesResponseDto expectedResponse,
             ProducerRegistrationFeesRequestDto request)
         {
@@ -89,7 +85,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_ShouldLogAndThrowServiceException_WhenHttpServiceThrowsException(
+        public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
             ProducerRegistrationFeesRequestDto request)
         {
             // Arrange
@@ -103,23 +99,20 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
             Func<Task> act = async () => await _service.CalculateProducerFeesAsync(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                var thrownException = await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+            var thrownException = await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
 
-                thrownException.Which.InnerException.Should().BeOfType<Exception>()
-                    .Which.Message.Should().Be(exceptionMessage);
+            thrownException.Which.InnerException.Should().BeOfType<Exception>()
+                .Which.Message.Should().Be(exceptionMessage);
 
-                _loggerMock.Verify(
-                    x => x.Log(
-                        LogLevel.Error,
-                        It.IsAny<EventId>(),
-                        It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingProducerFees)),
-                        exception,
-                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                    Times.Once);
-            }
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingProducerFees)),
+                    exception,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
         }
     }
 }
