@@ -7,7 +7,6 @@ using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
-using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -77,7 +76,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_ShouldThrowArgumentNullException_WhenHttpContextAccessorIsNull(
+        public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException(
             Mock<IHttpClientFactory> httpClientFactoryMock,
             Mock<IOptions<Service>> configMock)
         {
@@ -85,14 +84,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Action act = () => new HttpRegistrationFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
 
             // Assert
-            using (new AssertionScope())
-            {
-                act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
-            }
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_ShouldThrowArgumentNullException_WhenHttpClientFactoryIsNull(
+        public void Constructor_HttpClientFactoryIsNull_ShouldThrowArgumentNullException(
             Mock<IHttpContextAccessor> httpContextAccessorMock,
             Mock<IOptions<Service>> configMock)
         {
@@ -100,14 +96,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
 
             // Assert
-            using (new AssertionScope())
-            {
-                act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
-            }
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_ShouldThrowArgumentNullException_WhenConfigUrlIsNull(
+        public void Constructor_ConfigUrlIsNull_ShouldThrowArgumentNullException(
             Mock<IHttpContextAccessor> httpContextAccessorMock,
             Mock<IHttpClientFactory> httpClientFactoryMock)
         {
@@ -119,15 +112,12 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
 
             // Assert
-            using (new AssertionScope())
-            {
-                act.Should().Throw<ArgumentNullException>()
-                    .WithMessage($"{ExceptionMessages.RegistrationFeesServiceBaseUrlMissing} (Parameter 'config')");
-            }
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage($"{ExceptionMessages.RegistrationFeesServiceBaseUrlMissing} (Parameter 'config')");
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_ShouldThrowArgumentNullException_WhenConfigEndPointNameIsNull(
+        public void Constructor_ConfigEndPointNameIsNull_ShouldThrowArgumentNullException(
             Mock<IHttpContextAccessor> httpContextAccessorMock,
             Mock<IHttpClientFactory> httpClientFactoryMock)
         {
@@ -139,15 +129,12 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
 
             // Assert
-            using (new AssertionScope())
-            {
-                act.Should().Throw<ArgumentNullException>()
-                    .WithMessage($"{ExceptionMessages.RegistrationFeesServiceEndPointNameMissing} (Parameter 'config')");
-            }
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage($"{ExceptionMessages.RegistrationFeesServiceEndPointNameMissing} (Parameter 'config')");
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_Success_ReturnsRegistrationFeesResponseDto(
+        public async Task CalculateProducerFeesAsync_ValidRequest_ReturnsRegistrationFeesResponseDto(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             HttpRegistrationFeesService httpRegistrationFeesService,
             CancellationToken cancellationToken)
@@ -168,20 +155,17 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var result = await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.Should().BeEquivalentTo(_registrationFeesResponseDto);
-                handlerMock.Protected().Verify(
-                    "SendAsync",
-                    Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Post),
-                    ItExpr.IsAny<CancellationToken>());
-            }
+            result.Should().BeEquivalentTo(_registrationFeesResponseDto);
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_Failure_ThrowsServiceException(
+        public async Task CalculateProducerFeesAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             HttpRegistrationFeesService httpRegistrationFeesService,
             CancellationToken cancellationToken)
@@ -198,17 +182,14 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Func<Task> act = async () => await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
 
             // Assert
-            using (new AssertionScope())
-            {
-                await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
-                handlerMock.Protected().Verify(
-                    "SendAsync",
-                    Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Post),
-                    ItExpr.IsAny<CancellationToken>());
-            }
+            await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [TestMethod, AutoMoqData]
@@ -241,18 +222,15 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
 
             // Assert
-            using (new AssertionScope())
-            {
-                await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+            await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
 
-                handlerMock.Protected().Verify(
-                    "SendAsync",
-                    Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Post),
-                    ItExpr.IsAny<CancellationToken>());
-            }
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [TestMethod, AutoMoqData]
@@ -277,17 +255,14 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Func<Task> act = async () => await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
 
             // Assert
-            using (new AssertionScope())
-            {
-                await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
-                handlerMock.Protected().Verify(
-                    "SendAsync",
-                    Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Post),
-                    ItExpr.IsAny<CancellationToken>());
-            }
+            await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
         }
     }
 }
