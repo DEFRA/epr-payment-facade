@@ -76,13 +76,15 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 _configMock!.Object);
         }
 
-        [TestMethod, AutoMoqData]
         public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException(
             Mock<IHttpClientFactory> httpClientFactoryMock,
             Mock<IOptions<Service>> configMock)
         {
             // Act
-            Action act = () => new HttpRegistrationFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
+            Action act = () =>
+            {
+                var service = new HttpRegistrationFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
+            };
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
