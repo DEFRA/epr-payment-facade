@@ -8,9 +8,11 @@ namespace EPR.Payment.Facade.Validations
     {
         public ProducerRegistrationFeesRequestDtoValidator()
         {
+            var validProducerTypes = new List<string> { "LARGE", "SMALL" };
+
             RuleFor(x => x.ProducerType)
-                .Must(pt => string.IsNullOrEmpty(pt) || pt.ToUpper() == "L" || pt.ToUpper() == "S")
-                .WithMessage(ValidationMessages.ProducerTypeInvalid);
+                .Must(pt => string.IsNullOrEmpty(pt) || validProducerTypes.Contains(pt.ToUpper()))
+                .WithMessage(ValidationMessages.ProducerTypeInvalid + string.Join(", ", validProducerTypes));
 
             RuleFor(x => x.NumberOfSubsidiaries)
                 .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.NumberOfSubsidiariesRange)
@@ -19,7 +21,7 @@ namespace EPR.Payment.Facade.Validations
             RuleFor(x => x.NumberOfSubsidiaries)
                 .GreaterThan(0)
                 .When(x => string.IsNullOrEmpty(x.ProducerType))
-                .WithMessage("Number of subsidiaries must be greater than 0 when ProducerType is empty.");
+                .WithMessage(ValidationMessages.NumberOfSubsidiariesRequiredWhenProducerTypeEmpty);
 
             RuleFor(x => x.Regulator)
                 .NotEmpty().WithMessage(ValidationMessages.RegulatorRequired)
@@ -28,10 +30,15 @@ namespace EPR.Payment.Facade.Validations
 
         private bool IsValidRegulator(string regulator)
         {
-            return regulator == RegulatorConstants.GBENG ||
-                   regulator == RegulatorConstants.GBSCT ||
-                   regulator == RegulatorConstants.GBWLS ||
-                   regulator == RegulatorConstants.GBNIR;
+            var validRegulators = new List<string>
+            {
+                RegulatorConstants.GBENG,
+                RegulatorConstants.GBSCT,
+                RegulatorConstants.GBWLS,
+                RegulatorConstants.GBNIR
+            };
+
+            return validRegulators.Contains(regulator);
         }
     }
 }

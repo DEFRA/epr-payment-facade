@@ -1,7 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
 using EPR.Payment.Facade.Validations;
-using FluentAssertions.Execution;
 using FluentValidation.TestHelper;
 
 namespace EPR.Payment.Facade.UnitTests.Validations
@@ -18,7 +17,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations
         }
 
         [TestMethod]
-        public void Validate_ShouldHaveError_WhenProducerTypeIsInvalid()
+        public void Validate_InvalidProducerType_ShouldHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
@@ -33,20 +32,17 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldHaveValidationErrorFor(x => x.ProducerType)
-                    .WithErrorMessage(ValidationMessages.ProducerTypeInvalid);
-            }
+            result.ShouldHaveValidationErrorFor(x => x.ProducerType)
+                  .WithErrorMessage(ValidationMessages.ProducerTypeInvalid + "LARGE, SMALL");
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_ForUpperCaseProducerTypeL()
+        public void Validate_UpperCaseProducerTypeLarge_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
             {
-                ProducerType = "L",
+                ProducerType = "LARGE",
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsOnlineMarketplace = false
@@ -56,19 +52,16 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
-            }
+            result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_ForLowerCaseProducerTypeL()
+        public void Validate_LowerCaseProducerTypeLarge_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
             {
-                ProducerType = "l",  // Lowercase
+                ProducerType = "large",  // Lowercase
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsOnlineMarketplace = false
@@ -78,19 +71,16 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
-            }
+            result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_ForUpperCaseProducerTypeS()
+        public void Validate_UpperCaseProducerTypeSmall_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
             {
-                ProducerType = "S",
+                ProducerType = "SMALL",
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsOnlineMarketplace = false
@@ -100,19 +90,16 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
-            }
+            result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_ForLowerCaseProducerTypeS()
+        public void Validate_LowerCaseProducerTypeSmall_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
             {
-                ProducerType = "s",  // Lowercase
+                ProducerType = "small",  // Lowercase
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsOnlineMarketplace = false
@@ -122,19 +109,16 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
-            }
+            result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
         }
 
         [TestMethod]
-        public void Validate_ShouldHaveError_WhenNumberOfSubsidiariesIsOutOfRange()
+        public void Validate_NumberOfSubsidiariesOutOfRange_ShouldHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
             {
-                ProducerType = "L",
+                ProducerType = "LARGE",
                 NumberOfSubsidiaries = 101,
                 Regulator = RegulatorConstants.GBENG,
                 IsOnlineMarketplace = false
@@ -144,20 +128,17 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldHaveValidationErrorFor(x => x.NumberOfSubsidiaries)
-                    .WithErrorMessage(ValidationMessages.NumberOfSubsidiariesRange);
-            }
+            result.ShouldHaveValidationErrorFor(x => x.NumberOfSubsidiaries)
+                  .WithErrorMessage(ValidationMessages.NumberOfSubsidiariesRange);
         }
 
         [TestMethod]
-        public void Validate_ShouldHaveError_WhenRegulatorIsEmpty()
+        public void Validate_EmptyRegulator_ShouldHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
             {
-                ProducerType = "L",
+                ProducerType = "LARGE",
                 NumberOfSubsidiaries = 10,
                 Regulator = string.Empty,
                 IsOnlineMarketplace = false
@@ -167,15 +148,12 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldHaveValidationErrorFor(x => x.Regulator)
-                    .WithErrorMessage(ValidationMessages.RegulatorRequired);
-            }
+            result.ShouldHaveValidationErrorFor(x => x.Regulator)
+                  .WithErrorMessage(ValidationMessages.RegulatorRequired);
         }
 
         [TestMethod]
-        public void Validate_ShouldHaveError_WhenProducerTypeIsEmpty_AndNumberOfSubsidiariesIsZero()
+        public void Validate_EmptyProducerTypeAndZeroSubsidiaries_ShouldHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
@@ -190,20 +168,17 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldHaveValidationErrorFor(x => x.NumberOfSubsidiaries)
-                    .WithErrorMessage("Number of subsidiaries must be greater than 0 when ProducerType is empty.");
-            }
+            result.ShouldHaveValidationErrorFor(x => x.NumberOfSubsidiaries)
+                  .WithErrorMessage(ValidationMessages.NumberOfSubsidiariesRequiredWhenProducerTypeEmpty);
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_WhenRequestIsValid_WithProducerType()
+        public void Validate_ValidRequestWithProducerType_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
             {
-                ProducerType = "L",
+                ProducerType = "LARGE",
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsOnlineMarketplace = false
@@ -213,16 +188,13 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
-                result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
-                result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
-            }
+            result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
+            result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
+            result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_WhenProducerTypeIsEmpty_AndNumberOfSubsidiariesIsGreaterThanZero()
+        public void Validate_EmptyProducerTypeAndGreaterThanZeroSubsidiaries_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerRegistrationFeesRequestDto
@@ -237,15 +209,12 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             var result = _validator.TestValidate(request);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
-                result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
-            }
+            result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
+            result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
         }
 
         [TestMethod]
-        public void Validate_ShouldNotHaveError_WhenRegulatorIsValid()
+        public void Validate_ValidRegulator_ShouldNotHaveError()
         {
             // Arrange
             var validRegulators = new[] { RegulatorConstants.GBENG, RegulatorConstants.GBSCT, RegulatorConstants.GBWLS, RegulatorConstants.GBNIR };
@@ -254,7 +223,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations
             {
                 var request = new ProducerRegistrationFeesRequestDto
                 {
-                    ProducerType = "L",
+                    ProducerType = "LARGE",
                     NumberOfSubsidiaries = 10,
                     Regulator = regulator,
                     IsOnlineMarketplace = false
@@ -264,10 +233,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations
                 var result = _validator.TestValidate(request);
 
                 // Assert
-                using (new AssertionScope())
-                {
-                    result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
-                }
+                result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
             }
         }
     }
