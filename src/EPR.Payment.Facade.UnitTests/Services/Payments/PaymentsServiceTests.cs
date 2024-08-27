@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace EPR.Payment.Facade.UnitTests.Services
+namespace EPR.Payment.Facade.UnitTests.Services.Payments
 {
     [TestClass]
     public class PaymentsServiceTests
@@ -124,7 +124,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpGovPayService");
         }
 
-        [TestMethod,AutoMoqData]
+        [TestMethod, AutoMoqData]
         public void Constructor_WhenHttpPaymentsServiceIsNull_ShouldThrowArgumentNullException(
             [Frozen] PaymentServiceOptions _paymentServiceOptions,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
@@ -199,7 +199,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             act.Should().Throw<ArgumentNullException>().WithParameterName("paymentServiceOptions");
         }
 
-        [TestMethod,AutoMoqData]
+        [TestMethod, AutoMoqData]
         public void Constructor_WhenMapperIsNull_ShouldThrowArgumentNullException(
             [Frozen] PaymentServiceOptions _paymentServiceOptions,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
@@ -224,7 +224,7 @@ namespace EPR.Payment.Facade.UnitTests.Services
             act.Should().Throw<ArgumentNullException>().WithParameterName("mapper");
         }
 
-        [TestMethod,AutoMoqData]
+        [TestMethod, AutoMoqData]
         public void Constructor_WhenPaymentRequestDtoValidatorIsNull_ShouldThrowArgumentNullException(
             [Frozen] PaymentServiceOptions _paymentServiceOptions,
             [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
