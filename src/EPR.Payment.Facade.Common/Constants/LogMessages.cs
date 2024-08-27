@@ -3,8 +3,8 @@
     public static class LogMessages
     {
         // General Log Messages
-        public const string ValidationErrorOccured = "Validation error occurred while processing {0} request";
-        public const string ErrorOccured = "An error occurred while processing {0} request";
+        public const string ValidationErrorOccured = "Validation error occurred while processing {MethodName} request";
+        public const string ErrorOccured = "An error occurred while processing {MethodName} request";
 
         // Log Messages for PaymentsService
         public const string ValidationErrorUpdatingPayment = "Validation error occurred while updating payment status.";
@@ -16,6 +16,6 @@
         public const string NextUrlNull = "Next URL is null.";
 
         // Log Messages for RegistrationFeesService
-        public const string ErrorOccuredWhileCalculatingProducerFees = "An error occurred while calculating producer fees in {0} request";
+        public const string ErrorOccuredWhileCalculatingProducerFees = "An error occurred while calculating producer fees in {MethodName} request";
     }
 }
