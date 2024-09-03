@@ -3,9 +3,10 @@ using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
+using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
-using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentValidation;
@@ -23,9 +24,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ValidRequest_ReturnsRedirectResponse(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller,
-            PaymentRequestDto request,
-            PaymentResponseDto expectedResponse)
+            [Greedy] PaymentsController controller,
+            [Frozen] PaymentRequestDto request,
+            [Frozen] PaymentResponseDto expectedResponse)
         {
             // Arrange
             var cancellationToken = new CancellationToken();
@@ -127,7 +128,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_AmountZero_ReturnsBadRequest(PaymentsController controller)
+        public async Task InitiatePayment_AmountZero_ReturnsBadRequest([Greedy] PaymentsController controller)
         {
             // Arrange
             var request = new PaymentRequestDto
@@ -154,7 +155,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_AmountNegative_ReturnsBadRequest(PaymentsController controller)
+        public async Task InitiatePayment_AmountNegative_ReturnsBadRequest([Greedy] PaymentsController controller)
         {
             // Arrange
             var request = new PaymentRequestDto
@@ -184,30 +185,30 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task InitiatePayment_NextUrlIsNull_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
             [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
-            PaymentsController controller,
-            PaymentRequestDto request,
-            PaymentResponseDto expectedResponse)
-        {
+            [Greedy] PaymentsController controller,
+            [Frozen] PaymentRequestDto request)
+        { 
             // Arrange
             var cancellationToken = new CancellationToken();
-            expectedResponse.NextUrl = null;
+            PaymentResponseDto expectedResponse = new PaymentResponseDto { NextUrl = null };
             paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
             var result = await controller.InitiatePayment(request, cancellationToken);
 
             // Assert
-            loggerMock.Verify(
-            x => x.Log(
-                It.Is<LogLevel>(l => l == LogLevel.Error),
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(LogMessages.NextUrlNull)),
-                It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
-            Times.Once);
 
             using (new AssertionScope())
             {
+                loggerMock.Verify(
+                    x => x.Log(
+                        It.Is<LogLevel>(l => l == LogLevel.Error),
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(LogMessages.NextUrlNull)),
+                        It.IsAny<Exception>(),
+                        It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+                    Times.Once);
+
                 result.Should().BeOfType<ContentResult>();
                 var contentResult = result as ContentResult;
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -218,7 +219,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_InvalidRequest_ReturnsBadRequest(
-            PaymentsController controller)
+            [Greedy] PaymentsController controller)
         {
             // Arrange
             var request = new PaymentRequestDto(); // Invalid request
@@ -241,7 +242,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller)
+            [Greedy] PaymentsController controller)
         {
             // Arrange
             var invalidRequest = new PaymentRequestDto();
@@ -265,8 +266,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task InitiatePayment_ThrowsException_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller,
-            PaymentRequestDto request)
+            [Greedy] PaymentsController controller,
+            [Frozen] PaymentRequestDto request)
         {
             // Arrange
             var exception = new Exception("Some error");
@@ -292,9 +293,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_ValidExternalPaymentId_ReturnsOk(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller,
-            Guid externalPaymentId,
-            CompletePaymentResponseDto expectedResponse)
+            [Greedy] PaymentsController controller,
+            [Frozen] Guid externalPaymentId,
+            [Frozen] CompletePaymentResponseDto expectedResponse)
         {
             // Arrange
             var cancellationToken = new CancellationToken();
@@ -313,7 +314,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_EmptyExternalPaymentId_ReturnsBadRequest(
-            PaymentsController controller)
+            [Greedy] PaymentsController controller)
         {
             // Arrange
             var externalPaymentId = Guid.Empty;
@@ -339,8 +340,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_ThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller,
-            Guid externalPaymentId)
+            [Greedy] PaymentsController controller,
+            [Frozen] Guid externalPaymentId)
         {
             // Arrange
             var validationException = new ValidationException("Validation error");
@@ -363,8 +364,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CompletePayment_ThrowsException_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller,
-            Guid externalPaymentId)
+            [Greedy] PaymentsController controller,
+            [Frozen] Guid externalPaymentId)
         {
             // Arrange
             var exception = new Exception("Some error");

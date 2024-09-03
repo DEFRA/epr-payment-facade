@@ -285,9 +285,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsRegistrationFeesResponseDto(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpRegistrationFeesService httpRegistrationFeesService,
-            CancellationToken cancellationToken,
-            [Frozen] decimal expectedAmount)
+            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Frozen] decimal expectedAmount,
+            CancellationToken cancellationToken)
         {
             // Arrange
             handlerMock.Protected()
@@ -305,20 +305,23 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var result = await httpRegistrationFeesService.GetResubmissionFeeAsync("GB-ENG", cancellationToken);
 
             // Assert
-            result.Should().Be(expectedAmount);
-            handlerMock.Protected().Verify(
-                "SendAsync",
-                Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(msg =>
-                    msg.Method == HttpMethod.Get),
-                ItExpr.IsAny<CancellationToken>());
+            using (new AssertionScope())
+            {
+                result.Should().Be(expectedAmount);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>());
+            }
         }
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            Mock<IOptions<Service>> configMock,
-            HttpRegistrationFeesService httpRegistrationFeesService,
+            [Frozen] Mock<IOptions<Service>> configMock,
+            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -351,8 +354,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_UnsuccessfulStatusCode_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            Mock<IOptions<Service>> configMock,
-            HttpRegistrationFeesService httpRegistrationFeesService,
+            [Frozen] Mock<IOptions<Service>> configMock,
+            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange

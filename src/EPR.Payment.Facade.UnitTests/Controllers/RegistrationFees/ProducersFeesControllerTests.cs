@@ -1,11 +1,14 @@
-﻿using AutoFixture.MSTest;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
+using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.RegistrationFees;
+using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
-using EPR.Payment.Facade.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentValidation;
@@ -24,9 +27,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task CalculateFeesAsync_ValidRequest_ReturnsOk(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
             [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
-            ProducersFeesController controller,
-            ProducerRegistrationFeesRequestDto request,
-            RegistrationFeesResponseDto expectedResponse)
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerRegistrationFeesRequestDto request,
+            [Frozen] RegistrationFeesResponseDto expectedResponse)
         {
             // Arrange
             var validationResult = new ValidationResult();
@@ -49,8 +52,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_InvalidRequest_ReturnsBadRequest(
             [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
-            ProducersFeesController controller,
-            ProducerRegistrationFeesRequestDto request)
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerRegistrationFeesRequestDto request)
         {
             // Arrange
             var validationFailures = new List<ValidationFailure>
@@ -80,8 +83,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task CalculateFeesAsync_ServiceThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
             [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
-            ProducersFeesController controller,
-            ProducerRegistrationFeesRequestDto request)
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerRegistrationFeesRequestDto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
@@ -111,8 +114,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task CalculateFeesAsync_ServiceThrowsServiceException_ReturnsInternalServerError(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
             [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
-            ProducersFeesController controller,
-            ProducerRegistrationFeesRequestDto request)
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerRegistrationFeesRequestDto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
@@ -143,8 +146,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task CalculateFeesAsync_ServiceThrowsException_ReturnsInternalServerError(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
             [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
-            ProducersFeesController controller,
-            ProducerRegistrationFeesRequestDto request)
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerRegistrationFeesRequestDto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
@@ -244,8 +247,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task GetResubmissionFeeAsync_ServiceReturnsAResult_ShouldReturnOkResponse(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
             [Frozen] string regulator,
-            [Frozen] decimal expectedAmount, 
-            ProducersFeesController controller)
+            [Frozen] decimal expectedAmount,
+            [Greedy] ProducersFeesController controller)
         {
             //Arrange
             registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(regulator, CancellationToken.None)).ReturnsAsync(expectedAmount);
@@ -254,15 +257,18 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.GetResubmissionFeeAsync(regulator, CancellationToken.None);
 
             //Assert
-            result.Should().BeOfType<OkObjectResult>();
-            result.As<OkObjectResult>().Should().NotBeNull();
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<OkObjectResult>();
+                result.As<OkObjectResult>().Should().NotBeNull();
+            }
         }
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ServiceThrowsException_ShouldReturnInternalServerError(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
             [Frozen] string regulator,
-            ProducersFeesController controller)
+            [Greedy] ProducersFeesController controller)
         {
             // Arrange
             registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(regulator, CancellationToken.None))
@@ -276,7 +282,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_EmptyRegulator_ShouldReturnBadRequest(ProducersFeesController controller)
+        public async Task GetResubmissionFeeAsync_EmptyRegulator_ShouldReturnBadRequest([Greedy] ProducersFeesController controller)
         {
             // Arrange
             string regulator = string.Empty;
@@ -287,7 +293,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_NullRegulator_ShouldReturnBadRequest(ProducersFeesController controller)
+        public async Task GetResubmissionFeeAsync_NullRegulator_ShouldReturnBadRequest([Greedy] ProducersFeesController controller)
         {
             // Arrange
             string regulator = null!;
