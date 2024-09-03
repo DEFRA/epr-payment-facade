@@ -19,12 +19,21 @@ namespace EPR.Payment.Facade.Services.RegistrationFees
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Task<RegistrationFeesResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeesRequestDto request)
+        public Task<RegistrationFeesResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorCalculatingProducerFees);
 
             return CalculateProducerFeesInternalAsync(request);
+        }
+        public async Task<decimal?> GetResubmissionFeeAsync(string regulator, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(regulator))
+            {
+                throw new ArgumentException(ExceptionMessages.RegulatorCanNotBeNullOrEmpty, nameof(regulator));
+            }
+
+            return await _httpRegistrationFeesService.GetResubmissionFeeAsync(regulator, cancellationToken);
         }
 
         private async Task<RegistrationFeesResponseDto> CalculateProducerFeesInternalAsync(ProducerRegistrationFeesRequestDto request)

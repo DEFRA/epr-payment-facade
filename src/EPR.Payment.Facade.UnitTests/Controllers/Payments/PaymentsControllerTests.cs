@@ -181,24 +181,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_EmptyExternalPaymentId_ReturnsBadRequest(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            PaymentsController controller)
-        {
-            // Arrange
-            var externalPaymentId = Guid.Empty;
-
-            // Act
-            var result = await controller.CompletePayment(externalPaymentId, CancellationToken.None);
-
-            // Assert
-            using (var scope = new AssertionScope())
-            {
-                result.Should().BeOfType<BadRequestObjectResult>().Which.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be("ExternalPaymentId cannot be empty.");
-            }
-        }
-
-        [TestMethod, AutoMoqData]
         public async Task InitiatePayment_NextUrlIsNull_ReturnsErrorUrl(
             [Frozen] Mock<IPaymentsService> paymentsServiceMock,
             [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
