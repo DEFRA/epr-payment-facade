@@ -281,5 +281,111 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                     ItExpr.IsAny<CancellationToken>());
             }
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsRegistrationFeesResponseDto(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Frozen] decimal expectedAmount,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(expectedAmount), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+
+            // Act
+            var result = await httpRegistrationFeesService.GetResubmissionFeeAsync("GB-ENG", cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().Be(expectedAmount);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetResubmissionFeeAsync_HttpRequestException_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            [Frozen] Mock<IOptions<Service>> configMock,
+            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new HttpRequestException("Unexpected error"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync("Test-Reg", cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ServiceException>()
+                    .WithMessage(ExceptionMessages.ErrorResubmissionFees);
+
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetResubmissionFeeAsync_UnsuccessfulStatusCode_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            [Frozen] Mock<IOptions<Service>> configMock,
+            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
+                           Content = new StringContent(JsonConvert.SerializeObject("GB-ENG"), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync("GB-ENG", cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorResubmissionFees);
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
     }
 }

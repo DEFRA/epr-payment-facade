@@ -1,5 +1,5 @@
-﻿using EPR.Payment.Facade.Helpers;
-using EPR.Payment.Facade.UnitTests.TestHelpers;
+﻿using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
+using EPR.Payment.Facade.Helpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
 

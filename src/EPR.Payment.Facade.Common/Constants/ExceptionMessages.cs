@@ -40,6 +40,10 @@
         public const string RegistrationFeesServiceHttpClientNameMissing = "RegistrationFeesService HttpClientName configuration is missing";
         public const string ErrorCalculatingProducerFees = "Error occurred while calculating producer registration fees.";
         public const string UnexpectedErrorCalculatingProducerFees = "An unexpected error occurred while calculating producer registration fees.";
+        public const string ErrorResubmissionFees = "Error occurred while getting resubmission fee.";
+
+        //RegistrationFeesService exceptions
+        public const string RegulatorCanNotBeNullOrEmpty = "regulator cannot be null or empty";
 
         // ProducersFeesController specific exceptions
         public const string UnexpectedErrorCalculatingFees = "An unexpected error occurred while calculating the fees.";

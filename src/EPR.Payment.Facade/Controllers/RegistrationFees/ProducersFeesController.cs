@@ -3,7 +3,7 @@ using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +18,12 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
     [FeatureGate("EnableProducersFeesFeature")]
     public class ProducersFeesController : ControllerBase
     {
-        private readonly IHttpRegistrationFeesService _registrationFeesService;
+        private readonly IRegistrationFeesService _registrationFeesService;
         private readonly ILogger<ProducersFeesController> _logger;
         private readonly IValidator<ProducerRegistrationFeesRequestDto> _validator;
 
         public ProducersFeesController(
-            IHttpRegistrationFeesService registrationFeesService,
+            IRegistrationFeesService registrationFeesService,
             ILogger<ProducersFeesController> logger,
             IValidator<ProducerRegistrationFeesRequestDto> validator)
         {
@@ -82,6 +82,45 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
                     Detail = ex.Message,
                     Status = StatusCodes.Status500InternalServerError
                 });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(CalculateFeesAsync));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Unexpected Error",
+                    Detail = ExceptionMessages.UnexpectedErrorCalculatingFees,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+        }
+
+        [HttpGet("{regulator}/resubmission")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
+        [SwaggerOperation(
+            Summary = "Producer registration resubmission fee by regulator",
+            Description = "Return producer registration resubmission fee by regulator."
+        )]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
+        [FeatureGate("EnableProducerResubmissionFee")]
+        public async Task<IActionResult> GetResubmissionFeeAsync(string regulator, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(regulator))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Validation Error",
+                    Detail = "Regulator cannot be null or empty.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            try
+            {
+                var registrationFeesResponse = await _registrationFeesService.GetResubmissionFeeAsync(regulator, cancellationToken);
+                return Ok(registrationFeesResponse);
             }
             catch (Exception ex)
             {
