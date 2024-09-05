@@ -2,7 +2,6 @@
 {
     public static class ExceptionMessages
     {
-
         // HttpGovPayService exceptions
         public const string BearerTokenNull = "Bearer token is null. Unable to initiate payment.";
         public const string GovPayResponseInvalid = "GovPay response does not contain a valid PaymentId.";
@@ -34,5 +33,15 @@
 
         // PaymentsController validation messages
         public const string AmountMustBeGreaterThanZero = "Amount must be greater than 0";
+
+        // HttpRegistrationFeesService exceptions
+        public const string RegistrationFeesServiceBaseUrlMissing = "RegistrationFeesService BaseUrl configuration is missing";
+        public const string RegistrationFeesServiceEndPointNameMissing = "RegistrationFeesService EndPointName configuration is missing";
+        public const string RegistrationFeesServiceHttpClientNameMissing = "RegistrationFeesService HttpClientName configuration is missing";
+        public const string ErrorCalculatingProducerFees = "Error occurred while calculating producer registration fees.";
+        public const string UnexpectedErrorCalculatingProducerFees = "An unexpected error occurred while calculating producer registration fees.";
+
+        // ProducersFeesController specific exceptions
+        public const string UnexpectedErrorCalculatingFees = "An unexpected error occurred while calculating the fees.";
     }
 }

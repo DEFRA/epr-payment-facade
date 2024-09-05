@@ -9,6 +9,7 @@ namespace EPR.Payment.Facade.Common.Configuration
 
         public Service PaymentService { get; set; } = new Service();
         public Service GovPayService { get; set; } = new Service();
+        public Service RegistrationFeesService { get; set; } = new Service();
     }
 
     public class Service

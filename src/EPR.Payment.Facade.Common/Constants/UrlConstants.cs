@@ -10,5 +10,8 @@
         // GovPay service endpoints
         public const string GovPayInitiatePayment = "payments";
         public const string GovPayGetPaymentStatus = "payments/{paymentId}";
+
+        // Registration fees service endpoints
+        public const string CalculateProducerRegistrationFees = "registration-fees";
     }
 }

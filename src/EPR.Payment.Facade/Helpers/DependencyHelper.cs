@@ -1,6 +1,8 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
@@ -28,6 +30,9 @@ namespace EPR.Payment.Facade.Helpers
 
             RegisterHttpService<IHttpGovPayService, HttpGovPayService>(
                 services, nameof(ServicesConfiguration.GovPayService));
+
+            RegisterHttpService<IHttpRegistrationFeesService, HttpRegistrationFeesService>(
+                services, nameof(ServicesConfiguration.RegistrationFeesService));
 
             return services;
         }

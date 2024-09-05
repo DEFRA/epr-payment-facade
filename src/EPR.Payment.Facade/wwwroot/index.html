@@ -1,19 +1,27 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Initiation</title>
+    <title>Payment and Fees Calculation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             background-color: #f4f4f9;
+        }
+
+        .container-wrapper {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 40px;
         }
 
         .container {
@@ -21,7 +29,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 350px;
             text-align: center;
         }
 
@@ -37,13 +45,24 @@
             text-align: left;
         }
 
-        input[type="text"], input[type="number"] {
+        input[type="text"],
+        input[type="number"] {
             width: 100%;
             padding: 8px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         button {
@@ -54,10 +73,102 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            margin-top: 10px;
         }
 
             button:hover {
                 background-color: #45a049;
+            }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+            }
+
+        .modal-body {
+            margin-top: 10px;
+        }
+
+            .modal-body table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 16px;
+            }
+
+            .modal-body th,
+            .modal-body td {
+                text-align: left;
+                padding: 12px;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .modal-body th {
+                background-color: #f2f2f2;
+            }
+
+            .modal-body td {
+                text-align: right;
+            }
+
+            .modal-body .total-row {
+                font-weight: bold;
+                background-color: #f9f9f9;
+            }
+
+            .modal-body .total-fee {
+                font-size: 18px;
+                font-weight: bold;
+                background-color: #e6f7ff;
+            }
+
+            .modal-body .calc-info {
+                text-align: center;
+                background-color: #f2f2f2;
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .modal-body .total-values {
+                text-align: right;
+                font-weight: bold;
             }
     </style>
     <script>
@@ -126,23 +237,172 @@
             }
         }
 
+        async function calculateFees() {
+            const producerType = document.getElementById('producerType').value;
+            const numberOfSubsidiaries = document.getElementById('numberOfSubsidiaries').value;
+            const regulator = document.getElementById('producerRegulator').value;
+            const isOnlineMarketplace = document.getElementById('isOnlineMarketplace').checked;
+
+            const requestData = {
+                producerType: producerType,
+                numberOfSubsidiaries: parseInt(numberOfSubsidiaries),
+                regulator: regulator,
+                isOnlineMarketplace: isOnlineMarketplace
+            };
+
+            console.log('Request Data:', requestData);
+
+            try {
+                const response = await fetch('/api/v1/producers-fees/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData),
+                    redirect: 'follow'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const totalSubsidiariesFee = data.feeBreakdowns
+                        .filter(fee => fee.description.includes("Subsidiaries"))
+                        .reduce((acc, fee) => acc + fee.amount, 0);
+                    showModal(data.feeBreakdowns, totalSubsidiariesFee);
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error calculating fees:', errorData);
+
+                    let errorMessage = 'Failed to calculate fees.';
+                    if (errorData.errors) {
+                        errorMessage = Object.values(errorData.errors).flat().join('\n');
+                    } else if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    }
+
+                    alert(`Error: ${errorMessage}`);
+                }
+
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('Network error occurred.');
+            }
+        }
+
+        function formatCurrency(amountInPence) {
+            const amountInPounds = amountInPence / 100;
+            return amountInPounds.toLocaleString('en-GB', {
+                style: 'currency',
+                currency: 'GBP'
+            }).replace('£', ''); // Remove currency symbol
+        }
+
+        function showModal(breakdowns, totalSubsidiariesFee) {
+            const modal = document.getElementById("resultsModal");
+            const modalBody = document.getElementById("modalBody");
+
+            const breakdownRows = breakdowns.map(fee => `
+                    <tr>
+                        <td>${fee.description}</td>
+                        <td>£${formatCurrency(fee.amount)}</td>
+                    </tr>
+                `).join('');
+
+            const totalSubsidiariesRow = `
+                    <tr class="calc-info">
+                        <td>Total Subsidiaries Fee (Sum of subsidiary fees)</td>
+                        <td></td>
+                        <td>£${formatCurrency(totalSubsidiariesFee)}</td>
+                    </tr>
+                `;
+
+            const totalRow = `
+                    <tr class="total-fee">
+                        <td>Total Fee</td>
+                        <td>£${formatCurrency(breakdowns.reduce((acc, fee) => acc + fee.amount, 0))}</td>
+                        <td></td>
+                    </tr>
+                `;
+
+            modalBody.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${breakdownRows}
+                            ${totalSubsidiariesRow}
+                            ${totalRow}
+                        </tbody>
+                    </table>
+                `;
+
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("resultsModal").style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById("resultsModal");
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+
         window.onload = setGuids;
     </script>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Payment Initiation</h1>
-        <label for="userId">User ID:</label>
-        <input type="text" id="userId" required>
-        <label for="organisationId">Organisation ID:</label>
-        <input type="text" id="organisationId" required>
-        <label for="regulator">Regulator:</label>
-        <input type="text" id="regulator" required>
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" required>
-        <label for="reference">Reference:</label>
-        <input type="text" id="reference" required>
-        <button onclick="initiatePayment()">Initiate Payment</button>
+    <div class="container-wrapper">
+        <div class="container">
+            <h1>Payment Initiation</h1>
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" required>
+            <label for="organisationId">Organisation ID:</label>
+            <input type="text" id="organisationId" required>
+            <label for="regulator">Regulator:</label>
+            <input type="text" id="regulator" required placeholder="ie GB-ENG">
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" required>
+            <label for="reference">Reference:</label>
+            <input type="text" id="reference" required>
+            <button onclick="initiatePayment()">Initiate Payment</button>
+        </div>
+
+        <div class="container">
+            <h1>Producer Fees Calculation</h1>
+            <label for="producerType">Producer Type (Optional):</label>
+            <input type="text" id="producerType" placeholder="Large, or Small">
+            <label for="numberOfSubsidiaries">Number of Subsidiaries:</label>
+            <input type="number" id="numberOfSubsidiaries" required>
+            <label for="producerRegulator">Regulator:</label>
+            <input type="text" id="producerRegulator" required placeholder="ie GB-ENG">
+            <div class="checkbox-container">
+                <input type="checkbox" id="isOnlineMarketplace">
+                <label for="isOnlineMarketplace">Is Online Marketplace</label>
+            </div>
+            <button onclick="calculateFees()">Calculate Fees</button>
+        </div>
+    </div>
+
+    <!-- Modal for displaying results -->
+    <div id="resultsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Registration Fee Breakdown</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Results will be inserted here -->
+            </div>
+        </div>
     </div>
 </body>
+
 </html>

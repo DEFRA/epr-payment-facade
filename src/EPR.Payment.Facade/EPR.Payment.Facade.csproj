@@ -41,6 +41,10 @@
     <Folder Include="Configuration\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\index.html" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<SonarQubeSetting Include="sonar.coverage.exclusions">
 			<value>Program.cs</value>
