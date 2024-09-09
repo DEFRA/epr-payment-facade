@@ -54,18 +54,15 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 
         public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayRequestDto paymentRequestDto, CancellationToken cancellationToken = default)
         {
-            if (_bearerToken != null)
-            {
-                SetBearerToken(_bearerToken); // Set the bearer token
-            }
-            else
-            {
-                throw new InvalidOperationException(ExceptionMessages.BearerTokenNull);
-            }
-
-            var url = UrlConstants.GovPayInitiatePayment;
             try
             {
+                if (_bearerToken != null)
+                {
+                    SetBearerToken(_bearerToken); // Set the bearer token
+                }
+
+                var url = UrlConstants.GovPayInitiatePayment;
+
                 // Use the retry policy when calling the Post method
                 return await _paymentRetryPolicy.ExecuteAsync(async () =>
                 {
@@ -80,18 +77,15 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 
         public async Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId, CancellationToken cancellationToken = default)
         {
-            if (_bearerToken != null)
-            {
-                SetBearerToken(_bearerToken); // Set the bearer token
-            }
-            else
-            {
-                throw new InvalidOperationException(ExceptionMessages.BearerTokenNull);
-            }
-
-            var url = UrlConstants.GovPayGetPaymentStatus.Replace("{paymentId}", paymentId);
             try
             {
+                if (_bearerToken != null)
+                {
+                    SetBearerToken(_bearerToken); // Set the bearer token
+                }
+
+                var url = UrlConstants.GovPayGetPaymentStatus.Replace("{paymentId}", paymentId);
+
                 // Use the retry policy when calling the Get method
                 return await _statusRetryPolicy.ExecuteAsync(async () =>
                 {

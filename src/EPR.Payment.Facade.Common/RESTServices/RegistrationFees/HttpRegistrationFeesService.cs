@@ -35,5 +35,19 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
                 throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees, ex);
             }
         }
+
+        public async Task<decimal?> GetResubmissionFeeAsync(string regulator, CancellationToken cancellationToken = default)
+        {
+            var url = UrlConstants.GetProducerResubmissionFee.Replace("{regulator}", regulator);
+            try
+            {
+                var response = await Get<decimal>(url, cancellationToken);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new ServiceException(ExceptionMessages.ErrorResubmissionFees, ex);
+            }
+        }
     }
 }

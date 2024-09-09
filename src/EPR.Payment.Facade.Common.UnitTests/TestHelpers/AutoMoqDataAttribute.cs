@@ -2,6 +2,9 @@
 using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
 using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Configuration;
+using Microsoft.Extensions.Options;
+using Moq;
 
 namespace EPR.Payment.Facade.Common.UnitTests.TestHelpers
 {
@@ -13,6 +16,15 @@ namespace EPR.Payment.Facade.Common.UnitTests.TestHelpers
             var fixture = new Fixture().Customize(new CompositeCustomization(
                 new AutoMoqCustomization { ConfigureMembers = true },
                 new SupportMutableValueTypesCustomization()));
+
+            // Configure the fixture to use the correct PaymentServiceOptions
+            var optionsMock = fixture.Freeze<Mock<IOptions<PaymentServiceOptions>>>();
+            optionsMock.Setup(o => o.Value).Returns(new PaymentServiceOptions
+            {
+                ReturnUrl = "https://example.com/return",
+                Description = "Payment description",
+                ErrorUrl = "https://example.com/error"
+            });
 
             fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList().ForEach(delegate (ThrowingRecursionBehavior b)
             {

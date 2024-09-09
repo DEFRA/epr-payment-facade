@@ -1,6 +1,8 @@
 ﻿using EPR.Payment.Facade.HealthCheck;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees;
+using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics.CodeAnalysis;
 
@@ -21,6 +23,8 @@ namespace EPR.Payment.Facade.Extension
 
             // Register payments services
             services.AddScoped<IPaymentsService, PaymentsService>();
+
+            services.AddScoped<IRegistrationFeesService, RegistrationFeesService>();
 
             return services;
         }
