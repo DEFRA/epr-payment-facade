@@ -2,7 +2,7 @@
 using AutoFixture.AutoMoq;
 using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
@@ -118,15 +118,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ReturnsAResult_ShouldReturnAmount(
-            [Frozen] string regulator,
+            [Frozen] RegulatorDto request,
             [Frozen] decimal expectedAmount
             )
         {
             //Arrange
-            _httpRegistrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(regulator, CancellationToken.None)).ReturnsAsync(expectedAmount);
+            _httpRegistrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync(expectedAmount);
 
             //Act
-            var result = await _service!.GetResubmissionFeeAsync(regulator, CancellationToken.None);
+            var result = await _service!.GetResubmissionFeeAsync(request, CancellationToken.None);
 
             //Assert
             result.Should().Be(expectedAmount);
@@ -134,35 +134,26 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ReturnsAResult_ShouldReturnNull(
-            [Frozen] string regulator
+            [Frozen] RegulatorDto request
             )
         {
             //Arrange
-            _httpRegistrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(regulator, CancellationToken.None)).ReturnsAsync((decimal?)null);
+            _httpRegistrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync((decimal?)null);
 
             //Act
-            var result = await _service!.GetResubmissionFeeAsync(regulator, CancellationToken.None);
+            var result = await _service!.GetResubmissionFeeAsync(request, CancellationToken.None);
 
             //Assert
             result.Should().BeNull();
         }
 
         [TestMethod]
-        public async Task GetResubmissionFeeAsync_EmptyRegulator_ThrowsArgumentException()
-        {
-            // Act & Assert
-            await _service.Invoking(async s => await s!.GetResubmissionFeeAsync(string.Empty, new CancellationToken()))
-                .Should().ThrowAsync<ArgumentException>()
-                .WithMessage("regulator cannot be null or empty (Parameter 'regulator')");
-        }
-
-        [TestMethod]
-        public async Task GetResubmissionFeeAsync_NullRegulator_ThrowsArgumentException()
+        public async Task GetResubmissionFeeAsync_RequestIsNull_ThrowsArgumentException()
         {
             // Act & Assert
             await _service.Invoking(async s => await s!.GetResubmissionFeeAsync(null!, new CancellationToken()))
                 .Should().ThrowAsync<ArgumentException>()
-                .WithMessage("regulator cannot be null or empty (Parameter 'regulator')");
+                .WithMessage("Error occurred while getting resubmission fee. (Parameter 'request')");
         }
     }
 }

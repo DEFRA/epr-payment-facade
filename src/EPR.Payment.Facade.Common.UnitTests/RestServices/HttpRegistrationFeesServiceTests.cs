@@ -1,7 +1,7 @@
 ﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
@@ -283,9 +283,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsRegistrationFeesResponseDto(
+        public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsRegistrationFee(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Frozen] RegulatorDto request,
             [Frozen] decimal expectedAmount,
             CancellationToken cancellationToken)
         {
@@ -302,7 +303,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
 
             // Act
-            var result = await httpRegistrationFeesService.GetResubmissionFeeAsync("GB-ENG", cancellationToken);
+            var result = await httpRegistrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -322,6 +323,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Frozen] Mock<IOptions<Service>> configMock,
             [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Frozen] RegulatorDto request,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -333,7 +335,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync("Test-Reg", cancellationToken);
+            Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -356,6 +358,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Frozen] Mock<IOptions<Service>> configMock,
             [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Frozen] RegulatorDto request,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -371,7 +374,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync("GB-ENG", cancellationToken);
+            Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())

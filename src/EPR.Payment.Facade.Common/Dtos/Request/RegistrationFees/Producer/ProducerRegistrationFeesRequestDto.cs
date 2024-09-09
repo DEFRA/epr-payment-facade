@@ -1,4 +1,4 @@
-﻿namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees
+﻿namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer
 {
     public class ProducerRegistrationFeesRequestDto
     {

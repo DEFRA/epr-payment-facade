@@ -1,6 +1,6 @@
 ﻿using Asp.Versioning;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
@@ -20,16 +20,19 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
     {
         private readonly IRegistrationFeesService _registrationFeesService;
         private readonly ILogger<ProducersFeesController> _logger;
-        private readonly IValidator<ProducerRegistrationFeesRequestDto> _validator;
+        private readonly IValidator<ProducerRegistrationFeesRequestDto> _registrationValidator;
+        private readonly IValidator<RegulatorDto> _resubmissionValidator;
 
         public ProducersFeesController(
             IRegistrationFeesService registrationFeesService,
             ILogger<ProducersFeesController> logger,
-            IValidator<ProducerRegistrationFeesRequestDto> validator)
+            IValidator<ProducerRegistrationFeesRequestDto> registrationValidator,
+            IValidator<RegulatorDto> resubmissionValidator)
         {
             _registrationFeesService = registrationFeesService ?? throw new ArgumentNullException(nameof(registrationFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _registrationValidator = registrationValidator ?? throw new ArgumentNullException(nameof(registrationValidator));
+            _resubmissionValidator = resubmissionValidator ?? throw new ArgumentNullException(nameof(resubmissionValidator));
         }
 
         [HttpPost("calculate")]
@@ -46,7 +49,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
         [FeatureGate("EnableProducersFeesCalculation")]
         public async Task<IActionResult> CalculateFeesAsync([FromBody] ProducerRegistrationFeesRequestDto request, CancellationToken cancellationToken)
         {
-            ValidationResult validationResult = _validator.Validate(request);
+            ValidationResult validationResult = _registrationValidator.Validate(request);
             if (!validationResult.IsValid)
             {
                 _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
@@ -95,7 +98,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             }
         }
 
-        [HttpGet("{regulator}/resubmission")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
         [SwaggerOperation(
@@ -105,22 +108,34 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
         [FeatureGate("EnableProducerResubmissionFee")]
-        public async Task<IActionResult> GetResubmissionFeeAsync(string regulator, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetResubmissionFeeAsync([FromQuery] RegulatorDto request, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(regulator))
+            ValidationResult validationResult = _resubmissionValidator.Validate(request);
+            if (!validationResult.IsValid)
             {
+                _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",
-                    Detail = "Regulator cannot be null or empty.",
+                    Detail = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)),
                     Status = StatusCodes.Status400BadRequest
                 });
             }
 
             try
             {
-                var registrationFeesResponse = await _registrationFeesService.GetResubmissionFeeAsync(regulator, cancellationToken);
+                var registrationFeesResponse = await _registrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);
                 return Ok(registrationFeesResponse);
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Validation Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status400BadRequest
+                });
             }
             catch (Exception ex)
             {
