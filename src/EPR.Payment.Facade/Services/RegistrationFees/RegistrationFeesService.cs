@@ -1,5 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
@@ -26,14 +26,12 @@ namespace EPR.Payment.Facade.Services.RegistrationFees
 
             return CalculateProducerFeesInternalAsync(request);
         }
-        public async Task<decimal?> GetResubmissionFeeAsync(string regulator, CancellationToken cancellationToken = default)
+        public async Task<decimal?> GetResubmissionFeeAsync(RegulatorDto request, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(regulator))
-            {
-                throw new ArgumentException(ExceptionMessages.RegulatorCanNotBeNullOrEmpty, nameof(regulator));
-            }
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorResubmissionFees);
 
-            return await _httpRegistrationFeesService.GetResubmissionFeeAsync(regulator, cancellationToken);
+            return await _httpRegistrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);
         }
 
         private async Task<RegistrationFeesResponseDto> CalculateProducerFeesInternalAsync(ProducerRegistrationFeesRequestDto request)

@@ -2,7 +2,7 @@
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using FluentValidation;
 
-namespace EPR.Payment.Facade.Validations
+namespace EPR.Payment.Facade.Validations.Payments
 {
     public class PaymentRequestDtoValidator : AbstractValidator<PaymentRequestDto>
     {

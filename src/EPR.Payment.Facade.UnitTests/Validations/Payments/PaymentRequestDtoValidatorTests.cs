@@ -1,9 +1,9 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Validations;
+using EPR.Payment.Facade.Validations.Payments;
 using FluentValidation.TestHelper;
 
-namespace EPR.Payment.Facade.UnitTests.Validations
+namespace EPR.Payment.Facade.UnitTests.Validations.Payments
 {
     [TestClass]
     public class PaymentRequestDtoValidatorTests

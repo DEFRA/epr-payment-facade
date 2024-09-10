@@ -1,13 +1,10 @@
-﻿using AutoFixture;
-using AutoFixture.AutoMoq;
-using AutoFixture.MSTest;
+﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.RegistrationFees;
-using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -178,13 +175,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock)
+            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             var controller = new ProducersFeesController(
                 registrationFeesServiceMock.Object,
                 loggerMock.Object,
-                validatorMock.Object
+                registrationValidator.Object,
+                resubmissionValidator.Object
             );
 
             // Assert
@@ -195,13 +194,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullRegistrationFeesService_ShouldThrowArgumentNullException(
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock)
+            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
                 null!,
                 loggerMock.Object,
-                validatorMock.Object
+                registrationValidator.Object,
+                resubmissionValidator.Object
             );
 
             // Assert
@@ -212,13 +213,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock)
+            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
                 registrationFeesServiceMock.Object,
                 null!,
-                validatorMock.Object
+                registrationValidator.Object,
+                resubmissionValidator.Object
             );
 
             // Assert
@@ -227,34 +230,59 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_WithNullValidator_ShouldThrowArgumentNullException(
+        public void Constructor_WithNullRegistrationValidator_ShouldThrowArgumentNullException(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock)
+            [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
                 registrationFeesServiceMock.Object,
                 loggerMock.Object,
+                null!,
+                resubmissionValidator.Object
+            );
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithParameterName("registrationValidator");
+        }
+
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_WithNullResubmissionValidator_ShouldThrowArgumentNullException(
+            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
+            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidatorMock)
+        {
+            // Act
+            Action act = () => new ProducersFeesController(
+                registrationFeesServiceMock.Object,
+                loggerMock.Object,
+                registrationValidatorMock.Object,
                 null!
             );
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("validator");
+                .WithParameterName("resubmissionValidator");
         }
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ServiceReturnsAResult_ShouldReturnOkResponse(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] string regulator,
+            [Frozen] RegulatorDto request,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
             [Frozen] decimal expectedAmount,
             [Greedy] ProducersFeesController controller)
         {
             //Arrange
-            registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(regulator, CancellationToken.None)).ReturnsAsync(expectedAmount);
+            var validationResult = new ValidationResult();
+            resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+            registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync(expectedAmount);
 
             //Act
-            var result = await controller.GetResubmissionFeeAsync(regulator, CancellationToken.None);
+            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
 
             //Assert
             using (new AssertionScope())
@@ -267,40 +295,107 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ServiceThrowsException_ShouldReturnInternalServerError(
             [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] string regulator,
+            [Frozen] RegulatorDto request,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
             [Greedy] ProducersFeesController controller)
         {
             // Arrange
-            registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(regulator, CancellationToken.None))
+            var validationResult = new ValidationResult();
+            resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+            registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None))
                                .ThrowsAsync(new Exception("Test Exception"));
 
             // Act
-            var result = await controller.GetResubmissionFeeAsync(regulator, CancellationToken.None);
+            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
 
             // Assert
             result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_EmptyRegulator_ShouldReturnBadRequest([Greedy] ProducersFeesController controller)
+        public async Task GetResubmissionAsync_ThrowsValidationException_ShouldReturnBadRequest(
+            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] RegulatorDto request,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
+            [Greedy] ProducersFeesController controller)
         {
             // Arrange
-            string regulator = string.Empty;
+            var validationResult = new ValidationResult();
+            resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+            registrationFeesServiceMock.Setup(s => s.GetResubmissionFeeAsync(It.IsAny<RegulatorDto>(), CancellationToken.None)).ThrowsAsync(new ValidationException("Validation error"));
 
-            var result = await controller.GetResubmissionFeeAsync(regulator, CancellationToken.None);
+            // Act
+            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
 
-            result.Should().BeOfType<BadRequestObjectResult>();
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+
+                var badRequestResult = result as BadRequestObjectResult;
+                badRequestResult.Should().NotBeNull();
+            }
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_NullRegulator_ShouldReturnBadRequest([Greedy] ProducersFeesController controller)
+        public async Task GetResubmissionAsync_ServiceThrowsValidationException_ReturnsBadRequest(
+            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] RegulatorDto request,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
+            [Greedy] ProducersFeesController controller)
         {
             // Arrange
-            string regulator = null!;
+            var validationResult = new ValidationResult();
+            resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
-            var result = await controller.GetResubmissionFeeAsync(regulator, CancellationToken.None);
+            var validationException = new ValidationException("Validation error");
+            registrationFeesServiceMock.Setup(s => s.GetResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(validationException);
 
-            result.Should().BeOfType<BadRequestObjectResult>();
+            // Act
+            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                var problemDetails = badRequestResult?.Value as ProblemDetails;
+
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Title.Should().Be("Validation Error");
+                problemDetails?.Detail.Should().Be(validationException.Message);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetResubmissionAsync_InvalidRequest_ReturnsBadRequest(
+            [Frozen] RegulatorDto request,
+            [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
+            [Greedy] ProducersFeesController controller)
+        {
+            // Arrange
+            var validationFailures = new List<ValidationFailure>
+            {
+                new ValidationFailure("Regulator", "Invalid regulator parameter.")
+            };
+            var validationResult = new ValidationResult(validationFailures);
+            resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+
+            // Act
+            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                var problemDetails = badRequestResult?.Value as ProblemDetails;
+
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Title.Should().Be("Validation Error");
+                problemDetails?.Detail.Should().Contain("Invalid regulator parameter.");
+            }
         }
     }
 }

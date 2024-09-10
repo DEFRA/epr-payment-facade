@@ -1,6 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
@@ -36,12 +36,12 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
             }
         }
 
-        public async Task<decimal?> GetResubmissionFeeAsync(string regulator, CancellationToken cancellationToken = default)
+        public async Task<decimal?> GetResubmissionFeeAsync(RegulatorDto request, CancellationToken cancellationToken = default)
         {
-            var url = UrlConstants.GetProducerResubmissionFee.Replace("{regulator}", regulator);
+            var url = UrlConstants.GetProducerResubmissionFee.Replace("{regulator}", request.Regulator);
             try
             {
-                var response = await Get<decimal>(url, cancellationToken);
+                var response = await Get<decimal>(url, cancellationToken, false);
                 return response;
             }
             catch (Exception ex)

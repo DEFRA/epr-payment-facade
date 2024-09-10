@@ -13,6 +13,6 @@
 
         // Registration fees service endpoints
         public const string CalculateProducerRegistrationFees = "registration-fees";
-        public const string GetProducerResubmissionFee = "resubmissions/{regulator}";
+        public const string GetProducerResubmissionFee = "resubmissions?Regulator={regulator}";
     }
 }
