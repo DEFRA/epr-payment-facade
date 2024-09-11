@@ -42,10 +42,19 @@
         public const string UnexpectedErrorCalculatingProducerFees = "An unexpected error occurred while calculating producer registration fees.";
         public const string ErrorResubmissionFees = "Error occurred while getting resubmission fee.";
 
-        //RegistrationFeesService exceptions
+        // ProducerFeesService exceptions
         public const string RegulatorCanNotBeNullOrEmpty = "regulator cannot be null or empty";
 
         // ProducersFeesController specific exceptions
         public const string UnexpectedErrorCalculatingFees = "An unexpected error occurred while calculating the fees.";
+
+        // ComplianceSchemeFeesService exceptions
+        public const string ComplianceSchemeServiceBaseUrlMissing = "ComplianceSchemeService BaseUrl configuration is missing.";
+        public const string ComplianceSchemeServiceEndPointNameMissing = "ComplianceSchemeService EndPointName configuration is missing.";
+        public const string ComplianceSchemeServiceHttpClientNameMissing = "ComplianceSchemeService HttpClientName configuration is missing.";
+        public const string ErrorRetrievingComplianceSchemeBaseFee = "Error occurred while retrieving the compliance scheme base fee.";
+        public const string UnexpectedErrorRetrievingComplianceSchemeBaseFee = "An unexpected error occurred while retrieving the compliance scheme base fee.";
+        public const string InvalidRegulatorForComplianceScheme = "The compliance scheme base fee for regulator {0} could not be retrieved.";
+
     }
 }

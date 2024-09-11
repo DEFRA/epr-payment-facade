@@ -2,7 +2,9 @@
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
@@ -29,10 +31,13 @@ namespace EPR.Payment.Facade.Helpers
                 services, nameof(ServicesConfiguration.PaymentService));
 
             RegisterHttpService<IHttpGovPayService, HttpGovPayService>(
-                services, nameof(ServicesConfiguration.GovPayService));
+            services, nameof(ServicesConfiguration.GovPayService));
 
-            RegisterHttpService<IHttpRegistrationFeesService, HttpRegistrationFeesService>(
-                services, nameof(ServicesConfiguration.RegistrationFeesService));
+            RegisterHttpService<IHttpProducerFeesService, HttpProducerFeesService>(
+                services, nameof(ServicesConfiguration.ProducerFeesService));
+
+            RegisterHttpService<IHttpComplianceSchemeFeesService, HttpComplianceSchemeFeesService>(
+                services, nameof(ServicesConfiguration.ComplianceSchemeFeesService));
 
             return services;
         }

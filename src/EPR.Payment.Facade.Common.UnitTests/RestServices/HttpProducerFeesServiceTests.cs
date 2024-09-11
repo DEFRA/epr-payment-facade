@@ -2,7 +2,7 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
@@ -19,12 +19,12 @@ using System.Text;
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
-    public class HttpRegistrationFeesServiceTests
+    public class HttpProducerFeesServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptions<Service>> _configMock = null!;
-        private ProducerRegistrationFeesRequestDto _producerRegistrationFeesRequestDto = null!;
-        private RegistrationFeesResponseDto _registrationFeesResponseDto = null!;
+        private ProducerFeesRequestDto _producerFeesRequestDto = null!;
+        private ProducerFeesResponseDto _producerFeesResponseDto = null!;
 
         [TestInitialize]
         public void Initialize()
@@ -41,7 +41,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             _configMock.Setup(x => x.Value).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            _producerRegistrationFeesRequestDto = new ProducerRegistrationFeesRequestDto
+            _producerFeesRequestDto = new ProducerFeesRequestDto
             {
                 ProducerType = "LARGE",
                 NumberOfSubsidiaries = 10,
@@ -49,7 +49,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 IsOnlineMarketplace = false
             };
 
-            _registrationFeesResponseDto = new RegistrationFeesResponseDto
+            _producerFeesResponseDto = new ProducerFeesResponseDto
             {
                 TotalFee = 1000,
                 FeeBreakdowns = new List<FeeBreakdown>
@@ -68,9 +68,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
         }
 
-        private HttpRegistrationFeesService CreateHttpRegistrationFeesService(HttpClient httpClient)
+        private HttpProducerFeesService CreateHttpProducerFeesService(HttpClient httpClient)
         {
-            return new HttpRegistrationFeesService(
+            return new HttpProducerFeesService(
                 _httpContextAccessorMock!.Object,
                 new HttpClientFactoryMock(httpClient),
                 _configMock!.Object);
@@ -82,7 +82,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Mock<IOptions<Service>> configMock)
         {
             // Act
-            Action act = () => new HttpRegistrationFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
+            Action act = () => new HttpProducerFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
@@ -94,7 +94,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             Mock<IOptions<Service>> configMock)
         {
             // Act
-            Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
+            Action act = () => new HttpProducerFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
@@ -110,7 +110,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             configMock.Setup(c => c.Value).Returns(new Service { Url = null, EndPointName = "SomeEndPoint" });
 
             // Act
-            Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
+            Action act = () => new HttpProducerFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
@@ -127,7 +127,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             configMock.Setup(c => c.Value).Returns(new Service { Url = "https://api.example.com", EndPointName = null });
 
             // Act
-            Action act = () => new HttpRegistrationFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
+            Action act = () => new HttpProducerFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
@@ -138,7 +138,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateProducerFeesAsync_ValidRequest_ReturnsRegistrationFeesResponseDto(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpRegistrationFeesService httpRegistrationFeesService,
+            HttpProducerFeesService httpProducerFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -147,17 +147,17 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.OK,
-                           Content = new StringContent(JsonConvert.SerializeObject(_registrationFeesResponseDto), Encoding.UTF8, "application/json")
+                           Content = new StringContent(JsonConvert.SerializeObject(_producerFeesResponseDto), Encoding.UTF8, "application/json")
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
 
             // Act
-            var result = await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
+            var result = await httpProducerFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
 
             // Assert
-            result.Should().BeEquivalentTo(_registrationFeesResponseDto);
+            result.Should().BeEquivalentTo(_producerFeesResponseDto);
             handlerMock.Protected().Verify(
                 "SendAsync",
                 Times.Once(),
@@ -170,7 +170,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateProducerFeesAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpRegistrationFeesService httpRegistrationFeesService,
+            HttpProducerFeesService httpRegistrationFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -179,10 +179,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        .ThrowsAsync(new HttpRequestException("Unexpected error"));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+            httpRegistrationFeesService = CreateHttpProducerFeesService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
+            Func<Task> act = async () => await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -204,7 +204,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateProducerFeesAsync_NullContent_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpRegistrationFeesService httpRegistrationFeesService,
+            HttpProducerFeesService httpProducerFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -217,12 +217,12 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
 
             // Act
             Func<Task> act = async () =>
             {
-                var response = await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
+                var response = await httpProducerFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
                 // Manually check for null content to simulate the exception throwing
                 if (response == null)
                 {
@@ -249,7 +249,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateProducerFeesAsync_UnsuccessfulStatusCode_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpRegistrationFeesService httpRegistrationFeesService,
+            HttpProducerFeesService httpRegistrationFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -258,14 +258,14 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
-                           Content = new StringContent(JsonConvert.SerializeObject(_registrationFeesResponseDto), Encoding.UTF8, "application/json")
+                           Content = new StringContent(JsonConvert.SerializeObject(_producerFeesResponseDto), Encoding.UTF8, "application/json")
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+            httpRegistrationFeesService = CreateHttpProducerFeesService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerRegistrationFeesRequestDto, cancellationToken);
+            Func<Task> act = async () => await httpRegistrationFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -285,7 +285,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsRegistrationFee(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Greedy] HttpProducerFeesService httpRegistrationFeesService,
             [Frozen] RegulatorDto request,
             [Frozen] decimal expectedAmount,
             CancellationToken cancellationToken)
@@ -300,7 +300,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+            httpRegistrationFeesService = CreateHttpProducerFeesService(httpClient);
 
             // Act
             var result = await httpRegistrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);
@@ -322,7 +322,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetResubmissionFeeAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Frozen] Mock<IOptions<Service>> configMock,
-            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Greedy] HttpProducerFeesService httpRegistrationFeesService,
             [Frozen] RegulatorDto request,
             CancellationToken cancellationToken)
         {
@@ -332,7 +332,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        .ThrowsAsync(new HttpRequestException("Unexpected error"));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+            httpRegistrationFeesService = CreateHttpProducerFeesService(httpClient);
 
             // Act
             Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);
@@ -357,7 +357,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetResubmissionFeeAsync_UnsuccessfulStatusCode_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Frozen] Mock<IOptions<Service>> configMock,
-            [Greedy] HttpRegistrationFeesService httpRegistrationFeesService,
+            [Greedy] HttpProducerFeesService httpRegistrationFeesService,
             [Frozen] RegulatorDto request,
             CancellationToken cancellationToken)
         {
@@ -371,7 +371,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpRegistrationFeesService = CreateHttpRegistrationFeesService(httpClient);
+            httpRegistrationFeesService = CreateHttpProducerFeesService(httpClient);
 
             // Act
             Func<Task> act = async () => await httpRegistrationFeesService.GetResubmissionFeeAsync(request, cancellationToken);

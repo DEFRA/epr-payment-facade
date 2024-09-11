@@ -1,6 +1,6 @@
-﻿namespace EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees
+﻿namespace EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer
 {
-    public class RegistrationFeesResponseDto
+    public class ProducerFeesResponseDto
     {
         public decimal? BaseFee { get; set; } // Nullable to handle scenarios where the fee is not applicable
         public decimal? SubsidiariesFee { get; set; } // Nullable to handle scenarios where the fee is not applicable

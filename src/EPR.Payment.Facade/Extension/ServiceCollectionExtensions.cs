@@ -1,8 +1,10 @@
 ﻿using EPR.Payment.Facade.HealthCheck;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
-using EPR.Payment.Facade.Services.RegistrationFees;
-using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme;
+using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees.Producer;
+using EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics.CodeAnalysis;
 
@@ -24,7 +26,8 @@ namespace EPR.Payment.Facade.Extension
             // Register payments services
             services.AddScoped<IPaymentsService, PaymentsService>();
 
-            services.AddScoped<IRegistrationFeesService, RegistrationFeesService>();
+            services.AddScoped<IProducerFeesService, ProducerFeesService>();
+            services.AddScoped<IComplianceSchemeFeesService, ComplianceSchemeFeesService>();
 
             return services;
         }
