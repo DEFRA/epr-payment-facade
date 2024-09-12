@@ -1,6 +1,6 @@
 ﻿namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer
 {
-    public class ProducerRegistrationFeesRequestDto
+    public class ProducerFeesRequestDto
     {
         public string ProducerType { get; set; } = string.Empty; // "L" for Large, "S" for Small, empty indicates no base fee
 

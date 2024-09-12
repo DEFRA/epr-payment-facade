@@ -1,6 +1,10 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Helpers;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
@@ -46,9 +50,12 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.BearerToken)}", "BearerTokenValue" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Retries)}", "3" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.RegistrationFeesService)}:{nameof(Service.Url)}", "https://registration.fees.service" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.RegistrationFeesService)}:{nameof(Service.EndPointName)}", "fees" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.RegistrationFeesService)}:{nameof(Service.HttpClientName)}", "RegistrationFeesClient" }
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.Url)}", "https://producer.fees.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.EndPointName)}", "fees" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.HttpClientName)}", "ProducerFeesClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.Url)}", "https://compliancescheme.fees.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.EndPointName)}", "fees" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.HttpClientName)}", "ComplianceFeesClient" }
             };
 
             var configurationBuilder = new ConfigurationBuilder()
@@ -77,6 +84,14 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 var httpGovPayService = serviceProvider?.GetService<IHttpGovPayService>();
                 httpGovPayService.Should().NotBeNull();
                 httpGovPayService.Should().BeOfType<HttpGovPayService>();
+
+                var httpProducerFeesService = serviceProvider?.GetService<IHttpProducerFeesService>();
+                httpProducerFeesService.Should().NotBeNull();
+                httpProducerFeesService.Should().BeOfType<HttpProducerFeesService>();
+
+                var httpComplianceSchemeFeesService = serviceProvider?.GetService<IHttpComplianceSchemeFeesService>();
+                httpComplianceSchemeFeesService.Should().NotBeNull();
+                httpComplianceSchemeFeesService.Should().BeOfType<HttpComplianceSchemeFeesService>();
             }
         }
 

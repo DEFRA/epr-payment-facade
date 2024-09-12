@@ -1,11 +1,11 @@
 ﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.RegistrationFees;
-using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentValidation;
@@ -22,16 +22,16 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
     {
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ValidRequest_ReturnsOk(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> validatorMock,
             [Greedy] ProducersFeesController controller,
-            [Frozen] ProducerRegistrationFeesRequestDto request,
-            [Frozen] RegistrationFeesResponseDto expectedResponse)
+            [Frozen] ProducerFeesRequestDto request,
+            [Frozen] ProducerFeesResponseDto expectedResponse)
         {
             // Arrange
             var validationResult = new ValidationResult();
             validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
-            registrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            producerFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -48,9 +48,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_InvalidRequest_ReturnsBadRequest(
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> validatorMock,
             [Greedy] ProducersFeesController controller,
-            [Frozen] ProducerRegistrationFeesRequestDto request)
+            [Frozen] ProducerFeesRequestDto request)
         {
             // Arrange
             var validationFailures = new List<ValidationFailure>
@@ -78,17 +78,17 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ServiceThrowsValidationException_ReturnsBadRequest(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> validatorMock,
             [Greedy] ProducersFeesController controller,
-            [Frozen] ProducerRegistrationFeesRequestDto request)
+            [Frozen] ProducerFeesRequestDto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
             validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
             var validationException = new ValidationException("Validation error");
-            registrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            producerFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(validationException);
 
             // Act
@@ -109,17 +109,17 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ServiceThrowsServiceException_ReturnsInternalServerError(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> validatorMock,
             [Greedy] ProducersFeesController controller,
-            [Frozen] ProducerRegistrationFeesRequestDto request)
+            [Frozen] ProducerFeesRequestDto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
             validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
             var serviceException = new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees);
-            registrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            producerFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(serviceException);
 
             // Act
@@ -141,17 +141,17 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ServiceThrowsException_ReturnsInternalServerError(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> validatorMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> validatorMock,
             [Greedy] ProducersFeesController controller,
-            [Frozen] ProducerRegistrationFeesRequestDto request)
+            [Frozen] ProducerFeesRequestDto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
             validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
             var exception = new Exception("Unexpected error");
-            registrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            producerFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -173,14 +173,14 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             var controller = new ProducersFeesController(
-                registrationFeesServiceMock.Object,
+                producerFeesServiceMock.Object,
                 loggerMock.Object,
                 registrationValidator.Object,
                 resubmissionValidator.Object
@@ -194,7 +194,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullRegistrationFeesService_ShouldThrowArgumentNullException(
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
@@ -207,18 +207,18 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("registrationFeesService");
+                .WithParameterName("producerFeesService");
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
-                registrationFeesServiceMock.Object,
+                producerFeesServiceMock.Object,
                 null!,
                 registrationValidator.Object,
                 resubmissionValidator.Object
@@ -231,13 +231,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullRegistrationValidator_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
-                registrationFeesServiceMock.Object,
+                producerFeesServiceMock.Object,
                 loggerMock.Object,
                 null!,
                 resubmissionValidator.Object
@@ -251,13 +251,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullResubmissionValidator_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ProducerRegistrationFeesRequestDto>> registrationValidatorMock)
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidatorMock)
         {
             // Act
             Action act = () => new ProducersFeesController(
-                registrationFeesServiceMock.Object,
+                producerFeesServiceMock.Object,
                 loggerMock.Object,
                 registrationValidatorMock.Object,
                 null!
@@ -270,7 +270,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ServiceReturnsAResult_ShouldReturnOkResponse(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] RegulatorDto request,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
             [Frozen] decimal expectedAmount,
@@ -279,7 +279,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             //Arrange
             var validationResult = new ValidationResult();
             resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
-            registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync(expectedAmount);
+            producerFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync(expectedAmount);
 
             //Act
             var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
@@ -294,7 +294,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ServiceThrowsException_ShouldReturnInternalServerError(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] RegulatorDto request,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
             [Greedy] ProducersFeesController controller)
@@ -302,7 +302,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Arrange
             var validationResult = new ValidationResult();
             resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
-            registrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None))
+            producerFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None))
                                .ThrowsAsync(new Exception("Test Exception"));
 
             // Act
@@ -314,7 +314,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionAsync_ThrowsValidationException_ShouldReturnBadRequest(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] RegulatorDto request,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
             [Greedy] ProducersFeesController controller)
@@ -322,7 +322,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Arrange
             var validationResult = new ValidationResult();
             resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
-            registrationFeesServiceMock.Setup(s => s.GetResubmissionFeeAsync(It.IsAny<RegulatorDto>(), CancellationToken.None)).ThrowsAsync(new ValidationException("Validation error"));
+            producerFeesServiceMock.Setup(s => s.GetResubmissionFeeAsync(It.IsAny<RegulatorDto>(), CancellationToken.None)).ThrowsAsync(new ValidationException("Validation error"));
 
             // Act
             var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
@@ -339,7 +339,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionAsync_ServiceThrowsValidationException_ReturnsBadRequest(
-            [Frozen] Mock<IRegistrationFeesService> registrationFeesServiceMock,
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] RegulatorDto request,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidatorMock,
             [Greedy] ProducersFeesController controller)
@@ -349,7 +349,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
             var validationException = new ValidationException("Validation error");
-            registrationFeesServiceMock.Setup(s => s.GetResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
+            producerFeesServiceMock.Setup(s => s.GetResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(validationException);
 
             // Act
