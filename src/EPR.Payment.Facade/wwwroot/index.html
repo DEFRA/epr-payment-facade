@@ -319,7 +319,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    resultContainer.textContent = `Resubmission Fee: £${data}`;
+                    resultContainer.textContent = `Resubmission Fee: £${formatCurrency(data)}`;
                     resultContainer.style.display = "block";
                 } else {
                     const errorData = await response.json();
@@ -361,7 +361,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    resultContainer.textContent = `Base Fee: £${data.baseFee}`;
+                    resultContainer.textContent = `Base Fee: £${formatCurrency(data.baseFee)}`;
                     resultContainer.style.display = "block";
                 } else {
                     const errorData = await response.json();
