@@ -2,8 +2,9 @@
 {
     public class ProducerFeesResponseDto
     {
-        public decimal? BaseFee { get; set; } // Nullable to handle scenarios where the fee is not applicable
-        public decimal? SubsidiariesFee { get; set; } // Nullable to handle scenarios where the fee is not applicable
+        public decimal BaseFee { get; set; } // Default to 0 if not applicable
+        public decimal OnlineMarket { get; set; } = 0; // Default to 0 if not applicable
+        public decimal SubsidiariesFee { get; set; } // Default to 0 if not applicable
         public decimal TotalFee { get; set; }
         public List<FeeBreakdown> FeeBreakdowns { get; set; } = new();
     }

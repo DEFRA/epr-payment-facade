@@ -113,13 +113,13 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         }
 
         [TestMethod]
-        public void Validate_NumberOfSubsidiariesOutOfRange_ShouldHaveError()
+        public void Validate_NumberOfSubsidiariesLessThanZero_ShouldHaveError()
         {
             // Arrange
             var request = new ProducerFeesRequestDto
             {
                 ProducerType = "LARGE",
-                NumberOfSubsidiaries = 101,
+                NumberOfSubsidiaries = -5,
                 Regulator = RegulatorConstants.GBENG,
                 IsOnlineMarketplace = false
             };
