@@ -8,7 +8,7 @@ Service Facade to calculate fees and manage payment records for EPR
 
 ### Prerequisites
 - EPR Payment Service - https://github.com/DEFRA/epr-payment-service
-- .NET SDK
+- .NET 8 SDK
 - Visual Studio or Visual Studio Code
 - GovPayService API Key
 
