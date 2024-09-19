@@ -18,7 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidation(fv =>
 {
     fv.RegisterValidatorsFromAssemblyContaining<PaymentRequestDtoValidator>();
-    fv.RegisterValidatorsFromAssemblyContaining<ProducerRegistrationFeesRequestDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<ProducerFeesRequestDtoValidator>();
     fv.AutomaticValidationEnabled = false;
 });
 builder.Services.Configure<PaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
@@ -86,11 +86,13 @@ bool enablePaymentsFeature = await featureManager.IsEnabledAsync("EnablePayments
 bool enablePaymentInitiation = await featureManager.IsEnabledAsync("EnablePaymentInitiation");
 bool enablePaymentStatus = await featureManager.IsEnabledAsync("EnablePaymentStatus");
 bool enablePaymentStatusInsert = await featureManager.IsEnabledAsync("EnablePaymentStatusInsert");
+bool enableHomePage = await featureManager.IsEnabledAsync("EnableHomePage");
 
 logger.LogInformation("EnablePaymentsFeature: {EnablePaymentsFeature}", enablePaymentsFeature);
 logger.LogInformation("EnablePaymentInitiation: {EnablePaymentInitiation}", enablePaymentInitiation);
 logger.LogInformation("EnablePaymentStatus: {EnablePaymentStatus}", enablePaymentStatus);
 logger.LogInformation("EnablePaymentStatusInsert: {EnablePaymentStatusInsert}", enablePaymentStatusInsert);
+logger.LogInformation("EnableHomePage: {EnableHomePage}", enableHomePage);
 
 if (app.Environment.IsDevelopment())
 {
@@ -103,13 +105,32 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Conditionally serve static files based on the feature flag
+if (enableHomePage)
+{
+    app.UseStaticFiles(); // Enable serving static files only if the feature is enabled
+}
+
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Enable serving static files
 app.UseRouting();
 app.UseCors("AllowAll");
 app.UseHealthChecks();
 app.UseAuthorization();
 app.UseMiddleware<ConditionalEndpointMiddleware>();
+
+// Check if the homepage is enabled and serve index.html accordingly
+app.MapGet("/", async context =>
+{
+    if (enableHomePage)
+    {
+        context.Response.ContentType = "text/html";
+        await context.Response.SendFileAsync(Path.Combine(app.Environment.WebRootPath, "index.html"));
+    }
+    else
+    {
+        context.Response.StatusCode = 404;
+    }
+});
 
 app.MapControllers();
 

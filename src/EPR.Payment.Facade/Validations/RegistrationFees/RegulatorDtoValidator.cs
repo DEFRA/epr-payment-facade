@@ -1,5 +1,4 @@
-﻿using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
+﻿using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using FluentValidation;
 
 namespace EPR.Payment.Facade.Validations.RegistrationFees
