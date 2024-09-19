@@ -310,7 +310,7 @@
             }
 
             try {
-                const response = await fetch(`/api/v1/producers-fees?regulator=${regulator}`, {
+                const response = await fetch(`/api/v1/producers-fees/resubmission?regulator=${regulator}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

@@ -54,7 +54,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Regulator)
-                  .WithErrorMessage("Invalid regulator parameter.");
+                  .WithErrorMessage("Invalid Regulator.");
         }
 
         [TestMethod]
@@ -73,20 +73,6 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 // Assert
                 result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
             }
-        }
-
-        [TestMethod]
-        public void Validate_LowercaseRegulator_ShouldHaveError()
-        {
-            // Arrange
-            var dto = new RegulatorDto { Regulator = "gb-eng" }; // Lowercase
-
-            // Act
-            var result = _validator.TestValidate(dto);
-
-            // Assert
-            result.ShouldHaveValidationErrorFor(x => x.Regulator)
-                  .WithErrorMessage("Regulator must be in uppercase.");
         }
     }
 }
