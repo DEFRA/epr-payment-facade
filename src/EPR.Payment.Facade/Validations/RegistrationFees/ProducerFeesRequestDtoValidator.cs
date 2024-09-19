@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace EPR.Payment.Facade.Validations.RegistrationFees
 {
-    public class ProducerRegistrationFeesRequestDtoValidator : AbstractValidator<ProducerRegistrationFeesRequestDto>
+    public class ProducerFeesRequestDtoValidator : AbstractValidator<ProducerFeesRequestDto>
     {
-        public ProducerRegistrationFeesRequestDtoValidator()
+        public ProducerFeesRequestDtoValidator()
         {
             var validProducerTypes = new List<string> { "LARGE", "SMALL" };
 

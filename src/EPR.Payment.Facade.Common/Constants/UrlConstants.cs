@@ -14,5 +14,8 @@
         // Registration fees service endpoints
         public const string CalculateProducerRegistrationFees = "registration-fees";
         public const string GetProducerResubmissionFee = "resubmissions?Regulator={regulator}";
+
+        // Compliance scheme fees service endpoints
+        public const string GetComplianceSchemeBaseFee = "compliance-scheme?regulator={regulator}";
     }
 }

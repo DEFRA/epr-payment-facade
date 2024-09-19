@@ -1,17 +1,17 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
 {
-    public class HttpRegistrationFeesService : BaseHttpService, IHttpRegistrationFeesService
+    public class HttpProducerFeesService : BaseHttpService, IHttpProducerFeesService
     {
-        public HttpRegistrationFeesService(
+        public HttpProducerFeesService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
@@ -22,12 +22,12 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        public async Task<RegistrationFeesResponseDto> CalculateProducerFeesAsync(ProducerRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.CalculateProducerRegistrationFees;
             try
             {
-                var response = await Post<RegistrationFeesResponseDto>(url, request, cancellationToken);
+                var response = await Post<ProducerFeesResponseDto>(url, request, cancellationToken);
                 return response;
             }
             catch (Exception ex)

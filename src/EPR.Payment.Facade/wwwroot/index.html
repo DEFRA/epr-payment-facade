@@ -9,8 +9,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            height: 100vh;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,10 +17,11 @@
         }
 
         .container-wrapper {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            gap: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
         }
 
         .container {
@@ -29,7 +29,6 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 350px;
             text-align: center;
         }
 
@@ -74,11 +73,23 @@
             cursor: pointer;
             font-size: 16px;
             margin-top: 10px;
+            width: 100%;
         }
 
             button:hover {
                 background-color: #45a049;
             }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
 
         /* Modal Styles */
         .modal {
@@ -288,6 +299,90 @@
             }
         }
 
+        async function getResubmissionFee() {
+            const regulator = document.getElementById('resubmissionRegulator').value;
+            const resultContainer = document.getElementById('resubmissionFeeResult');
+
+            if (!regulator) {
+                resultContainer.textContent = '';
+                resultContainer.style.display = "none";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/producers-fees?regulator=${regulator}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultContainer.textContent = `Resubmission Fee: £${formatCurrency(data)}`;
+                    resultContainer.style.display = "block";
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error fetching resubmission fee:', errorData);
+
+                    let errorMessage = 'Failed to fetch resubmission fee.';
+                    if (errorData.errors) {
+                        errorMessage = Object.values(errorData.errors).flat().join('\n');
+                    } else if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    }
+
+                    alert(`Error: ${errorMessage}`);
+                }
+
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('Network error occurred.');
+            }
+        }
+
+        async function getBaseFee() {
+            const regulator = document.getElementById('complianceSchemeRegulator').value;
+            const resultContainer = document.getElementById('baseFeeResult');
+
+            if (!regulator) {
+                resultContainer.textContent = '';
+                resultContainer.style.display = "none";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/compliance-scheme-fees/base-fee?regulator=${regulator}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultContainer.textContent = `Base Fee: £${formatCurrency(data.baseFee)}`;
+                    resultContainer.style.display = "block";
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error fetching base fee:', errorData);
+
+                    let errorMessage = 'Failed to fetch base fee.';
+                    if (errorData.errors) {
+                        errorMessage = Object.values(errorData.errors).flat().join('\n');
+                    } else if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    }
+
+                    alert(`Error: ${errorMessage}`);
+                }
+
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('Network error occurred.');
+            }
+        }
+
         function formatCurrency(amountInPence) {
             const amountInPounds = amountInPence / 100;
             return amountInPounds.toLocaleString('en-GB', {
@@ -301,44 +396,44 @@
             const modalBody = document.getElementById("modalBody");
 
             const breakdownRows = breakdowns.map(fee => `
-                    <tr>
-                        <td>${fee.description}</td>
-                        <td>£${formatCurrency(fee.amount)}</td>
-                    </tr>
-                `).join('');
+                            <tr>
+                                <td>${fee.description}</td>
+                                <td>£${formatCurrency(fee.amount)}</td>
+                            </tr>
+                        `).join('');
 
             const totalSubsidiariesRow = `
-                    <tr class="calc-info">
-                        <td>Total Subsidiaries Fee (Sum of subsidiary fees)</td>
-                        <td></td>
-                        <td>£${formatCurrency(totalSubsidiariesFee)}</td>
-                    </tr>
-                `;
+                            <tr class="calc-info">
+                                <td>Total Subsidiaries Fee (Sum of subsidiary fees)</td>
+                                <td></td>
+                                <td>£${formatCurrency(totalSubsidiariesFee)}</td>
+                            </tr>
+                        `;
 
             const totalRow = `
-                    <tr class="total-fee">
-                        <td>Total Fee</td>
-                        <td>£${formatCurrency(breakdowns.reduce((acc, fee) => acc + fee.amount, 0))}</td>
-                        <td></td>
-                    </tr>
-                `;
+                            <tr class="total-fee">
+                                <td>Total Fee</td>
+                                <td>£${formatCurrency(breakdowns.reduce((acc, fee) => acc + fee.amount, 0))}</td>
+                                <td></td>
+                            </tr>
+                        `;
 
             modalBody.innerHTML = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Amount</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${breakdownRows}
-                            ${totalSubsidiariesRow}
-                            ${totalRow}
-                        </tbody>
-                    </table>
-                `;
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${breakdownRows}
+                                    ${totalSubsidiariesRow}
+                                    ${totalRow}
+                                </tbody>
+                            </table>
+                        `;
 
             modal.style.display = "block";
         }
@@ -354,7 +449,37 @@
             }
         }
 
-        window.onload = setGuids;
+        function clearResubmissionFeeResult() {
+            const resultContainer = document.getElementById('resubmissionFeeResult');
+            resultContainer.textContent = '';
+            resultContainer.style.display = 'none';
+        }
+
+        function clearBaseFeeResult() {
+            const resultContainer = document.getElementById('baseFeeResult');
+            resultContainer.textContent = '';
+            resultContainer.style.display = 'none';
+        }
+
+        function setupInputListeners() {
+            document.getElementById('resubmissionRegulator').addEventListener('input', function () {
+                if (this.value === '') {
+                    clearResubmissionFeeResult();
+                }
+            });
+
+            document.getElementById('complianceSchemeRegulator').addEventListener('input', function () {
+                if (this.value === '') {
+                    clearBaseFeeResult();
+                }
+            });
+        }
+
+        window.onload = function () {
+            setGuids();
+            setupInputListeners();
+            closeModal(); // Ensure modal is hidden on page load
+        };
     </script>
 </head>
 
@@ -388,6 +513,22 @@
                 <label for="isOnlineMarketplace">Is Online Marketplace</label>
             </div>
             <button onclick="calculateFees()">Calculate Fees</button>
+        </div>
+
+        <div class="container">
+            <h1>Resubmission Fee</h1>
+            <label for="resubmissionRegulator">Regulator:</label>
+            <input type="text" id="resubmissionRegulator" required placeholder="ie GB-ENG">
+            <button onclick="getResubmissionFee()">Get Resubmission Fee</button>
+            <div id="resubmissionFeeResult" class="result"></div>
+        </div>
+
+        <div class="container">
+            <h1>Compliance Scheme Base Fee</h1>
+            <label for="complianceSchemeRegulator">Regulator:</label>
+            <input type="text" id="complianceSchemeRegulator" required placeholder="ie GB-ENG">
+            <button onclick="getBaseFee()">Get Base Fee</button>
+            <div id="baseFeeResult" class="result"></div>
         </div>
     </div>
 

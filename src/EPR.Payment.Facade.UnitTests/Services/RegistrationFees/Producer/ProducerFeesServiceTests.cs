@@ -3,55 +3,55 @@ using AutoFixture.AutoMoq;
 using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
-using EPR.Payment.Facade.Services.RegistrationFees;
+using EPR.Payment.Facade.Services.RegistrationFees.Producer;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
+namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
 {
     [TestClass]
-    public class RegistrationFeesServiceTests
+    public class ProducerFeesServiceTests
     {
         private IFixture _fixture = null!;
-        private Mock<IHttpRegistrationFeesService> _httpRegistrationFeesServiceMock = null!;
-        private Mock<ILogger<RegistrationFeesService>> _loggerMock = null!;
-        private RegistrationFeesService _service = null!;
+        private Mock<IHttpProducerFeesService> _httpProducerFeesService = null!;
+        private Mock<ILogger<ProducerFeesService>> _loggerMock = null!;
+        private ProducerFeesService _service = null!;
 
         [TestInitialize]
         public void TestInitialize()
         {
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
-            _httpRegistrationFeesServiceMock = _fixture.Freeze<Mock<IHttpRegistrationFeesService>>();
-            _loggerMock = _fixture.Freeze<Mock<ILogger<RegistrationFeesService>>>();
+            _httpProducerFeesService = _fixture.Freeze<Mock<IHttpProducerFeesService>>();
+            _loggerMock = _fixture.Freeze<Mock<ILogger<ProducerFeesService>>>();
 
-            _service = new RegistrationFeesService(
-                _httpRegistrationFeesServiceMock.Object,
+            _service = new ProducerFeesService(
+                _httpProducerFeesService.Object,
                 _loggerMock.Object);
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_HttpRegistrationFeesServiceIsNull_ShouldThrowArgumentNullException(
-            ILogger<RegistrationFeesService> logger)
+            ILogger<ProducerFeesService> logger)
         {
             // Act
-            Action act = () => new RegistrationFeesService(null!, logger);
+            Action act = () => new ProducerFeesService(null!, logger);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("httpRegistrationFeesService");
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpProducerFeesService");
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
-            IHttpRegistrationFeesService httpRegistrationFeesService)
+            IHttpProducerFeesService httpProducerFeesService)
         {
             // Act
-            Action act = () => new RegistrationFeesService(httpRegistrationFeesService, null!);
+            Action act = () => new ProducerFeesService(httpProducerFeesService, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
@@ -59,7 +59,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
 
         [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_RequestIsNull_ShouldThrowArgumentNullException(
-            RegistrationFeesService service)
+            ProducerFeesService service)
         {
             // Act
             Func<Task> act = () => service.CalculateProducerFeesAsync(null!);
@@ -71,11 +71,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
 
         [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_RequestIsValid_ShouldReturnResponse(
-            RegistrationFeesResponseDto expectedResponse,
-            ProducerRegistrationFeesRequestDto request)
+            ProducerFeesResponseDto expectedResponse,
+            ProducerFeesRequestDto request)
         {
             // Arrange
-            _httpRegistrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -87,13 +87,13 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
 
         [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
-            ProducerRegistrationFeesRequestDto request)
+            ProducerFeesRequestDto request)
         {
             // Arrange
             var exceptionMessage = "Unexpected error occurred";
             var exception = new Exception(exceptionMessage);
 
-            _httpRegistrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -123,7 +123,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
             )
         {
             //Arrange
-            _httpRegistrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync(expectedAmount);
+            _httpProducerFeesService.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync(expectedAmount);
 
             //Act
             var result = await _service!.GetResubmissionFeeAsync(request, CancellationToken.None);
@@ -138,7 +138,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
             )
         {
             //Arrange
-            _httpRegistrationFeesServiceMock.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync((decimal?)null);
+            _httpProducerFeesService.Setup(i => i.GetResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync((decimal?)null);
 
             //Act
             var result = await _service!.GetResubmissionFeeAsync(request, CancellationToken.None);
