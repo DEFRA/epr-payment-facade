@@ -15,8 +15,9 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees
                 .WithMessage(ValidationMessages.ProducerTypeInvalid + string.Join(", ", validProducerTypes));
 
             RuleFor(x => x.NumberOfSubsidiaries)
-                .Cascade(CascadeMode.Stop)
-                .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.NumberOfSubsidiariesRange)
+                .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.NumberOfSubsidiariesRange);
+
+            RuleFor(x => x.NumberOfSubsidiaries)
                 .GreaterThan(0)
                 .When(x => string.IsNullOrEmpty(x.ProducerType))
                 .WithMessage(ValidationMessages.NumberOfSubsidiariesRequiredWhenProducerTypeEmpty);
