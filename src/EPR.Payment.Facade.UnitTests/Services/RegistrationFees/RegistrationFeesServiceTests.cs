@@ -86,6 +86,40 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
         }
 
         [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_RequestIsValid_ShouldReturnResponseWithdecimalTypes(
+    RegistrationFeesResponseDto expectedResponse,
+    ProducerRegistrationFeesRequestDto request)
+        {
+            // Arrange
+            _httpRegistrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await _service.CalculateProducerFeesAsync(request);
+             
+            // Assert
+            //result.BaseFee.Should().BeOfType(typeof(decimal));
+            //result.SubsidiariesFee.Should().BeOfType(typeof(decimal));
+            //result.OnlineMarket.Should().BeOfType(typeof(decimal));
+            //result.TotalFee.Should().BeOfType(typeof(decimal));
+
+            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.BaseFee)).PropertyType).Should().BeNull();
+            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.SubsidiariesFee)).PropertyType).Should().BeNull();
+            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.OnlineMarket)).PropertyType).Should().BeNull();
+            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.TotalFee)).PropertyType).Should().BeNull();
+
+            //var propertyInfo = result.GetType().GetProperty("OnlineMarket");
+            //var IsNullable = IsNullableType(propertyInfo.PropertyType);
+
+            //Assert.IsFalse(IsNullable, "should not be nullable");
+        }
+
+        //private bool IsNullableType(Type type)
+        //{
+        //    return Nullable.GetUnderlyingType(type) != null;
+        //}
+
+        [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
             ProducerRegistrationFeesRequestDto request)
         {
