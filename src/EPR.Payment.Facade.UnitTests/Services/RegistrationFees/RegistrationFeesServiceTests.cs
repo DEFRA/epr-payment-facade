@@ -7,10 +7,12 @@ using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
+using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Services.RegistrationFees;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Reflection;
 
 namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
 {
@@ -108,6 +110,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
             Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.OnlineMarket)).PropertyType).Should().BeNull();
             Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.TotalFee)).PropertyType).Should().BeNull();
 
+            result.TotalFee.IsNullableDecimal().Should().BeFalse();
+
+            result.TotalFee.IsNullableDecimalSimple().Should().BeFalse();
+
             //var propertyInfo = result.GetType().GetProperty("OnlineMarket");
             //var IsNullable = IsNullableType(propertyInfo.PropertyType);
 
@@ -119,7 +125,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
         //    return Nullable.GetUnderlyingType(type) != null;
         //}
 
-        [TestMethod, AutoMoqData]
+            [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
             ProducerRegistrationFeesRequestDto request)
         {
