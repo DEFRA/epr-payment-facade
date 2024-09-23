@@ -24,20 +24,7 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees
 
             RuleFor(x => x.Regulator)
                 .NotEmpty().WithMessage(ValidationMessages.RegulatorRequired)
-                .Must(IsValidRegulator).WithMessage(ValidationMessages.RegulatorInvalid);
-        }
-
-        private bool IsValidRegulator(string regulator)
-        {
-            var validRegulators = new List<string>
-            {
-                RegulatorConstants.GBENG,
-                RegulatorConstants.GBSCT,
-                RegulatorConstants.GBWLS,
-                RegulatorConstants.GBNIR
-            };
-
-            return validRegulators.Contains(regulator);
+                .Must(RegulatorValidationHelper.IsValidRegulator).WithMessage(ValidationMessages.RegulatorInvalid);
         }
     }
 }
