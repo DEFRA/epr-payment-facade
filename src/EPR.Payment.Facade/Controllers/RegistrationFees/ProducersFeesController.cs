@@ -98,7 +98,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             }
         }
 
-        [HttpGet]
+        [HttpGet("resubmission")]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
         [SwaggerOperation(
