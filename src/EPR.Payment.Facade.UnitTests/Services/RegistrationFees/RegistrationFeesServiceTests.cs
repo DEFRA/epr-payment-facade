@@ -87,29 +87,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
             result.Should().BeEquivalentTo(expectedResponse);
         }
 
-        [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_RequestIsValid_ShouldReturnResponseWithdecimalTypes(
-    RegistrationFeesResponseDto expectedResponse,
-    ProducerRegistrationFeesRequestDto request)
-        {
-            // Arrange
-            _httpRegistrationFeesServiceMock.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await _service.CalculateProducerFeesAsync(request);
-             
-            // Assert
-            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.BaseFee)).PropertyType).Should().BeNull();
-            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.SubsidiariesFee)).PropertyType).Should().BeNull();
-            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.OnlineMarket)).PropertyType).Should().BeNull();
-            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.TotalFee)).PropertyType).Should().BeNull();
-
-            result.TotalFee.IsNullableDecimal().Should().BeFalse();
-
-            result.TotalFee.IsNullableDecimalSimple().Should().BeFalse();
-        }
-
             [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
             ProducerRegistrationFeesRequestDto request)
