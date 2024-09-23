@@ -33,7 +33,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var config = new Service
             {
                 Url = "https://api.example.com",
-                EndPointName = "registration-fees",
+                EndPointName = "registration-fee",
                 HttpClientName = "HttpClientName"
             };
 
