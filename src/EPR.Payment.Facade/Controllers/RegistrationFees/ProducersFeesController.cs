@@ -14,7 +14,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
 {
     [ApiVersion(1)]
     [ApiController]
-    [Route("api/v{version:apiVersion}/producers-fees")]
+    [Route("api/v{version:apiVersion}/producer")]
     [FeatureGate("EnableProducersFeesFeature")]
     public class ProducersFeesController : ControllerBase
     {
@@ -35,7 +35,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             _resubmissionValidator = resubmissionValidator ?? throw new ArgumentNullException(nameof(resubmissionValidator));
         }
 
-        [HttpPost("calculate")]
+        [HttpPost("registration-fee")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerFeesResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
@@ -98,7 +98,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             }
         }
 
-        [HttpGet]
+        [HttpGet("resubmission-fee")]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
         [SwaggerOperation(

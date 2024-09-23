@@ -12,10 +12,10 @@
         public const string GovPayGetPaymentStatus = "payments/{paymentId}";
 
         // Registration fees service endpoints
-        public const string CalculateProducerRegistrationFees = "registration-fees";
-        public const string GetProducerResubmissionFee = "resubmissions?Regulator={regulator}";
+        public const string CalculateProducerRegistrationFees = "producer/registration-fees";
+        public const string GetProducerResubmissionFee = "producer/resubmission-fee?Regulator={regulator}";
 
         // Compliance scheme fees service endpoints
-        public const string GetComplianceSchemeBaseFee = "compliance-scheme?regulator={regulator}";
+        public const string GetComplianceSchemeBaseFee = "compliance-scheme/registration-fee?regulator={regulator}";
     }
 }

@@ -13,7 +13,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
 {
     [ApiVersion(1)]
     [ApiController]
-    [Route("api/v{version:apiVersion}/compliance-scheme-fees")]
+    [Route("api/v{version:apiVersion}/compliance-scheme")]
     [FeatureGate("EnableComplianceSchemeFeesFeature")]
     public class ComplianceSchemeFeesController : ControllerBase
     {
@@ -31,7 +31,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
             _complianceSchemeValidator = complianceSchemeValidator ?? throw new ArgumentNullException(nameof(complianceSchemeValidator));
         }
 
-        [HttpGet("base-fee")]
+        [HttpGet("registration-fee")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(decimal))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]

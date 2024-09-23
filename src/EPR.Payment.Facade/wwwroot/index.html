@@ -264,7 +264,7 @@
             console.log('Request Data:', requestData);
 
             try {
-                const response = await fetch('/api/v1/producers-fees/calculate', {
+                const response = await fetch('/api/v1/producer/registration-fee', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -310,7 +310,7 @@
             }
 
             try {
-                const response = await fetch(`/api/v1/producers-fees?regulator=${regulator}`, {
+                const response = await fetch(`/api/v1/producer/resubmission-fee?regulator=${regulator}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -352,7 +352,7 @@
             }
 
             try {
-                const response = await fetch(`/api/v1/compliance-scheme-fees/base-fee?regulator=${regulator}`, {
+                const response = await fetch(`/api/v1/compliance-scheme/registration-fee?regulator=${regulator}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
