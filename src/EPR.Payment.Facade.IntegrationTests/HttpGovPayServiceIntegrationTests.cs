@@ -1,5 +1,6 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using FluentAssertions;
@@ -101,8 +102,8 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             // Act & Assert
             await service.Invoking(async x => await x.InitiatePaymentAsync(paymentRequestDto, cancellationToken))
-                .Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage("Bearer token is null. Unable to initiate payment.");
+                .Should().ThrowAsync<ServiceException>()
+                .WithMessage("Error occurred while initiating payment.");
         }
 
         [TestMethod]
@@ -164,8 +165,8 @@ namespace EPR.Payment.Facade.IntegrationTests
 
             // Act & Assert
             await service.Invoking(async x => await x.GetPaymentStatusAsync(paymentId, cancellationToken))
-                .Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage("Bearer token is null. Unable to initiate payment.");
+                .Should().ThrowAsync<ServiceException>()
+                .WithMessage("Error occurred while retrieving payment status.");
         }
 
         [TestMethod]
