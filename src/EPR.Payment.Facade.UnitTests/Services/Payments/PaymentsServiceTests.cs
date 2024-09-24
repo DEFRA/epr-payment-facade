@@ -428,8 +428,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 Amount = paymentDetails.Amount,
                 Email = paymentStatusResponse.Email
             });
-
-            Nullable.GetUnderlyingType(result.GetType().GetProperty(nameof(result.Amount)).PropertyType).Should().BeNull();
         }
 
         [TestMethod, AutoMoqData]

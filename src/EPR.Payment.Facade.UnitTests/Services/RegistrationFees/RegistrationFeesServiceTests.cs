@@ -7,12 +7,10 @@ using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
-using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Services.RegistrationFees;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Reflection;
 
 namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
 {
@@ -87,7 +85,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees
             result.Should().BeEquivalentTo(expectedResponse);
         }
 
-            [TestMethod, AutoMoqData]
+        [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
             ProducerRegistrationFeesRequestDto request)
         {
