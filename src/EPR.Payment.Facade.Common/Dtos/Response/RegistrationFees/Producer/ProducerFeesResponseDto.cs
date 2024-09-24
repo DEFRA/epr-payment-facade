@@ -2,10 +2,10 @@
 {
     public class ProducerFeesResponseDto
     {
-        public decimal BaseFee { get; set; } // Default to 0 if not applicable
+        public decimal BaseFee { get; set; } = 0; // Default to 0 if not applicable
         public decimal OnlineMarket { get; set; } = 0; // Default to 0 if not applicable
-        public decimal SubsidiariesFee { get; set; } // Default to 0 if not applicable
-        public decimal TotalFee { get; set; }
+        public decimal SubsidiariesFee { get; set; } = 0; // Default to 0 if not applicable
+        public decimal TotalFee { get; set; } = 0;
         public List<FeeBreakdown> FeeBreakdowns { get; set; } = new();
     }
 
