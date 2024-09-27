@@ -6,6 +6,8 @@
         public const string ProducerTypeInvalid = "ProducerType must be one of the following: ";
         public const string NumberOfSubsidiariesRange = "Number of subsidiaries must be greater than or equal to 0.";
         public const string NumberOfSubsidiariesRequiredWhenProducerTypeEmpty = "Number of subsidiaries must be greater than 0 when ProducerType is empty.";
+        public const string ApplicationReferenceNumberRequired = "Application Reference Number is required.";
+        public const string NoOfSubsidiariesOnlineMarketplaceRange = "Number of Subsidiaries with Online Marketplace must be greater than or equal to 0";
 
         // PaymentRequestDto Validation Messages
         public const string UserIdRequired = "User ID is required.";

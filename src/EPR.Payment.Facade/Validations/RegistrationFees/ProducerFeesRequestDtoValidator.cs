@@ -25,6 +25,12 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees
             RuleFor(x => x.Regulator)
                 .NotEmpty().WithMessage(ValidationMessages.RegulatorRequired)
                 .Must(RegulatorValidationHelper.IsValidRegulator).WithMessage(ValidationMessages.RegulatorInvalid);
+
+            RuleFor(x => x.NoOfSubsidiariesOnlineMarketplace)
+                .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.NoOfSubsidiariesOnlineMarketplaceRange);
+
+            RuleFor(x => x.ApplicationReferenceNumber)
+                .NotEmpty().WithMessage(ValidationMessages.ApplicationReferenceNumberRequired);
         }
     }
 }
