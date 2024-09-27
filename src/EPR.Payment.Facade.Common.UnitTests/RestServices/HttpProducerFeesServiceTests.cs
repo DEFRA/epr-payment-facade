@@ -46,23 +46,38 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 ProducerType = "LARGE",
                 NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
-                IsOnlineMarketplace = false
+                IsProducerOnlineMarketplace = false,
+                ApplicationReferenceNumber = "A123"
             };
 
             _producerFeesResponseDto = new ProducerFeesResponseDto
             {
                 TotalFee = 1000,
-                FeeBreakdowns = new List<FeeBreakdown>
+                SubsidiariesFeeBreakdown = new SubsidiariesFeeBreakdown
                 {
-                    new FeeBreakdown
+                    FeeBreakdowns = new List<FeeBreakdown>
                     {
-                        Description = "Base Fee",
-                        Amount = 500
-                    },
-                    new FeeBreakdown
-                    {
-                        Description = "Subsidiaries Fee",
-                        Amount = 500
+                        new FeeBreakdown
+                        {
+                            BandNumber = 1,
+                            UnitCount = 2,
+                            UnitPrice = 500,
+                            TotalPrice = 1000
+                        },
+                        new FeeBreakdown
+                        {
+                            BandNumber = 2,
+                            UnitCount = 3,
+                            UnitPrice = 200,
+                            TotalPrice = 600
+                        },
+                        new FeeBreakdown
+                        {
+                            BandNumber = 3,
+                            UnitCount = 0,
+                            UnitPrice = 500,
+                            TotalPrice = 0
+                        }
                     }
                 }
             };

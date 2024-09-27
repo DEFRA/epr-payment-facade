@@ -165,14 +165,22 @@
             }
 
             .modal-body .total-fee {
-                font-size: 18px;
+                text-align: center;
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
                 font-weight: bold;
                 background-color: #e6f7ff;
             }
 
             .modal-body .calc-info {
                 text-align: center;
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
                 background-color: #f2f2f2;
+            }
+
+            .modal-body .reg-info {
+                text-align: center;
                 padding: 10px;
                 border-bottom: 1px solid #ddd;
             }
@@ -251,14 +259,19 @@
         async function calculateFees() {
             const producerType = document.getElementById('producerType').value;
             const numberOfSubsidiaries = document.getElementById('numberOfSubsidiaries').value;
-            const regulator = document.getElementById('producerRegulator').value;
-            const isOnlineMarketplace = document.getElementById('isOnlineMarketplace').checked;
+            const regulator = document.getElementById('ProducerRegulator').value;
+            const isProducerOnlineMarketplace = document.getElementById('IsProducerOnlineMarketplace').checked;
+            const applicationReferenceNumber = document.getElementById('ApplicationReferenceNumber').value;
+            const noOfSubsidiariesOnlineMarketplace = document.getElementById('NoOfSubsidiariesOnlineMarketplace').value;
 
             const requestData = {
                 producerType: producerType,
                 numberOfSubsidiaries: parseInt(numberOfSubsidiaries),
                 regulator: regulator,
-                isOnlineMarketplace: isOnlineMarketplace
+                isProducerOnlineMarketplace: isProducerOnlineMarketplace,
+                noOfSubsidiariesOnlineMarketplace: parseInt(noOfSubsidiariesOnlineMarketplace),
+                applicationReferenceNumber: applicationReferenceNumber
+
             };
 
             console.log('Request Data:', requestData);
@@ -274,11 +287,8 @@
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    const totalSubsidiariesFee = data.feeBreakdowns
-                        .filter(fee => fee.description.includes("Subsidiaries"))
-                        .reduce((acc, fee) => acc + fee.amount, 0);
-                    showModal(data.feeBreakdowns, totalSubsidiariesFee);
+                    const data = await response.json();;
+                    showModal(data);
                 } else {
                     const errorData = await response.json();
                     console.error('Error calculating fees:', errorData);
@@ -391,36 +401,72 @@
             }).replace('£', ''); // Remove currency symbol
         }
 
-        function showModal(breakdowns, totalSubsidiariesFee) {
+        function showModal(data) {
             const modal = document.getElementById("resultsModal");
             const modalBody = document.getElementById("modalBody");
 
-            const breakdownRows = breakdowns.map(fee => `
-                            <tr>
-                                <td>${fee.description}</td>
-                                <td>£${formatCurrency(fee.amount)}</td>
-                            </tr>
-                        `).join('');
+            const producerRegistrationFee = `
+                                    <tr class="reg-info">
+                                        <td>Producer Registration Fee</td>
+                                        <td>£${formatCurrency(data.producerRegistrationFee)}</td>
+                                    </tr>`;
 
-            const totalSubsidiariesRow = `
+            const producerOnlineMarketPlaceFee = `
+                                    <tr class="reg-info">
+                                        <td>Producer Online Marketplace Fee</td>
+                                        <td>£${formatCurrency(data.producerOnlineMarketPlaceFee)}</td>
+                                    </tr>`;
+
+            const breakdownRows =data.subsidiariesFeeBreakdown.feeBreakdowns.map(fee => `
+                                    <tr class="reg-info">
+                                        <td>Band Number ${fee.bandNumber} (£${formatCurrency(fee.unitPrice)})</td>
+                                        <td>£${formatCurrency(fee.totalPrice)}</td>
+                                    </tr>
+                                `).join('');
+
+            const totalSubsidiariesOMPFees = `
+                                <tr class="calc-info">
+                                    <td>Total Subsidiaries OMP Fees (£${formatCurrency(data.subsidiariesFeeBreakdown.unitOMPFees)})</td>
+                                    <td></td>
+                                    <td>£${formatCurrency(data.subsidiariesFeeBreakdown.totalSubsidiariesOMPFees)}</td>
+                                </tr>
+                            `;
+
+            const subsidiariesFee = `
                             <tr class="calc-info">
-                                <td>Total Subsidiaries Fee (Sum of subsidiary fees)</td>
+                                <td>Subsidiaries Fee</td>
                                 <td></td>
-                                <td>£${formatCurrency(totalSubsidiariesFee)}</td>
+                                <td>£${formatCurrency(data.subsidiariesFee)}</td>
                             </tr>
                         `;
 
-            const totalRow = `
+            const totalFee = `
                             <tr class="total-fee">
                                 <td>Total Fee</td>
-                                <td>£${formatCurrency(breakdowns.reduce((acc, fee) => acc + fee.amount, 0))}</td>
+                                <td>£${formatCurrency(data.totalFee)}</td>
+                                <td></td>
+                            </tr>
+                        `;
+
+            const previousPayment = `
+                            <tr class="total-fee">
+                                <td>Previous Payment</td>
+                                <td>£${formatCurrency(data.previousPayment)}</td>
+                                <td></td>
+                            </tr>
+                        `;
+
+            const outstandingPayment = `
+                            <tr class="total-fee">
+                                <td>Outstanding Payment</td>
+                                <td>£${formatCurrency(data.outstandingPayment)}</td>
                                 <td></td>
                             </tr>
                         `;
 
             modalBody.innerHTML = `
                             <table>
-                                <thead>
+                               <thead>
                                     <tr>
                                         <th>Description</th>
                                         <th>Amount</th>
@@ -428,9 +474,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    ${producerRegistrationFee}
+                                    ${producerOnlineMarketPlaceFee}
                                     ${breakdownRows}
-                                    ${totalSubsidiariesRow}
-                                    ${totalRow}
+                                    ${totalSubsidiariesOMPFees}
+                                    ${subsidiariesFee}
+                                    ${totalFee}
+                                    ${previousPayment}
+                                    ${outstandingPayment}
                                 </tbody>
                             </table>
                         `;
@@ -506,11 +557,15 @@
             <input type="text" id="producerType" placeholder="Large, or Small">
             <label for="numberOfSubsidiaries">Number of Subsidiaries:</label>
             <input type="number" id="numberOfSubsidiaries" required>
-            <label for="producerRegulator">Regulator:</label>
-            <input type="text" id="producerRegulator" required placeholder="ie GB-ENG">
+            <label for="ProducerRegulator">Regulator:</label>
+            <input type="text" id="ProducerRegulator" required placeholder="ie GB-ENG">
+            <label for="NoOfSubsidiariesOnlineMarketplace">No Of Subsidiaries Online Marketplace:</label>
+            <input type="number" id="NoOfSubsidiariesOnlineMarketplace" required>
+            <label for="ApplicationReferenceNumber">Application Reference Number:</label>
+            <input type="text" id="ApplicationReferenceNumber" required placeholder="A123">
             <div class="checkbox-container">
-                <input type="checkbox" id="isOnlineMarketplace">
-                <label for="isOnlineMarketplace">Is Online Marketplace</label>
+                <input type="checkbox" id="IsProducerOnlineMarketplace">
+                <label for="IsProducerOnlineMarketplace">Is Producer Online Marketplace</label>
             </div>
             <button onclick="calculateFees()">Calculate Fees</button>
         </div>
