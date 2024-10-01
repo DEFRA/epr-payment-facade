@@ -2,12 +2,16 @@
 {
     public class ProducerFeesRequestDto
     {
-        public string ProducerType { get; set; } = string.Empty; // "L" for Large, "S" for Small, empty indicates no base fee
+        public string ProducerType { get; set; } = string.Empty; // "large" or "small", case insensitive, empty indicates no base fee
 
         public int NumberOfSubsidiaries { get; set; } // Any integer >= 0
 
         public required string Regulator { get; set; } // "GB-ENG", "GB-SCT", etc.
 
-        public bool IsOnlineMarketplace { get; set; } // True or False
+        public int NoOfSubsidiariesOnlineMarketplace { get; set; } // Any integer >= 0
+
+        public bool IsProducerOnlineMarketplace { get; set; } // True or False
+
+        public required string ApplicationReferenceNumber { get; set; }
     }
 }
