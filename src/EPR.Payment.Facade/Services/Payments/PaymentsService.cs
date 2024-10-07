@@ -216,7 +216,7 @@ namespace EPR.Payment.Facade.Services.Payments
             }
         }
 
-        private PaymentResponseDto CreatePaymentResponse(GovPayResponseDto govPayResponse)
+        private static PaymentResponseDto CreatePaymentResponse(GovPayResponseDto govPayResponse)
         {
             return new PaymentResponseDto
             {
