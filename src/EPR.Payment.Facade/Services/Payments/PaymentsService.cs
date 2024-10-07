@@ -147,7 +147,7 @@ namespace EPR.Payment.Facade.Services.Payments
         }
 
 
-        private CompletePaymentResponseDto CreateCompletePaymentResponse(PaymentDetailsDto paymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
+        private static CompletePaymentResponseDto CreateCompletePaymentResponse(PaymentDetailsDto paymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
         {
             return new CompletePaymentResponseDto
             {
