@@ -7,9 +7,9 @@ namespace EPR.Payment.Facade.Helpers
 {
     public class ConditionalEndpointMiddleware
     {
-        private readonly RequestDelegate _next = null!;
-        private readonly IFeatureManager _featureManager = null!;
-        private readonly ILogger<ConditionalEndpointMiddleware> _logger = null!;
+        private readonly RequestDelegate _next;
+        private readonly IFeatureManager _featureManager;
+        private readonly ILogger<ConditionalEndpointMiddleware> _logger;
 
         public ConditionalEndpointMiddleware(RequestDelegate next, IFeatureManager featureManager, ILogger<ConditionalEndpointMiddleware> logger)
         {
