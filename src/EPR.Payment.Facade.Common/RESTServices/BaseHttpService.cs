@@ -51,7 +51,21 @@ namespace EPR.Payment.Facade.Common.RESTServices
         /// </summary>
         protected virtual async Task<T> Get<T>(string url, CancellationToken cancellationToken, bool includeTrailingSlash = true)
         {
-            url = string.IsNullOrEmpty(url) && !includeTrailingSlash ? _baseUrl : includeTrailingSlash ? $"{_baseUrl}/{url}/" : $"{_baseUrl}/{url}";
+            if (string.IsNullOrEmpty(url))
+            {
+                url = _baseUrl;
+            }
+            else
+            {
+                if (includeTrailingSlash)
+                {
+                    url = $"{_baseUrl}/{url}/";
+                }
+                else
+                {
+                    url = $"{_baseUrl}/{url}";
+                }
+            }
 
             return await Send<T>(CreateMessage(url, null, HttpMethod.Get), cancellationToken);
         }
@@ -144,9 +158,9 @@ namespace EPR.Payment.Facade.Common.RESTServices
 
             if (response.IsSuccessStatusCode)
             {
-                var responseStream = await response.Content.ReadAsStreamAsync();
+                var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
                 using var streamReader = new StreamReader(responseStream);
-                var content = await streamReader.ReadToEndAsync();
+                var content = await streamReader.ReadToEndAsync(cancellationToken);
 
                 if (string.IsNullOrWhiteSpace(content))
                     return default!;
@@ -156,13 +170,13 @@ namespace EPR.Payment.Facade.Common.RESTServices
             else
             {
                 // get any message from the response
-                var responseStream = await response.Content.ReadAsStreamAsync();
+                var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
                 var content = default(string);
 
                 if (responseStream.Length > 0)
                 {
                     using var streamReader = new StreamReader(responseStream);
-                    content = await streamReader.ReadToEndAsync();
+                    content = await streamReader.ReadToEndAsync(cancellationToken);
                 }
 
                 // set the response status code and throw the exception for the middleware to handle
