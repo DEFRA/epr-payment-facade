@@ -5,6 +5,8 @@ namespace EPR.Payment.Facade.Common.Validators
 {
     public class ValidUrlAttribute : ValidationAttribute
     {
+        private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(5);
+
         protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
         {
             if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
@@ -15,12 +17,16 @@ namespace EPR.Payment.Facade.Common.Validators
             string url = value.ToString()!;
             string pattern = @"^(http|https)://([\w-]+(\.[\w-]+)+)([/#?]?.*)$";
 
-            if (!Regex.IsMatch(url, pattern))
+            try
             {
-                return new ValidationResult("The URL is not valid.");
+                return Regex.IsMatch(url, pattern, RegexOptions.None, RegexTimeout)
+                    ? ValidationResult.Success!
+                    : new ValidationResult("The URL is not valid.");
             }
-
-            return ValidationResult.Success!;
+            catch (RegexMatchTimeoutException)
+            {
+                return new ValidationResult("The URL validation timed out.");
+            }
         }
     }
 }
