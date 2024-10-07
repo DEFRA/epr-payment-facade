@@ -27,7 +27,6 @@ namespace EPR.Payment.Facade.Common.RESTServices
             ArgumentNullException.ThrowIfNull(httpClientFactory);
             ArgumentNullException.ThrowIfNullOrWhiteSpace(endPointName);
 
-
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
@@ -54,8 +53,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
 
         private string ReturnUrl(string url)
         {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(url);
 
             return $"{_baseUrl}/{url}/";
         }
@@ -186,11 +184,11 @@ namespace EPR.Payment.Facade.Common.RESTServices
                 return (T)Convert.ChangeType(value, typeof(T));
         }
 
-        private bool IsValidJson(string stringValue)
+        private static bool IsValidJson(string stringValue)
         {
             try
             {
-                var val = JToken.Parse(stringValue);
+                JToken.Parse(stringValue);
                 return true;
             }
             catch
