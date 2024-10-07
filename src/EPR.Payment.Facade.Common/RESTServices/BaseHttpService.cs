@@ -25,7 +25,12 @@ namespace EPR.Payment.Facade.Common.RESTServices
             _baseUrl = string.IsNullOrWhiteSpace(baseUrl) ? throw new ArgumentNullException(nameof(baseUrl)) : baseUrl;
 
             ArgumentNullException.ThrowIfNull(httpClientFactory);
-            ArgumentNullException.ThrowIfNullOrWhiteSpace(endPointName);
+
+            if (string.IsNullOrWhiteSpace(endPointName))
+            {
+                throw new ArgumentNullException(nameof(endPointName));
+            }
+                
 
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -53,8 +58,10 @@ namespace EPR.Payment.Facade.Common.RESTServices
 
         private string ReturnUrl(string url)
         {
-            ArgumentNullException.ThrowIfNullOrWhiteSpace(url);
-
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
             return $"{_baseUrl}/{url}/";
         }
 
