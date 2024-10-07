@@ -40,7 +40,7 @@ namespace EPR.Payment.Facade.Services.Payments
 
         public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken = default)
         {
-        var validatorResult = await _paymentRequestDtoValidator.ValidateAsync(request);
+        var validatorResult = await _paymentRequestDtoValidator.ValidateAsync(request, cancellationToken);
 
         if (!validatorResult.IsValid)
         {
