@@ -170,9 +170,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             [Frozen] GovPayRequestDto _govPayRequest,
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-            [Frozen] CancellationToken _cancellationToken,
             [Frozen] HttpRequestException _mockException,
-            [Frozen] GovPayResponseDto _mockResponse)
+            [Frozen] GovPayResponseDto _mockResponse,
+            [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             _mockResponse.PaymentId = "12345";
@@ -211,8 +211,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             [Frozen] GovPayRequestDto _govPayRequest,
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-            [Frozen] CancellationToken _cancellationToken,
-            [Frozen] HttpRequestException _mockException)
+            [Frozen] HttpRequestException _mockException,
+            [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             var service = new Mock<HttpGovPayService>(
@@ -240,8 +240,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             [Frozen] GovPayRequestDto _govPayRequest,
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-            [Frozen] CancellationToken _cancellationToken,
-            [Frozen] GovPayResponseDto _mockResponse)
+            [Frozen] GovPayResponseDto _mockResponse,
+            [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             _mockResponse.PaymentId = "12345";
@@ -275,10 +275,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetPaymentStatusAsync_ShouldRetryOnFailure(
            [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
            [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-           [Frozen] CancellationToken _cancellationToken,
            [Frozen] HttpRequestException _mockException,
            [Frozen] PaymentStatusResponseDto _mockResponse,
-           string _paymentId)
+           string _paymentId,
+           [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             _mockResponse.PaymentId = _paymentId;
@@ -316,10 +316,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetPaymentStatusAsync_WhenResponseStatusIsNull_ShouldRetryOnFailure(
            [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
            [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-           [Frozen] CancellationToken _cancellationToken,
            [Frozen] HttpRequestException _mockException,
            [Frozen] PaymentStatusResponseDto _mockResponse,
-           string _paymentId)
+           string _paymentId,
+           [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             _mockResponse.PaymentId = _paymentId;
@@ -358,10 +358,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetPaymentStatusAsync_WhenResponseStatusIsEmpty_ShouldRetryOnFailure(
            [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
            [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-           [Frozen] CancellationToken _cancellationToken,
            [Frozen] HttpRequestException _mockException,
            [Frozen] PaymentStatusResponseDto _mockResponse,
-           string _paymentId)
+           string _paymentId,
+           [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             _mockResponse.PaymentId = _paymentId;
@@ -400,9 +400,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetPaymentStatusAsync__WhenResponseIsNull_ShouldRetryOnFailure(
            [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
            [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-           [Frozen] CancellationToken _cancellationToken,
            [Frozen] PaymentStatusResponseDto _mockResponse,
-           string _paymentId)
+           string _paymentId,
+           [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             _mockResponse.PaymentId = _paymentId;
@@ -440,10 +440,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetPaymentStatusAsync_ShouldThrowAfterExhaustingRetries(
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-            [Frozen] CancellationToken _cancellationToken,
             [Frozen] HttpRequestException _mockException,
             [Frozen] PaymentStatusResponseDto _mockResponse,
-            string _paymentId)
+            string _paymentId,
+            [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             var service = new Mock<HttpGovPayService>(
@@ -471,9 +471,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task GetPaymentStatusAsync_ShouldNotRetryOnSuccess(
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-            [Frozen] CancellationToken _cancellationToken,
             [Frozen] PaymentStatusResponseDto _mockResponse,
-            string _paymentId)
+            string _paymentId,
+            [Frozen] CancellationToken _cancellationToken)
         {
             // Arrange
             _mockResponse.PaymentId = _paymentId;
