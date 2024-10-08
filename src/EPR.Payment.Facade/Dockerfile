@@ -22,8 +22,8 @@ COPY ["EPR.Payment.Facade/EPR.Payment.Facade.csproj", "EPR.Payment.Facade/"]
 COPY ["EPR.Payment.Facade.Common/EPR.Payment.Facade.Common.csproj", "EPR.Payment.Facade.Common/"]
 RUN dotnet restore "EPR.Payment.Facade/EPR.Payment.Facade.csproj"
 
-COPY --chown=dotnet:dotnet EPR.Payment.Facade/. ./EPR.Payment.Facade/.
-COPY --chown=dotnet:dotnet EPR.Payment.Facade.Common/. ./EPR.Payment.Facade.Common/.
+COPY EPR.Payment.Facade/. ./EPR.Payment.Facade/.
+COPY EPR.Payment.Facade.Common/. ./EPR.Payment.Facade.Common/.
 
 WORKDIR "/src/EPR.Payment.Facade"
 RUN dotnet build "EPR.Payment.Facade.csproj" -c Release /p:AzureBuild=true -o /app/build

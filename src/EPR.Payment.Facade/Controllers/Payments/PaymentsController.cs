@@ -154,7 +154,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
         }
 
-        private string CreateHtmlContent(string nextUrl)
+        private static string CreateHtmlContent(string nextUrl)
         {
             return $@"
     <!DOCTYPE html>

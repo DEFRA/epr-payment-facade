@@ -192,9 +192,14 @@
     </style>
     <script>
         function generateGuid() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                const r = Math.random() * 16 | 0,
-                    v = c === 'x' ? r : (r & 0x3 | 0x8);
+            const mask = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+            const array = new Uint8Array(mask.length);
+            const crypto = window.crypto || window.msCrypto;
+            crypto.getRandomValues(array); 
+
+            return mask.replace(/[xy]/g, function (c, i) {
+                const r = array[i] % 16; 
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
