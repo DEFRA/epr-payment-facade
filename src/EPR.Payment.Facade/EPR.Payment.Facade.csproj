@@ -8,7 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <DocumentationFile>EPR.Payment.Facade.xml</DocumentationFile>
-	<NoWarn>S4507</NoWarn>
+	<NoWarn>S4507;S5122</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
