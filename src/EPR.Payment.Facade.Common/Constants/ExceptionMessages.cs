@@ -49,11 +49,11 @@
         public const string UnexpectedErrorCalculatingFees = "An unexpected error occurred while calculating the fees.";
 
         // ComplianceSchemeFeesService exceptions
-        public const string ComplianceSchemeServiceBaseUrlMissing = "ComplianceSchemeService BaseUrl configuration is missing.";
+        public const string ComplianceSchemeServiceUrlMissing = "ComplianceSchemeService url configuration is missing.";
         public const string ComplianceSchemeServiceEndPointNameMissing = "ComplianceSchemeService EndPointName configuration is missing.";
         public const string ComplianceSchemeServiceHttpClientNameMissing = "ComplianceSchemeService HttpClientName configuration is missing.";
-        public const string ErrorRetrievingComplianceSchemeBaseFee = "Error occurred while retrieving the compliance scheme base fee.";
-        public const string UnexpectedErrorRetrievingComplianceSchemeBaseFee = "An unexpected error occurred while retrieving the compliance scheme base fee.";
+        public const string ErrorCalculatingCompianceSchemeFees = "Error occurred while calculating Compiance fees.";
+        public const string UnexpectedErrorCalculatingCompianceSchemeFees = "An unexpected error occurred while calculating Compiance Scheme fees.";
         public const string InvalidRegulatorForComplianceScheme = "The compliance scheme base fee for regulator {0} could not be retrieved.";
 
     }

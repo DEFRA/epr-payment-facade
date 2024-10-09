@@ -308,7 +308,7 @@
                 alert('Network error occurred.');
             }
         }
-
+        
         async function getResubmissionFee() {
             const regulator = document.getElementById('resubmissionRegulator').value;
             const resultContainer = document.getElementById('resubmissionFeeResult');
@@ -350,48 +350,174 @@
                 alert('Network error occurred.');
             }
         }
+        document.addEventListener('DOMContentLoaded', function () {
+            let currentMemberCount = 1;
 
-        async function getBaseFee() {
-            const regulator = document.getElementById('complianceSchemeRegulator').value;
-            const resultContainer = document.getElementById('baseFeeResult');
-
-            if (!regulator) {
-                resultContainer.textContent = '';
-                resultContainer.style.display = "none";
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/v1/compliance-scheme/registration-fee?regulator=${regulator}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    resultContainer.textContent = `Base Fee: £${formatCurrency(data.baseFee)}`;
-                    resultContainer.style.display = "block";
+            document.getElementById('addMemberButton').addEventListener('click', function () {
+                if (currentMemberCount < 3) {
+                    currentMemberCount++;
+                    document.getElementById(`member${currentMemberCount}`).style.display = 'block';
                 } else {
-                    const errorData = await response.json();
-                    console.error('Error fetching base fee:', errorData);
+                    alert('You can add a maximum of 3 members.');
+                }
+            });
 
-                    let errorMessage = 'Failed to fetch base fee.';
-                    if (errorData.errors) {
-                        errorMessage = Object.values(errorData.errors).flat().join('\n');
-                    } else if (errorData.detail) {
-                        errorMessage = errorData.detail;
+            async function calculateComplianceSchemeFees() {
+                const regulatorCode = document.getElementById('regulatorCode').value;
+                const applicationRefNumber = document.getElementById('applicationRefNumber').value;
+
+                const members = [];
+
+                for (let i = 1; i <= currentMemberCount; i++) {
+                    const memberId = document.getElementById(`memberId${i}`).value;
+                    const memberType = document.getElementById(`memberType${i}`).value;
+                    const subsidiaryCount = document.getElementById(`subsidiaryCount${i}`).value;
+                    const isOnlineMarketplace = document.getElementById(`isOnlineMarketplaceMember${i}`).checked;
+                    const onlineMarketplaceSubsidiaryCount = document.getElementById(`onlineMarketplaceSubsidiaryCount${i}`).value;
+
+                    if (memberId && memberType && subsidiaryCount) {
+                        members.push({
+                            MemberId: memberId,
+                            MemberType: memberType,
+                            IsOnlineMarketplace: isOnlineMarketplace,
+                            NumberOfSubsidiaries: parseInt(subsidiaryCount),
+                            NoOfSubsidiariesOnlineMarketplace: parseInt(onlineMarketplaceSubsidiaryCount),
+                        });
                     }
-
-                    alert(`Error: ${errorMessage}`);
                 }
 
-            } catch (error) {
-                console.error('Network error:', error);
-                alert('Network error occurred.');
+                const requestData = {
+                    Regulator: regulatorCode,
+                    ApplicationReferenceNumber: applicationRefNumber,
+                    ComplianceSchemeMembers: members
+                };
+
+                console.log('Request Data:', requestData);
+
+                try {
+                    const response = await fetch('/api/v1/compliance-scheme/registration-fee', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData),
+                        redirect: 'follow'
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        displayFees(data); // Call the function to display the fees
+                    } else {
+                        const errorData = await response.json();
+                        console.error('Error calculating fees:', errorData);
+
+                        let errorMessage = 'Failed to calculate fees.';
+                        if (errorData.errors) {
+                            errorMessage = Object.values(errorData.errors).flat().join('\n');
+                        } else if (errorData.detail) {
+                            errorMessage = errorData.detail;
+                        }
+
+                        alert(`Error: ${errorMessage}`);
+                    }
+
+                } catch (error) {
+                    console.error('Network error:', error);
+                    alert('Network error occurred.');
+                }
             }
-        }
+
+            function displayFees(data) {
+                const modal = document.getElementById("resultsModal");
+                const modalBody = document.getElementById("modalBody");
+
+                const totalFeesTable = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="total-fee">
+                                    <td>Total Fee</td>
+                                    <td>£${formatCurrency(data.totalFee)}</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="total-fee">
+                                    <td>Compliance Scheme Registration Fee</td>
+                                    <td>£${formatCurrency(data.complianceSchemeRegistrationFee)}</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="total-fee">
+                                    <td>Previous Payment</td>
+                                    <td>£${formatCurrency(data.previousPayment)}</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="total-fee">
+                                    <td>Outstanding Payment</td>
+                                    <td>£${formatCurrency(data.outstandingPayment)}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+
+                const memberFeesTables = data.complianceSchemeMembersWithFees.map(member => {
+                    const breakdownRows = member.subsidiariesFeeBreakdown.feeBreakdowns.map(fee => `
+                    <tr class="reg-info">
+                        <td>Band Number ${fee.bandNumber} (£${formatCurrency(fee.unitPrice)})</td>
+                        <td>£${formatCurrency(fee.totalPrice)}</td>
+                    </tr>
+                `).join('');
+
+                return `
+                    <h3>Member ID: ${member.memberId}</h3>
+                    <table>
+                        <tbody>
+                            <tr class="reg-info">
+                                <td>Member Registration Fee</td>
+                                <td>£${formatCurrency(member.memberRegistrationFee)}</td>
+                            </tr>
+                            <tr class="reg-info">
+                                <td>Member Online Marketplace Fee</td>
+                                <td>£${formatCurrency(member.memberOnlineMarketPlaceFee)}</td>
+                            </tr>
+                            <tr class="reg-info">
+                                <td>Subsidiaries Fee</td>
+                                <td>£${formatCurrency(member.subsidiariesFee)}</td>
+                            </tr>
+                            ${breakdownRows}
+                            <tr class="calc-info">
+                                <td>Total Member Fee</td>
+                                <td>£${formatCurrency(member.totalMemberFee)}</td>
+                            </tr>
+                            <tr class="calc-info">
+                                <td>Total Subsidiaries OMP Fees (£${formatCurrency(member.subsidiariesFeeBreakdown.unitOMPFees)})</td>
+                                <td>£${formatCurrency(member.subsidiariesFeeBreakdown.totalSubsidiariesOMPFees)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+                }).join('');
+
+                modalBody.innerHTML = `
+                    ${totalFeesTable}
+                    <h2>Member Fees Breakdown</h2>
+                    ${memberFeesTables}
+                    `;
+
+                modal.style.display = "block";
+            }
+
+            // Attach the calculate function to the button
+            document.querySelector('button[onclick="calculateComplianceSchemeFees()"]').addEventListener('click', calculateComplianceSchemeFees);
+        });
+
+
+
 
         function formatCurrency(amountInPence) {
             const amountInPounds = amountInPence / 100;
@@ -518,12 +644,6 @@
                     clearResubmissionFeeResult();
                 }
             });
-
-            document.getElementById('complianceSchemeRegulator').addEventListener('input', function () {
-                if (this.value === '') {
-                    clearBaseFeeResult();
-                }
-            });
         }
 
         window.onload = function () {
@@ -579,12 +699,62 @@
         </div>
 
         <div class="container">
-            <h1>Compliance Scheme Base Fee</h1>
-            <label for="complianceSchemeRegulator">Regulator:</label>
-            <input type="text" id="complianceSchemeRegulator" required placeholder="ie GB-ENG">
-            <button onclick="getBaseFee()">Get Base Fee</button>
-            <div id="baseFeeResult" class="result"></div>
+            <h1>Compliance Scheme Fees Calculation</h1>
+            <label for="regulatorCode">Regulator:</label>
+            <input type="text" id="regulatorCode" required placeholder="ie GB-ENG">
+            <label for="applicationRefNumber">Application Reference Number:</label>
+            <input type="text" id="applicationRefNumber" required placeholder="A123">
+
+            <div id="membersContainer">
+                <h2>Members</h2>
+                <div class="member" id="member1">
+                    <label for="memberId1">Member ID:</label>
+                    <input type="text" id="memberId1" placeholder="Member ID" required>
+                    <label for="memberType1">Member Type:</label>
+                    <input type="text" id="memberType1" placeholder="Large, or Small" required>
+                    <label for="subsidiaryCount1">Number of Subsidiaries:</label>
+                    <input type="number" id="subsidiaryCount1" required>
+                    <label for="onlineMarketplaceSubsidiaryCount1">No Of Subsidiaries Online Marketplace:</label>
+                    <input type="number" id="onlineMarketplaceSubsidiaryCount1" required>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="isOnlineMarketplaceMember1">
+                        <label for="isOnlineMarketplaceMember1">Is Member Online Marketplace</label>
+                    </div>
+                </div>
+                <div class="member" id="member2" style="display: none;">
+                    <label for="memberId2">Member ID:</label>
+                    <input type="text" id="memberId2" placeholder="Member ID">
+                    <label for="memberType2">Member Type:</label>
+                    <input type="text" id="memberType2" placeholder="Large, or Small">
+                    <label for="subsidiaryCount2">Number of Subsidiaries:</label>
+                    <input type="number" id="subsidiaryCount2">
+                    <label for="onlineMarketplaceSubsidiaryCount2">No Of Subsidiaries Online Marketplace:</label>
+                    <input type="number" id="onlineMarketplaceSubsidiaryCount2">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="isOnlineMarketplaceMember2">
+                        <label for="isOnlineMarketplaceMember2">Is Member Online Marketplace</label>
+                    </div>
+                </div>
+                <div class="member" id="member3" style="display: none;">
+                    <label for="memberId3">Member ID:</label>
+                    <input type="text" id="memberId3" placeholder="Member ID">
+                    <label for="memberType3">Member Type:</label>
+                    <input type="text" id="memberType3" placeholder="Large, or Small">
+                    <label for="subsidiaryCount3">Number of Subsidiaries:</label>
+                    <input type="number" id="subsidiaryCount3">
+                    <label for="onlineMarketplaceSubsidiaryCount3">No Of Subsidiaries Online Marketplace:</label>
+                    <input type="number" id="onlineMarketplaceSubsidiaryCount3">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="isOnlineMarketplaceMember3">
+                        <label for="isOnlineMarketplaceMember3">Is Member Online Marketplace</label>
+                    </div>
+                </div>
+            </div>
+
+            <button id="addMemberButton">Add Another Member</button>
+            <button onclick="calculateComplianceSchemeFees()">Calculate Fees</button>
         </div>
+
     </div>
 
     <!-- Modal for displaying results -->

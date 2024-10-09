@@ -1,7 +1,7 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
@@ -18,8 +18,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
     {
         private IFixture _fixture = null!;
         private Mock<IHttpComplianceSchemeFeesService> _httpComplianceSchemeFeesServiceMock = null!;
-        private Mock<ILogger<ComplianceSchemeFeesService>> _loggerMock = null!;
-        private ComplianceSchemeFeesService _service = null!;
+        private Mock<ILogger<ComplianceSchemeCalculatorService>> _loggerMock = null!;
+        private ComplianceSchemeCalculatorService _service = null!;
 
         [TestInitialize]
         public void TestInitialize()
@@ -27,19 +27,19 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
             _httpComplianceSchemeFeesServiceMock = _fixture.Freeze<Mock<IHttpComplianceSchemeFeesService>>();
-            _loggerMock = _fixture.Freeze<Mock<ILogger<ComplianceSchemeFeesService>>>();
+            _loggerMock = _fixture.Freeze<Mock<ILogger<ComplianceSchemeCalculatorService>>>();
 
-            _service = new ComplianceSchemeFeesService(
+            _service = new ComplianceSchemeCalculatorService(
                 _httpComplianceSchemeFeesServiceMock.Object,
                 _loggerMock.Object);
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_HttpComplianceSchemeFeesServiceIsNull_ShouldThrowArgumentNullException(
-            ILogger<ComplianceSchemeFeesService> logger)
+            ILogger<ComplianceSchemeCalculatorService> logger)
         {
             // Act
-            Action act = () => new ComplianceSchemeFeesService(null!, logger);
+            Action act = () => new ComplianceSchemeCalculatorService(null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpComplianceSchemeFeesService");
@@ -50,82 +50,45 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             IHttpComplianceSchemeFeesService httpComplianceSchemeFeesService)
         {
             // Act
-            Action act = () => new ComplianceSchemeFeesService(httpComplianceSchemeFeesService, null!);
+            Action act = () => new ComplianceSchemeCalculatorService(httpComplianceSchemeFeesService, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetComplianceSchemeBaseFeeAsync_RequestIsNull_ShouldThrowArgumentNullException()
-        {
-            // Act
-            Func<Task> act = () => _service.GetComplianceSchemeBaseFeeAsync(null!);
-
-            // Assert
-            await act.Should().ThrowAsync<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.ErrorRetrievingComplianceSchemeBaseFee} (Parameter 'request')");
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task GetComplianceSchemeBaseFeeAsync_RequestIsValid_ShouldReturnResponse(
-            ComplianceSchemeBaseFeeResponse expectedResponse,
-            RegulatorDto request)
+        public async Task CalculateFeesAsync_RequestIsValid_ShouldReturnResponse(
+            ComplianceSchemeFeesResponseDto expectedResponse,
+            ComplianceSchemeFeesRequestDto request)
         {
             // Arrange
-            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetComplianceSchemeBaseFeeAsync(request, It.IsAny<CancellationToken>()))
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await _service.GetComplianceSchemeBaseFeeAsync(request);
+            var result = await _service.CalculateFeesAsync(request);
 
             // Assert
             result.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetComplianceSchemeBaseFeeAsync_InvalidBaseFee_ShouldThrowServiceException(
-            RegulatorDto request)
-        {
-            // Arrange
-            var invalidResponse = new ComplianceSchemeBaseFeeResponse { BaseFee = 0 };
-            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetComplianceSchemeBaseFeeAsync(request, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(invalidResponse);
-
-            // Act
-            Func<Task> act = async () => await _service.GetComplianceSchemeBaseFeeAsync(request);
-
-            // Assert
-            await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorRetrievingComplianceSchemeBaseFee); // Expect the general message
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Invalid base fee returned for regulator")),
-                    null,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()!),
-                Times.Once);
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task GetComplianceSchemeBaseFeeAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
-            RegulatorDto request)
+        public async Task CalculateFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
+            ComplianceSchemeFeesRequestDto request)
         {
             // Arrange
             var exceptionMessage = "Unexpected error occurred";
             var exception = new Exception(exceptionMessage);
 
-            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetComplianceSchemeBaseFeeAsync(request, It.IsAny<CancellationToken>()))
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
             // Act
-            Func<Task> act = async () => await _service.GetComplianceSchemeBaseFeeAsync(request);
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
 
             // Assert
             var thrownException = await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorRetrievingComplianceSchemeBaseFee);
+                .WithMessage(ExceptionMessages.ErrorCalculatingCompianceSchemeFees);
 
             thrownException.Which.InnerException.Should().BeOfType<Exception>()
                 .Which.Message.Should().Be(exceptionMessage);
@@ -134,9 +97,9 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorRetrievingComplianceSchemeBaseFee)),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingCompianceSchemeFees)),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()!),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
     }
