@@ -28,8 +28,8 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ExceptionMessages.UnexpectedErrorCalculatingCompianceSchemeFees);
-                throw new ServiceException(ExceptionMessages.ErrorCalculatingCompianceSchemeFees, ex);
+                _logger.LogError(ex, ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
             }
         }
     }

@@ -187,7 +187,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             var validationResult = new ValidationResult();
             validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
-            var serviceException = new ServiceException(ExceptionMessages.ErrorCalculatingCompianceSchemeFees);
+            var serviceException = new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
             complianceSchemeCalculatorServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(serviceException);
 
@@ -204,7 +204,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
                 problemDetails.Should().NotBeNull();
                 problemDetails?.Title.Should().Be("Service Error");
-                problemDetails?.Detail.Should().Be(ExceptionMessages.ErrorCalculatingCompianceSchemeFees);
+                problemDetails?.Detail.Should().Be(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
             }
         }
 
@@ -236,7 +236,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
                 problemDetails.Should().NotBeNull();
                 problemDetails?.Title.Should().Be("Unexpected Error");
-                problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErrorCalculatingCompianceSchemeFees);
+                problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
             }
         }
     }

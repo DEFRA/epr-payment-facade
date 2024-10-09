@@ -90,7 +90,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
                 return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
                 {
                     Title = "Unexpected Error",
-                    Detail = ExceptionMessages.UnexpectedErrorCalculatingCompianceSchemeFees,
+                    Detail = ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees,
                     Status = StatusCodes.Status500InternalServerError
                 });
             }

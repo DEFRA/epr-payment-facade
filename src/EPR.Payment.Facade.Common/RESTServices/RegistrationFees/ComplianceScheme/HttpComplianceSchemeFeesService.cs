@@ -29,11 +29,11 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
             }
             catch (HttpRequestException ex)
             {
-                throw new ServiceException(ExceptionMessages.ErrorCalculatingCompianceSchemeFees, ex);
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
             }
             catch (Exception ex)
             {
-                throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingCompianceSchemeFees, ex);
+                throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees, ex);
             }
         }
     }

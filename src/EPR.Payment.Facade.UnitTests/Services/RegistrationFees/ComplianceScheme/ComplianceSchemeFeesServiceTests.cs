@@ -88,7 +88,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
 
             // Assert
             var thrownException = await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorCalculatingCompianceSchemeFees);
+                .WithMessage(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
 
             thrownException.Which.InnerException.Should().BeOfType<Exception>()
                 .Which.Message.Should().Be(exceptionMessage);
@@ -97,7 +97,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingCompianceSchemeFees)),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees)),
                     exception,
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);

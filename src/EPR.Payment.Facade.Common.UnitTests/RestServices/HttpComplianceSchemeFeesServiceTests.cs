@@ -231,7 +231,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorCalculatingCompianceSchemeFees);
+                    .WithMessage(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
 
 
                 handlerMock.Protected().Verify(
@@ -269,7 +269,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.UnexpectedErrorCalculatingCompianceSchemeFees);
+                .WithMessage(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
 
                 handlerMock.Protected().Verify(
                     "SendAsync",
