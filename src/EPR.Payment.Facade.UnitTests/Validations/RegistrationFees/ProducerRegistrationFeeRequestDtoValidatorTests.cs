@@ -26,6 +26,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -47,6 +48,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -67,6 +69,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -87,6 +90,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -107,6 +111,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -127,6 +132,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = -5,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -148,6 +154,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = string.Empty,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -169,6 +176,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 0,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -190,6 +198,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -212,6 +221,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
@@ -237,6 +247,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                     NumberOfSubsidiaries = 10,
                     Regulator = regulator,
                     IsProducerOnlineMarketplace = false,
+                    IsLateFeeApplicable = false,
                     ApplicationReferenceNumber = "A123"
                 };
 
@@ -258,6 +269,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 0,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 NoOfSubsidiariesOnlineMarketplace = -5,
                 ApplicationReferenceNumber = "A123"
             };
@@ -280,6 +292,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 NumberOfSubsidiaries = 10,
                 Regulator = string.Empty,
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = string.Empty
             };
 
