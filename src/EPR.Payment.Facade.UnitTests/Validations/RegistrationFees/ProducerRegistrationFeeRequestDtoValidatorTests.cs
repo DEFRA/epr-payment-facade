@@ -167,12 +167,13 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         }
 
         [TestMethod]
-        public void Validate_EmptyProducerTypeAndZeroSubsidiaries_ShouldHaveError()
+        public void Validate_EmptyProducerType_ShouldHaveError()
         {
             // Arrange
+            var validProducerTypes = new List<string> { "LARGE", "SMALL" };
             var request = new ProducerFeesRequestDto
             {
-                ProducerType = string.Empty, // No base fee required
+                ProducerType = string.Empty,
                 NumberOfSubsidiaries = 0,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
@@ -184,8 +185,30 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
             var result = _validator.TestValidate(request);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.NumberOfSubsidiaries)
-                  .WithErrorMessage(ValidationMessages.NumberOfSubsidiariesRequiredWhenProducerTypeEmpty);
+            result.ShouldHaveValidationErrorFor(x => x.ProducerType)
+                  .WithErrorMessage(ValidationMessages.ProducerTypeInvalid + string.Join(", ", validProducerTypes));
+        }
+
+        [TestMethod]
+        public void Validate_NumberOfOMPSubsidiaries_ShouldBeLessThanOrEqualToNumberOfSubsidiaries()
+        {
+            // Arrange
+            var request = new ProducerFeesRequestDto
+            {
+                ProducerType = "Large",
+                NumberOfSubsidiaries = 10,
+                NoOfSubsidiariesOnlineMarketplace = 11,
+                Regulator = RegulatorConstants.GBENG,
+                IsProducerOnlineMarketplace = false,
+                ApplicationReferenceNumber = "A123"
+            };
+
+            // Act
+            var result = _validator.TestValidate(request);
+
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.NoOfSubsidiariesOnlineMarketplace)
+                  .WithErrorMessage(ValidationMessages.NumberOfOMPSubsidiariesLessThanOrEqualToNumberOfSubsidiaries);
         }
 
         [TestMethod]
@@ -212,12 +235,12 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         }
 
         [TestMethod]
-        public void Validate_EmptyProducerTypeAndGreaterThanZeroSubsidiaries_ShouldNotHaveError()
+        public void Validate_ProducerTypeAndGreaterThanZeroSubsidiaries_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerFeesRequestDto
             {
-                ProducerType = string.Empty, // No base fee required
+                ProducerType = "LARGE",
                 NumberOfSubsidiaries = 10,
                 Regulator = RegulatorConstants.GBENG,
                 IsProducerOnlineMarketplace = false,
