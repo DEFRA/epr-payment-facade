@@ -27,7 +27,7 @@ namespace EPR.Payment.Facade.Extension
             services.AddScoped<IPaymentsService, PaymentsService>();
 
             services.AddScoped<IProducerFeesService, ProducerFeesService>();
-            services.AddScoped<IComplianceSchemeFeesService, ComplianceSchemeFeesService>();
+            services.AddScoped<IComplianceSchemeCalculatorService, ComplianceSchemeCalculatorService>();
 
             return services;
         }
