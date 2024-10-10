@@ -47,6 +47,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
                 IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123"
             };
 
