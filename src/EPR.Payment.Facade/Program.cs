@@ -5,7 +5,7 @@ using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
 using EPR.Payment.Facade.Validations.Payments;
-using EPR.Payment.Facade.Validations.RegistrationFees;
+using EPR.Payment.Facade.Validations.RegistrationFees.Producer;
 using FluentValidation.AspNetCore;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
