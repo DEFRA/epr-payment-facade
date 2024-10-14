@@ -51,7 +51,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 {
                     new ComplianceSchemeMemberDto
                     {
-                        MemberId = 123,
+                        MemberId = "123",
                         MemberType = "LARGE",
                         IsOnlineMarketplace = true,
                         NumberOfSubsidiaries = 150,
@@ -71,7 +71,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 {
                     new ComplianceSchemeMembersWithFeesDto 
                     {
-                        MemberId = 123,
+                        MemberId = "123",
                         MemberRegistrationFee = 165800,
                         MemberOnlineMarketPlaceFee = 257900,
                         SubsidiariesFee = 4815000,

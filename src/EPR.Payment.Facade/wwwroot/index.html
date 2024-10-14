@@ -351,8 +351,9 @@
                 alert('Network error occurred.');
             }
         }
+
         document.addEventListener('DOMContentLoaded', function () {
-            let currentMemberCount = 1;
+            let currentMemberCount = 0;
 
             document.getElementById('addMemberButton').addEventListener('click', function () {
                 if (currentMemberCount < 3) {
@@ -363,70 +364,70 @@
                 }
             });
 
-            async function calculateComplianceSchemeFees() {
-                const regulatorCode = document.getElementById('regulatorCode').value;
-                const applicationRefNumber = document.getElementById('applicationRefNumber').value;
 
-                const members = [];
+        async function calculateComplianceSchemeFees() {
+            const regulatorCode = document.getElementById('regulatorCode').value;
+            const applicationRefNumber = document.getElementById('applicationRefNumber').value;
 
-                for (let i = 1; i <= currentMemberCount; i++) {
-                    const memberId = document.getElementById(`memberId${i}`).value;
-                    const memberType = document.getElementById(`memberType${i}`).value;
-                    const subsidiaryCount = document.getElementById(`subsidiaryCount${i}`).value;
-                    const isOnlineMarketplace = document.getElementById(`isOnlineMarketplaceMember${i}`).checked;
-                    const onlineMarketplaceSubsidiaryCount = document.getElementById(`onlineMarketplaceSubsidiaryCount${i}`).value;
+            const members = [];
+            for (let i = 1; i <= currentMemberCount; i++) {
+                const memberId = document.getElementById(`memberId${i}`).value;
+                const memberType = document.getElementById(`memberType${i}`).value;
+                const subsidiaryCount = document.getElementById(`subsidiaryCount${i}`).value;
+                const isOnlineMarketplace = document.getElementById(`isOnlineMarketplaceMember${i}`).checked;
+                const onlineMarketplaceSubsidiaryCount = document.getElementById(`onlineMarketplaceSubsidiaryCount${i}`).value;
 
-                    if (memberId && memberType && subsidiaryCount) {
-                        members.push({
-                            MemberId: memberId,
-                            MemberType: memberType,
-                            IsOnlineMarketplace: isOnlineMarketplace,
-                            NumberOfSubsidiaries: parseInt(subsidiaryCount),
-                            NoOfSubsidiariesOnlineMarketplace: parseInt(onlineMarketplaceSubsidiaryCount),
-                        });
-                    }
-                }
-
-                const requestData = {
-                    Regulator: regulatorCode,
-                    ApplicationReferenceNumber: applicationRefNumber,
-                    ComplianceSchemeMembers: members
-                };
-
-                console.log('Request Data:', requestData);
-
-                try {
-                    const response = await fetch('/api/v1/compliance-scheme/registration-fee', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestData),
-                        redirect: 'follow'
+                if (memberId && memberType && subsidiaryCount) {
+                    members.push({
+                        MemberId: memberId,
+                        MemberType: memberType,
+                        IsOnlineMarketplace: isOnlineMarketplace,
+                        NumberOfSubsidiaries: parseInt(subsidiaryCount),
+                        NoOfSubsidiariesOnlineMarketplace: parseInt(onlineMarketplaceSubsidiaryCount),
                     });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        displayFees(data); // Call the function to display the fees
-                    } else {
-                        const errorData = await response.json();
-                        console.error('Error calculating fees:', errorData);
-
-                        let errorMessage = 'Failed to calculate fees.';
-                        if (errorData.errors) {
-                            errorMessage = Object.values(errorData.errors).flat().join('\n');
-                        } else if (errorData.detail) {
-                            errorMessage = errorData.detail;
-                        }
-
-                        alert(`Error: ${errorMessage}`);
-                    }
-
-                } catch (error) {
-                    console.error('Network error:', error);
-                    alert('Network error occurred.');
+                } else {
+                    alert('memberId and memberType are required.');
+                    return;
                 }
             }
+
+            const requestData = {
+                Regulator: regulatorCode,
+                ApplicationReferenceNumber: applicationRefNumber,
+                ComplianceSchemeMembers: members
+            };
+
+            console.log('Request Data:', requestData);
+
+            try {
+                const response = await fetch('/api/v1/compliance-scheme/registration-fee', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayFees(data);
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error calculating fees:', errorData);
+                    let errorMessage = 'Failed to calculate fees.';
+                    if (errorData.errors) {
+                        errorMessage = Object.values(errorData.errors).flat().join('\n');
+                    } else if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    }
+                    alert(`Error: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('Network error occurred.');
+            }
+        }
+        
 
             function displayFees(data) {
                 const modal = document.getElementById("resultsModal");
@@ -513,8 +514,8 @@
                 modal.style.display = "block";
             }
 
-            // Attach the calculate function to the button
-            document.querySelector('button[onclick="calculateComplianceSchemeFees()"]').addEventListener('click', calculateComplianceSchemeFees);
+
+            document.getElementById('calculateFeesButton').addEventListener('click', calculateComplianceSchemeFees);
         });
 
 
@@ -719,7 +720,7 @@
 
             <div id="membersContainer">
                 <h2>Members</h2>
-                <div class="member" id="member1">
+                <div class="member" id="member1" style="display: none;">
                     <label for="memberId1">Member ID:</label>
                     <input type="text" id="memberId1" placeholder="Member ID" required>
                     <label for="memberType1">Member Type:</label>
@@ -763,8 +764,8 @@
                 </div>
             </div>
 
-            <button id="addMemberButton">Add Another Member</button>
-            <button onclick="calculateComplianceSchemeFees()">Calculate Fees</button>
+            <button id="addMemberButton">Add Member</button>
+            <button id="calculateFeesButton">Calculate Fees</button>
         </div>
 
     </div>
