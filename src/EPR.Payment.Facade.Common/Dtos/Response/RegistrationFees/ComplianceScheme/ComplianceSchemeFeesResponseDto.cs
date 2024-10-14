@@ -13,7 +13,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceSch
 
     public class ComplianceSchemeMembersWithFeesDto
     {
-        public int MemberId { get; set; }
+        public required string MemberId { get; set; }
         public decimal MemberRegistrationFee { get; set; }
         public decimal MemberOnlineMarketPlaceFee { get; set; }
         public decimal SubsidiariesFee { get; set; }
