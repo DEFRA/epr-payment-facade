@@ -1,7 +1,8 @@
 ﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
@@ -23,7 +24,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptions<Service>> _configMock = null!;
-        private RegulatorDto _regulatorDto = null!;
+        private ComplianceSchemeFeesRequestDto _complianceSchemeFeesRequestDto = null!;
+        private ComplianceSchemeFeesResponseDto _complianceSchemeFeesResponseDto = null!;
 
         [TestInitialize]
         public void Initialize()
@@ -41,9 +43,71 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-            _regulatorDto = new RegulatorDto
+            _complianceSchemeFeesRequestDto = new ComplianceSchemeFeesRequestDto
             {
-                Regulator = "GB-ENG"
+                Regulator = "GB-ENG",
+                ApplicationReferenceNumber = "A123",
+                ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
+                {
+                    new ComplianceSchemeMemberDto
+                    {
+                        MemberId = "123",
+                        MemberType = "LARGE",
+                        IsOnlineMarketplace = true,
+                        NumberOfSubsidiaries = 150,
+                        NoOfSubsidiariesOnlineMarketplace = 10
+
+                    }
+                }
+            };
+
+            _complianceSchemeFeesResponseDto = new ComplianceSchemeFeesResponseDto
+            {
+                TotalFee = 6619100,
+                ComplianceSchemeRegistrationFee = 1380400,
+                PreviousPayment = 0,
+                OutstandingPayment = 6619100,
+                ComplianceSchemeMembersWithFees = new List<ComplianceSchemeMembersWithFeesDto>
+                {
+                    new ComplianceSchemeMembersWithFeesDto 
+                    {
+                        MemberId = "123",
+                        MemberRegistrationFee = 165800,
+                        MemberOnlineMarketPlaceFee = 257900,
+                        SubsidiariesFee = 4815000,
+                        TotalMemberFee = 5238700,
+                        SubsidiariesFeeBreakdown = new SubsidiariesFeeBreakdown
+                        {
+                                TotalSubsidiariesOMPFees = 2579000,
+                                CountOfOMPSubsidiaries = 10,
+                                UnitOMPFees = 257900,
+                                FeeBreakdowns = new List<FeeBreakdown>
+                                {
+                                    new FeeBreakdown
+                                    {
+                                        BandNumber = 1,
+                                        UnitCount = 20,
+                                        UnitPrice = 55800,
+                                        TotalPrice = 1116000
+                                    },
+                                    new FeeBreakdown
+                                    {
+                                        BandNumber = 2,
+                                        UnitCount = 80,
+                                        UnitPrice = 14000,
+                                        TotalPrice = 1120000
+                                    },
+                                    new FeeBreakdown
+                                    {
+                                        BandNumber = 3,
+                                        UnitCount = 50,
+                                        UnitPrice = 0,
+                                        TotalPrice = 0
+                                    }
+                                }
+                        }
+                    }
+                }
             };
         }
 
@@ -56,151 +120,164 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetComplianceSchemeBaseFeeAsync_Success_ReturnsBaseFeeResponseDto(
-            [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
-            CancellationToken cancellationToken)
+        public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException(
+            Mock<IHttpClientFactory> httpClientFactoryMock,
+            Mock<IOptions<Service>> configMock)
         {
-            // Arrange
-            var baseFeeResponse = new ComplianceSchemeBaseFeeResponse { BaseFee = 1380400m };
-
-            handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ReturnsAsync(new HttpResponseMessage
-                       {
-                           StatusCode = HttpStatusCode.OK,
-                           Content = new StringContent(JsonConvert.SerializeObject(baseFeeResponse), Encoding.UTF8, "application/json")
-                       });
-
-            var httpClient = new HttpClient(handlerMock.Object);
-            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
-
             // Act
-            var result = await httpComplianceSchemeFeesService.GetComplianceSchemeBaseFeeAsync(_regulatorDto, cancellationToken);
+            Action act = () => new HttpComplianceSchemeFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.Should().BeEquivalentTo(baseFeeResponse);
-                handlerMock.Protected().Verify(
-                    "SendAsync",
-                    Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Get),
-                    ItExpr.IsAny<CancellationToken>());
-            }
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
         }
-
-        [TestMethod]
-        public async Task GetComplianceSchemeBaseFeeAsync_InvalidBaseFee_ShouldThrowServiceException()
-        {
-            // Arrange
-            var handlerMock = new Mock<HttpMessageHandler>();
-            var httpClient = new HttpClient(handlerMock.Object);
-            var configMock = Options.Create(new Service
-            {
-                Url = "https://example.com",
-                EndPointName = "compliance-scheme-fees"
-            });
-
-            var service = new HttpComplianceSchemeFeesService(
-                new HttpContextAccessor(),
-                new HttpClientFactoryMock(httpClient),
-                configMock);
-
-            var request = new RegulatorDto { Regulator = "GB-ENG" };
-            handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ReturnsAsync(new HttpResponseMessage
-                       {
-                           StatusCode = HttpStatusCode.OK,
-                           Content = new StringContent("{\"BaseFee\": 0}")
-                       });
-
-            // Act
-            Func<Task> action = async () => await service.GetComplianceSchemeBaseFeeAsync(request);
-
-            // Assert
-            await action.Should().ThrowAsync<ServiceException>()
-                        .WithMessage("An unexpected error occurred while retrieving the compliance scheme base fee.");
-        }
-
 
         [TestMethod, AutoMoqData]
-        public async Task GetComplianceSchemeBaseFeeAsync_HttpRequestException_ShouldThrowServiceException(
+        public void Constructor_HttpClientFactoryIsNull_ShouldThrowArgumentNullException(
+            Mock<IHttpContextAccessor> httpContextAccessorMock,
+            Mock<IOptions<Service>> configMock)
+        {
+            // Act
+            Action act = () => new HttpComplianceSchemeFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_ConfigUrlIsNull_ShouldThrowArgumentNullException(
+            Mock<IHttpContextAccessor> httpContextAccessorMock,
+            Mock<IHttpClientFactory> httpClientFactoryMock)
+        {
+            // Arrange
+            var configMock = new Mock<IOptions<Service>>();
+            configMock.Setup(c => c.Value).Returns(new Service { Url = null, EndPointName = "SomeEndPoint" });
+
+            // Act
+            Action act = () => new HttpComplianceSchemeFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage($"{ExceptionMessages.ComplianceSchemeServiceUrlMissing} (Parameter 'config')");
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_ConfigEndPointNameIsNull_ShouldThrowArgumentNullException(
+            Mock<IHttpContextAccessor> httpContextAccessorMock,
+            Mock<IHttpClientFactory> httpClientFactoryMock)
+        {
+            // Arrange
+            var configMock = new Mock<IOptions<Service>>();
+            configMock.Setup(c => c.Value).Returns(new Service { Url = "https://api.example.com", EndPointName = null });
+
+            // Act
+            Action act = () => new HttpComplianceSchemeFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage($"{ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing} (Parameter 'config')");
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ValidRequest_ReturnsRegistrationFeesResponseDto(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
             HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorRetrievingComplianceSchemeBaseFee));
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
 
             var httpClient = new HttpClient(handlerMock.Object);
             httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpComplianceSchemeFeesService.GetComplianceSchemeBaseFeeAsync(_regulatorDto, cancellationToken);
+            var result = await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
+
+            // Assert
+            result.Should().BeEquivalentTo(_complianceSchemeFeesResponseDto);
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_HttpRequestException_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new HttpRequestException("Unexpected error"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorRetrievingComplianceSchemeBaseFee);
+                    .WithMessage(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
+
 
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
                     ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Get),
+                        msg.Method == HttpMethod.Post),
                     ItExpr.IsAny<CancellationToken>());
             }
         }
 
-        [TestMethod]
-        public async Task GetComplianceSchemeBaseFeeAsync_UnexpectedException_ShouldThrowServiceException()
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_UnsuccessfulStatusCode_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
         {
             // Arrange
-            var handlerMock = new Mock<HttpMessageHandler>();
-            var httpClient = new HttpClient(handlerMock.Object);
-            var configMock = Options.Create(new Service
-            {
-                Url = "https://example.com",
-                EndPointName = "compliance-scheme-fees"
-            });
-
-            var service = new HttpComplianceSchemeFeesService(
-                new HttpContextAccessor(),
-                new HttpClientFactoryMock(httpClient),
-                configMock);
-
-            var request = new RegulatorDto { Regulator = "GB-ENG" };
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .Throws(new Exception("Test exception"));
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
+                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
 
             // Act
-            Func<Task> action = async () => await service.GetComplianceSchemeBaseFeeAsync(request);
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
 
             // Assert
-            await action.Should().ThrowAsync<ServiceException>()
-                        .WithMessage("An unexpected error occurred while retrieving the compliance scheme base fee.");
-        }
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
 
-        [TestMethod]
-        public async Task GetComplianceSchemeBaseFeeAsync_RequestIsNull_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            var httpClient = new HttpClient();
-            var service = CreateHttpComplianceSchemeFeesService(httpClient);
-
-            // Act
-            Func<Task> act = async () => await service.GetComplianceSchemeBaseFeeAsync(null!, CancellationToken.None);
-
-            // Assert
-            await act.Should().ThrowAsync<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.ErrorRetrievingComplianceSchemeBaseFee} (Parameter 'request')");
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Validations.RegistrationFees;
+using EPR.Payment.Facade.Validations.RegistrationFees.Producer;
 using FluentValidation.TestHelper;
 
 namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees

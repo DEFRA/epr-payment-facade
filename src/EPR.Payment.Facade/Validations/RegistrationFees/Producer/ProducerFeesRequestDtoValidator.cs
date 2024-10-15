@@ -2,7 +2,7 @@
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using FluentValidation;
 
-namespace EPR.Payment.Facade.Validations.RegistrationFees
+namespace EPR.Payment.Facade.Validations.RegistrationFees.Producer
 {
     public class ProducerFeesRequestDtoValidator : AbstractValidator<ProducerFeesRequestDto>
     {
