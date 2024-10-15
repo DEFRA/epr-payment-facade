@@ -2,7 +2,7 @@
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using FluentValidation;
 
-namespace EPR.Payment.Facade.Validations.RegistrationFees
+namespace EPR.Payment.Facade.Validations.RegistrationFees.Producer
 {
     public class ProducerFeesRequestDtoValidator : AbstractValidator<ProducerFeesRequestDto>
     {
@@ -11,16 +11,14 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees
             var validProducerTypes = new List<string> { "LARGE", "SMALL" };
 
             RuleFor(x => x.ProducerType)
-                .Must(pt => string.IsNullOrEmpty(pt) || validProducerTypes.Contains(pt.ToUpper()))
+                .Must(pt => validProducerTypes.Contains(pt.ToUpper()))
                 .WithMessage(ValidationMessages.ProducerTypeInvalid + string.Join(", ", validProducerTypes));
 
             RuleFor(x => x.NumberOfSubsidiaries)
                 .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.NumberOfSubsidiariesRange);
 
-            RuleFor(x => x.NumberOfSubsidiaries)
-                .GreaterThan(0)
-                .When(x => string.IsNullOrEmpty(x.ProducerType))
-                .WithMessage(ValidationMessages.NumberOfSubsidiariesRequiredWhenProducerTypeEmpty);
+            RuleFor(x => x.NoOfSubsidiariesOnlineMarketplace)
+                .LessThanOrEqualTo(x => x.NumberOfSubsidiaries).WithMessage(ValidationMessages.NumberOfOMPSubsidiariesLessThanOrEqualToNumberOfSubsidiaries);
 
             RuleFor(x => x.Regulator)
                 .NotEmpty().WithMessage(ValidationMessages.RegulatorRequired)
