@@ -40,7 +40,7 @@ namespace EPR.Payment.Facade.Services.Payments
 
         public async Task<PaymentResponseDto> InitiatePaymentAsync(PaymentRequestDto request, CancellationToken cancellationToken = default)
         {
-        var validatorResult = await _paymentRequestDtoValidator.ValidateAsync(request);
+        var validatorResult = await _paymentRequestDtoValidator.ValidateAsync(request, cancellationToken);
 
         if (!validatorResult.IsValid)
         {
@@ -147,7 +147,7 @@ namespace EPR.Payment.Facade.Services.Payments
         }
 
 
-        private CompletePaymentResponseDto CreateCompletePaymentResponse(PaymentDetailsDto paymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
+        private static CompletePaymentResponseDto CreateCompletePaymentResponse(PaymentDetailsDto paymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
         {
             return new CompletePaymentResponseDto
             {
@@ -216,7 +216,7 @@ namespace EPR.Payment.Facade.Services.Payments
             }
         }
 
-        private PaymentResponseDto CreatePaymentResponse(GovPayResponseDto govPayResponse)
+        private static PaymentResponseDto CreatePaymentResponse(GovPayResponseDto govPayResponse)
         {
             return new PaymentResponseDto
             {

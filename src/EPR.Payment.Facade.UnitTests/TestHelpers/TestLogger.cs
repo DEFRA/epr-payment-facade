@@ -25,10 +25,7 @@ namespace EPR.Payment.Facade.UnitTests
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            if (formatter == null)
-            {
-                throw new ArgumentNullException(nameof(formatter));
-            }
+            ArgumentNullException.ThrowIfNull(formatter);
 
             string message = formatter(state, exception);
             _logs.Add(message);
