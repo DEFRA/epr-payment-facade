@@ -4,7 +4,7 @@ using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
-using EPR.Payment.Facade.Controllers.RegistrationFees;
+using EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme.Interfaces;
 using FluentAssertions;
 using FluentAssertions.Execution;

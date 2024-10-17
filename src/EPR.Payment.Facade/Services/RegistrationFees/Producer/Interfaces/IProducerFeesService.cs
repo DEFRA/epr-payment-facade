@@ -6,6 +6,5 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces
     public interface IProducerFeesService
     {
         Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default);
-        Task<decimal?> GetResubmissionFeeAsync(RegulatorDto request, CancellationToken cancellationToken = default);
     }
 }
