@@ -39,6 +39,8 @@
 
   <ItemGroup>
     <Folder Include="Helpers\" />
+    <Folder Include="Services\ResubmissionFees\ComplianceScheme\" />
+    <Folder Include="Validations\ResubmissionFees\" />
   </ItemGroup>
 
 </Project>

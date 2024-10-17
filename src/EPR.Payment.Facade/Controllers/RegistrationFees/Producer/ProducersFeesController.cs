@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EPR.Payment.Facade.Controllers.RegistrationFees
+namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
 {
     [ApiVersion(1)]
     [ApiController]
@@ -21,18 +21,16 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
         private readonly IProducerFeesService _producerFeesService;
         private readonly ILogger<ProducersFeesController> _logger;
         private readonly IValidator<ProducerFeesRequestDto> _registrationValidator;
-        private readonly IValidator<RegulatorDto> _resubmissionValidator;
 
         public ProducersFeesController(
             IProducerFeesService producerFeesService,
             ILogger<ProducersFeesController> logger,
-            IValidator<ProducerFeesRequestDto> registrationValidator,
-            IValidator<RegulatorDto> resubmissionValidator)
+            IValidator<ProducerFeesRequestDto> registrationValidator
+            )
         {
             _producerFeesService = producerFeesService ?? throw new ArgumentNullException(nameof(producerFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _registrationValidator = registrationValidator ?? throw new ArgumentNullException(nameof(registrationValidator));
-            _resubmissionValidator = resubmissionValidator ?? throw new ArgumentNullException(nameof(resubmissionValidator));
         }
 
         [HttpPost("registration-fee")]
@@ -84,57 +82,6 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
                     Title = "Service Error",
                     Detail = ex.Message,
                     Status = StatusCodes.Status500InternalServerError
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(CalculateFeesAsync));
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Title = "Unexpected Error",
-                    Detail = ExceptionMessages.UnexpectedErrorCalculatingFees,
-                    Status = StatusCodes.Status500InternalServerError
-                });
-            }
-        }
-
-        [HttpGet("resubmission-fee")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
-        [SwaggerOperation(
-            Summary = "Producer registration resubmission fee by regulator",
-            Description = "Return producer registration resubmission fee by regulator."
-        )]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
-        [FeatureGate("EnableProducerResubmissionFee")]
-        public async Task<IActionResult> GetResubmissionFeeAsync([FromQuery] RegulatorDto request, CancellationToken cancellationToken)
-        {
-            ValidationResult validationResult = _resubmissionValidator.Validate(request);
-            if (!validationResult.IsValid)
-            {
-                _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Validation Error",
-                    Detail = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)),
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            try
-            {
-                var registrationFeesResponse = await _producerFeesService.GetResubmissionFeeAsync(request, cancellationToken);
-                return Ok(registrationFeesResponse);
-            }
-            catch (ValidationException ex)
-            {
-                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Validation Error",
-                    Detail = ex.Message,
-                    Status = StatusCodes.Status400BadRequest
                 });
             }
             catch (Exception ex)
