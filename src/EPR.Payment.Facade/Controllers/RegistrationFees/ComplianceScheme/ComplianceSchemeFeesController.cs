@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EPR.Payment.Facade.Controllers.RegistrationFees
+namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
 {
     [ApiVersion(1)]
     [ApiController]

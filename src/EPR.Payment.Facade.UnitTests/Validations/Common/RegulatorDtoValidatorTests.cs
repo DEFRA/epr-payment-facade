@@ -1,8 +1,8 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Validations.RegistrationFees;
+using EPR.Payment.Facade.Validations.Common;
 using FluentValidation.TestHelper;
 
-namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
+namespace EPR.Payment.Facade.UnitTests.Validations.Common
 {
     [TestClass]
     public class RegulatorDtoValidatorTests
