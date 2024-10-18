@@ -1,10 +1,11 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
+using EPR.Payment.Facade.Services.ResubmissionFees.Producer.Interfaces;
 
 namespace EPR.Payment.Facade.Services.ResubmissionFees.Producer
 {
-    public class ProducerResubmissionFeesService
+    public class ProducerResubmissionFeesService : IProducerResubmissionFeesService
     {
         private readonly IHttpProducerResubmissionFeesService _httpProducerResubmissionFeesService;
 
