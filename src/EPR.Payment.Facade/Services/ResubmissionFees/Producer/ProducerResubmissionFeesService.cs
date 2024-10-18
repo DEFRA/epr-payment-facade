@@ -7,13 +7,11 @@ namespace EPR.Payment.Facade.Services.ResubmissionFees.Producer
     public class ProducerResubmissionFeesService
     {
         private readonly IHttpProducerResubmissionFeesService _httpProducerResubmissionFeesService;
-        private readonly ILogger<ProducerResubmissionFeesService> _logger;
 
         public ProducerResubmissionFeesService(IHttpProducerResubmissionFeesService httpProducerResubmissionFeesService,
             ILogger<ProducerResubmissionFeesService> logger)
         {
             _httpProducerResubmissionFeesService = httpProducerResubmissionFeesService ?? throw new ArgumentNullException(nameof(httpProducerResubmissionFeesService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<decimal?> GetResubmissionFeeAsync(RegulatorDto request, CancellationToken cancellationToken = default)
