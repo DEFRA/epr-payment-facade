@@ -19,21 +19,21 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Controllers
 {
     [TestClass]
-    public class PaymentsControllerTests
+    public class OnlinePaymentsControllerTests
     {
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_ValidRequest_ReturnsRedirectResponse(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Greedy] PaymentsController controller,
-            [Frozen] PaymentRequestDto request,
-            [Frozen] PaymentResponseDto expectedResponse)
+        public async Task InitiateOnlinePayment_ValidRequest_ReturnsRedirectResponse(
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock,
+            [Greedy] OnlinePaymentsController controller,
+            [Frozen] OnlinePaymentRequestDto request,
+            [Frozen] OnlinePaymentResponseDto expectedResponse)
         {
             // Arrange
             var cancellationToken = new CancellationToken();
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
+            onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
+            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -48,55 +48,55 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
-            [Frozen] Mock<IPaymentsService> _paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> _loggerMock,
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
-            [Frozen] PaymentServiceOptions _paymentServiceOptions)
+            [Frozen] Mock<IOnlinePaymentsService> _onlinePaymentsServiceMock,
+            [Frozen] Mock<ILogger<OnlinePaymentsController>> _loggerMock,
+            [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
+            [Frozen] OnlinePaymentServiceOptions _onlinePaymentServiceOptions)
         {
             // Arrange
-            _paymentServiceOptionsMock.Setup(o => o.Value).Returns(_paymentServiceOptions);
+            _onlinePaymentServiceOptionsMock.Setup(o => o.Value).Returns(_onlinePaymentServiceOptions);
 
             // Act
-            var controller = new PaymentsController(
-                _paymentsServiceMock.Object,
+            var controller = new OnlinePaymentsController(
+                _onlinePaymentsServiceMock.Object,
                 _loggerMock.Object,
-                _paymentServiceOptionsMock.Object
+                _onlinePaymentServiceOptionsMock.Object
             );
 
             // Assert
             controller.Should().NotBeNull();
-            controller.Should().BeAssignableTo<PaymentsController>();
+            controller.Should().BeAssignableTo<OnlinePaymentsController>();
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_WithNullPaymentsService_ShouldThrowArgumentNullException(
-            [Frozen] Mock<ILogger<PaymentsController>> _loggerMock,
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock)
+        public void Constructor_WithNullOnlinePaymentsService_ShouldThrowArgumentNullException(
+            [Frozen] Mock<ILogger<OnlinePaymentsController>> _loggerMock,
+            [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock)
         {
 
             // Act
-            Action act = () => new PaymentsController(
+            Action act = () => new OnlinePaymentsController(
                 null!,
                 _loggerMock.Object,
-                _paymentServiceOptionsMock.Object
+                _onlinePaymentServiceOptionsMock.Object
             );
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("paymentsService");
+                .WithParameterName("onlinePaymentsService");
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IPaymentsService> _paymentsServiceMock,
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock)
+            [Frozen] Mock<IOnlinePaymentsService> _onlinePaymentsServiceMock,
+            [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock)
         {
 
             // Act
-            Action act = () => new PaymentsController(
-                _paymentsServiceMock.Object,
+            Action act = () => new OnlinePaymentsController(
+                _onlinePaymentsServiceMock.Object,
                 null!,
-                _paymentServiceOptionsMock.Object
+                _onlinePaymentServiceOptionsMock.Object
             );
 
             // Assert
@@ -105,33 +105,33 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_WithPaymentServiceOptionsWithoutErrorUrl_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IPaymentsService> _paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> _loggerMock,
-            [Frozen] Mock<IOptions<PaymentServiceOptions>> _paymentServiceOptionsMock,
-            [Frozen] PaymentServiceOptions _paymentServiceOptions)
+        public void Constructor_WithOnlinePaymentServiceOptionsWithoutErrorUrl_ShouldThrowArgumentNullException(
+            [Frozen] Mock<IOnlinePaymentsService> _onlinePaymentsServiceMock,
+            [Frozen] Mock<ILogger<OnlinePaymentsController>> _loggerMock,
+            [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
+            [Frozen] OnlinePaymentServiceOptions _onlinePaymentServiceOptions)
         {
             // Arrange
-            _paymentServiceOptions.ErrorUrl = null!;
-            _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_paymentServiceOptions);
+            _onlinePaymentServiceOptions.ErrorUrl = null!;
+            _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
 
             // Act
-            Action act = () => new PaymentsController(
-                _paymentsServiceMock.Object,
+            Action act = () => new OnlinePaymentsController(
+                _onlinePaymentsServiceMock.Object,
                 _loggerMock.Object,
-                _paymentServiceOptionsMock.Object
+                _onlinePaymentServiceOptionsMock.Object
             );
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("paymentServiceOptions");
+                .WithParameterName("onlinePaymentServiceOptions");
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_AmountZero_ReturnsBadRequest([Greedy] PaymentsController controller)
+        public async Task InitiateOnlinePayment_AmountZero_ReturnsBadRequest([Greedy] OnlinePaymentsController controller)
         {
             // Arrange
-            var request = new PaymentRequestDto
+            var request = new OnlinePaymentRequestDto
             {
                 UserId = Guid.NewGuid(),
                 OrganisationId = Guid.NewGuid(),
@@ -143,7 +143,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
+            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -155,10 +155,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_AmountNegative_ReturnsBadRequest([Greedy] PaymentsController controller)
+        public async Task InitiateOnlinePayment_AmountNegative_ReturnsBadRequest([Greedy] OnlinePaymentsController controller)
         {
             // Arrange
-            var request = new PaymentRequestDto
+            var request = new OnlinePaymentRequestDto
             {
                 UserId = Guid.NewGuid(),
                 OrganisationId = Guid.NewGuid(),
@@ -170,7 +170,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
+            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -182,19 +182,19 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_NextUrlIsNull_ReturnsErrorUrl(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Frozen] Mock<ILogger<PaymentsController>> loggerMock,
-            [Greedy] PaymentsController controller,
-            [Frozen] PaymentRequestDto request)
+        public async Task InitiateOnlinePayment_NextUrlIsNull_ReturnsErrorUrl(
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock,
+            [Frozen] Mock<ILogger<OnlinePaymentsController>> loggerMock,
+            [Greedy] OnlinePaymentsController controller,
+            [Frozen] OnlinePaymentRequestDto request)
         { 
             // Arrange
             var cancellationToken = new CancellationToken();
-            PaymentResponseDto expectedResponse = new PaymentResponseDto { NextUrl = null };
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
+            OnlinePaymentResponseDto expectedResponse = new OnlinePaymentResponseDto { NextUrl = null };
+            onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
+            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
 
@@ -218,17 +218,17 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_InvalidRequest_ReturnsBadRequest(
-            [Greedy] PaymentsController controller)
+        public async Task InitiateOnlinePayment_InvalidRequest_ReturnsBadRequest(
+            [Greedy] OnlinePaymentsController controller)
         {
             // Arrange
-            var request = new PaymentRequestDto(); // Invalid request
+            var request = new OnlinePaymentRequestDto(); // Invalid request
             controller.ModelState.AddModelError("Amount", "Amount is required");
 
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
+            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -240,19 +240,19 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_ThrowsValidationException_ReturnsBadRequest(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Greedy] PaymentsController controller)
+        public async Task InitiateOnlinePayment_ThrowsValidationException_ReturnsBadRequest(
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock,
+            [Greedy] OnlinePaymentsController controller)
         {
             // Arrange
-            var invalidRequest = new PaymentRequestDto();
+            var invalidRequest = new OnlinePaymentRequestDto();
             var validationException = new ValidationException("Validation error");
             var cancellationToken = new CancellationToken();
 
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(invalidRequest, cancellationToken)).ThrowsAsync(validationException);
+            onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentAsync(invalidRequest, cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.InitiatePayment(invalidRequest, cancellationToken);
+            var result = await controller.InitiateOnlinePayment(invalidRequest, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -264,20 +264,20 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiatePayment_ThrowsException_ReturnsErrorUrl(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Greedy] PaymentsController controller,
-            [Frozen] PaymentRequestDto request)
+        public async Task InitiateOnlinePayment_ThrowsException_ReturnsErrorUrl(
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock,
+            [Greedy] OnlinePaymentsController controller,
+            [Frozen] OnlinePaymentRequestDto request)
         {
             // Arrange
             var exception = new Exception("Some error");
             var cancellationToken = new CancellationToken();
             var errorUrl = "https://example.com/error";
 
-            paymentsServiceMock.Setup(s => s.InitiatePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
+            onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await controller.InitiatePayment(request, cancellationToken);
+            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -291,37 +291,37 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_ValidExternalPaymentId_ReturnsOk(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Greedy] PaymentsController controller,
+        public async Task CompleteOnlinePayment_ValidExternalPaymentId_ReturnsOk(
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock,
+            [Greedy] OnlinePaymentsController controller,
             [Frozen] Guid externalPaymentId,
-            [Frozen] CompletePaymentResponseDto expectedResponse)
+            [Frozen] CompleteOnlinePaymentResponseDto expectedResponse)
         {
             // Arrange
             var cancellationToken = new CancellationToken();
-            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken)).ReturnsAsync(expectedResponse);
+            onlinePaymentsServiceMock.Setup(s => s.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
+            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
                 result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(expectedResponse);
-                paymentsServiceMock.Verify(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken), Times.Once);
+                onlinePaymentsServiceMock.Verify(s => s.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken), Times.Once);
             }
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_EmptyExternalPaymentId_ReturnsBadRequest(
-            [Greedy] PaymentsController controller)
+        public async Task CompleteOnlinePayment_EmptyExternalPaymentId_ReturnsBadRequest(
+            [Greedy] OnlinePaymentsController controller)
         {
             // Arrange
             var externalPaymentId = Guid.Empty;
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
+            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (var scope = new AssertionScope())
@@ -338,19 +338,19 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_ThrowsValidationException_ReturnsBadRequest(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Greedy] PaymentsController controller,
+        public async Task CompleteOnlinePayment_ThrowsValidationException_ReturnsBadRequest(
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock,
+            [Greedy] OnlinePaymentsController controller,
             [Frozen] Guid externalPaymentId)
         {
             // Arrange
             var validationException = new ValidationException("Validation error");
             var cancellationToken = new CancellationToken();
 
-            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(validationException);
+            onlinePaymentsServiceMock.Setup(s => s.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
+            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -362,9 +362,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CompletePayment_ThrowsException_ReturnsErrorUrl(
-            [Frozen] Mock<IPaymentsService> paymentsServiceMock,
-            [Greedy] PaymentsController controller,
+        public async Task CompleteOnlinePayment_ThrowsException_ReturnsErrorUrl(
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock,
+            [Greedy] OnlinePaymentsController controller,
             [Frozen] Guid externalPaymentId)
         {
             // Arrange
@@ -372,10 +372,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
             var errorUrl = "https://example.com/error";
 
-            paymentsServiceMock.Setup(s => s.CompletePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(exception);
+            onlinePaymentsServiceMock.Setup(s => s.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await controller.CompletePayment(externalPaymentId, cancellationToken);
+            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())

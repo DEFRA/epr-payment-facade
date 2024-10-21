@@ -75,11 +75,11 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
 
                 var httpPaymentServiceHealthCheck = serviceProvider?.GetService<IHttpPaymentServiceHealthCheckService>();
                 httpPaymentServiceHealthCheck.Should().NotBeNull();
-                httpPaymentServiceHealthCheck.Should().BeOfType<HttpPaymentServiceHealthCheckService>();
+                httpPaymentServiceHealthCheck.Should().BeOfType<HttpOnlinePaymentServiceHealthCheckService>();
 
-                var httpPaymentsService = serviceProvider?.GetService<IHttpPaymentsService>();
+                var httpPaymentsService = serviceProvider?.GetService<IHttpOnlinePaymentsService>();
                 httpPaymentsService.Should().NotBeNull();
-                httpPaymentsService.Should().BeOfType<HttpPaymentsService>();
+                httpPaymentsService.Should().BeOfType<HttpOnlinePaymentsService>();
 
                 var httpGovPayService = serviceProvider?.GetService<IHttpGovPayService>();
                 httpGovPayService.Should().NotBeNull();

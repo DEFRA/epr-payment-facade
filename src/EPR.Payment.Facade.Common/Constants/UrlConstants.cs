@@ -3,9 +3,9 @@
     public static class UrlConstants
     {
         // Payments service endpoints
-        public const string PaymentsInsert = "payments";
-        public const string PaymentsUpdate = "payments/{externalPaymentId}";
-        public const string GetPaymentDetails = "payments/{externalPaymentId}";
+        public const string OnlinePaymentsInsert = "onlinepayments";
+        public const string OnlinePaymentsUpdate = "onlinepayments/{externalPaymentId}";
+        public const string GetOnlinePaymentDetails = "onlinepayments/{externalPaymentId}";
 
         // GovPay service endpoints
         public const string GovPayInitiatePayment = "payments";

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
-    public class UpdatePaymentRequestDto
+    public class UpdateOnlinePaymentRequestDto
     {
         [Required(ErrorMessage = "ID is required")]
         public Guid ExternalPaymentId { get; set; }

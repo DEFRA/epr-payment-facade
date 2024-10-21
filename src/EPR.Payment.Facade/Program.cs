@@ -17,11 +17,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddFluentValidation(fv =>
 {
-    fv.RegisterValidatorsFromAssemblyContaining<PaymentRequestDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<OnlinePaymentRequestDtoValidator>();
     fv.RegisterValidatorsFromAssemblyContaining<ProducerFeesRequestDtoValidator>();
     fv.AutomaticValidationEnabled = false;
 });
-builder.Services.Configure<PaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
+builder.Services.Configure<OnlinePaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setupAction =>

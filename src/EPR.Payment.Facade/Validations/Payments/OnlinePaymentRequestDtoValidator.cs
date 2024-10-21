@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace EPR.Payment.Facade.Validations.Payments
 {
-    public class PaymentRequestDtoValidator : AbstractValidator<PaymentRequestDto>
+    public class OnlinePaymentRequestDtoValidator : AbstractValidator<OnlinePaymentRequestDto>
     {
-        public PaymentRequestDtoValidator()
+        public OnlinePaymentRequestDtoValidator()
         {
             RuleFor(x => x.UserId)
                 .NotNull()
