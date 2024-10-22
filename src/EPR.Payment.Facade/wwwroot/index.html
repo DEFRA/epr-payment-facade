@@ -380,6 +380,7 @@
                 const memberType = document.getElementById(`memberType${i}`).value;
                 const subsidiaryCount = document.getElementById(`subsidiaryCount${i}`).value;
                 const isOnlineMarketplace = document.getElementById(`isOnlineMarketplaceMember${i}`).checked;
+                const IsLateFeeApplicable = document.getElementById(`IsLateFeeApplicable${i}`).checked;
                 const onlineMarketplaceSubsidiaryCount = document.getElementById(`onlineMarketplaceSubsidiaryCount${i}`).value;
 
                 if (memberId && memberType && subsidiaryCount) {
@@ -387,6 +388,7 @@
                         MemberId: memberId,
                         MemberType: memberType,
                         IsOnlineMarketplace: isOnlineMarketplace,
+                        IsLateFeeApplicable: IsLateFeeApplicable,
                         NumberOfSubsidiaries: parseInt(subsidiaryCount),
                         NoOfSubsidiariesOnlineMarketplace: parseInt(onlineMarketplaceSubsidiaryCount),
                     });
@@ -437,7 +439,7 @@
             function displayFees(data) {
                 const modal = document.getElementById("resultsModal");
                 const modalBody = document.getElementById("modalBody");
-
+                
                 const totalFeesTable = `
                         <table>
                             <thead>
@@ -491,6 +493,10 @@
                             <tr class="reg-info">
                                 <td>Member Online Marketplace Fee</td>
                                 <td>£${formatCurrency(member.memberOnlineMarketPlaceFee)}</td>
+                            </tr>
+                            <tr class="reg-info">
+                                <td>Member Late Registration Fee</td>
+                                <td>£${formatCurrency(member.memberLateRegistrationFee)}</td>
                             </tr>
                             <tr class="reg-info">
                                 <td>Subsidiaries Fee</td>
@@ -738,6 +744,10 @@
                         <input type="checkbox" id="isOnlineMarketplaceMember1">
                         <label for="isOnlineMarketplaceMember1">Is Member Online Marketplace</label>
                     </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="IsLateFeeApplicable1">
+                        <label for="IsLateFeeApplicable1">Is Member Late Fee Applicable</label>
+                    </div>
                 </div>
                 <div class="member" id="member2" style="display: none;">
                     <label for="memberId2">Member ID:</label>
@@ -752,6 +762,10 @@
                         <input type="checkbox" id="isOnlineMarketplaceMember2">
                         <label for="isOnlineMarketplaceMember2">Is Member Online Marketplace</label>
                     </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="IsLateFeeApplicable2">
+                        <label for="IsLateFeeApplicable2">Is Memeber Late Fee Applicable</label>
+                    </div>
                 </div>
                 <div class="member" id="member3" style="display: none;">
                     <label for="memberId3">Member ID:</label>
@@ -765,6 +779,10 @@
                     <div class="checkbox-container">
                         <input type="checkbox" id="isOnlineMarketplaceMember3">
                         <label for="isOnlineMarketplaceMember3">Is Member Online Marketplace</label>
+                    </div>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="IsLateFeeApplicable3">
+                        <label for="IsLateFeeApplicable3">Is Member Late Fee Applicable</label>
                     </div>
                 </div>
             </div>
