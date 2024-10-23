@@ -34,7 +34,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var config = new Service
             {
                 Url = "https://example.com",
-                EndPointName = "onlinepayments",
+                EndPointName = "online-payments",
                 HttpClientName = "HttpClientName"
             };
 
