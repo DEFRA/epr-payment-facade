@@ -17,6 +17,9 @@
         public const string RegulatorInvalid = "Invalid Regulator.";
         public const string RegulatorNotENG = "Online payment is not supported for this regulator.";
 
+        public const string OfflinePaymentUserIdRequired = "User ID is required.";
+        public const string OfflinePaymentReferenceRequired = "Reference is required.";
+
         // Common Validation Messages
         public const string RegulatorRequired = "Regulator is required.";
         public const string InvalidComplianceSchemeMember = "Invalid ComplianceSchemeMember entry.";

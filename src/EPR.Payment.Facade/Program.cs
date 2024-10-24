@@ -18,10 +18,12 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidation(fv =>
 {
     fv.RegisterValidatorsFromAssemblyContaining<OnlinePaymentRequestDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<OfflinePaymentRequestDtoValidator>();
     fv.RegisterValidatorsFromAssemblyContaining<ProducerFeesRequestDtoValidator>();
     fv.AutomaticValidationEnabled = false;
 });
 builder.Services.Configure<OnlinePaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
+builder.Services.Configure<OfflinePaymentServiceOptions>(builder.Configuration.GetSection("OfflinePaymentServiceOptions"));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setupAction =>

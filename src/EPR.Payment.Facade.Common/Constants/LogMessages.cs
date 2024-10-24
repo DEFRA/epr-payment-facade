@@ -9,11 +9,15 @@
         public const string ErrorOccured = "An error occurred while processing {MethodName} request";
         // General-purpose error log message template.
 
-        // Log Messages for PaymentsService
+        // Log Messages for OnlinePaymentsService
         public const string ValidationErrorUpdatingOnlinePayment = "Validation error occurred while updating payment status.";
         public const string UnexpectedErrorUpdatingOnlinePayment = "An unexpected error occurred while updating payment status.";
         public const string ValidationErrorInsertingOnlinePayment = "Validation error occurred while inserting payment.";
         public const string UnexpectedErrorInsertingOnlinePayment = "An unexpected error occurred while inserting payment.";
+
+        // Log Messages for OfflinePaymentsService
+        public const string ValidationErrorInsertingOfflinePayment = "Validation error occurred while inserting offline payment.";
+        public const string UnexpectedErrorInsertingOfflinePayment = "An unexpected error occurred while inserting offline payment.";
 
         // Log Messages for PaymentsController
         public const string NextUrlNull = "Next URL is null.";
