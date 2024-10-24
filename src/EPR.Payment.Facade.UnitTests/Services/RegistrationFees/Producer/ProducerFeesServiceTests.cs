@@ -8,6 +8,7 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interface
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer;
 using FluentAssertions;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -110,6 +111,34 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
                     LogLevel.Error,
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingProducerFees)),
+                    exception,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_HttpServiceThrowsValidationException_ShouldLogAndThrowValidationException(
+            ProducerFeesRequestDto request)
+        {
+            // Arrange
+            var exceptionMessage = "Validation error";
+            var exception = new ValidationException(exceptionMessage);
+
+            _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateProducerFeesAsync(request);
+
+            // Assert
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage(exceptionMessage);
+
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(exceptionMessage)),
                     exception,
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);

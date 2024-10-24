@@ -9,6 +9,7 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -269,8 +270,40 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             // Assert
             using (new AssertionScope())
             {
+                await act.Should().ThrowAsync<ValidationException>();
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ThrowException_ShouldThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new Exception("Unexpected error")); 
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
                 await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
+                    .WithMessage(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
 
                 handlerMock.Protected().Verify(
                     "SendAsync",

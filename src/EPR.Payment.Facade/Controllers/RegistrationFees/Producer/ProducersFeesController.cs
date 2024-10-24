@@ -45,9 +45,9 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
         [FeatureGate("EnableProducersFeesCalculation")]
-        public async Task<IActionResult> CalculateFeesAsync([FromBody] ProducerFeesRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CalculateFeesAsync([FromBody] ProducerFeesRequestDto producerRegistrationFeesRequestDto, CancellationToken cancellationToken)
         {
-            ValidationResult validationResult = _registrationValidator.Validate(request);
+            ValidationResult validationResult = _registrationValidator.Validate(producerRegistrationFeesRequestDto);
             if (!validationResult.IsValid)
             {
                 _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
@@ -61,7 +61,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
 
             try
             {
-                var result = await _producerFeesService.CalculateProducerFeesAsync(request, cancellationToken);
+                var result = await _producerFeesService.CalculateProducerFeesAsync(producerRegistrationFeesRequestDto, cancellationToken);
                 return Ok(result);
             }
             catch (ValidationException ex)

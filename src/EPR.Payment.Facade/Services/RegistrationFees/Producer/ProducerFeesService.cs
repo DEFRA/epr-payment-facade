@@ -4,6 +4,7 @@ using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces;
+using FluentValidation;
 
 namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
 {
@@ -33,6 +34,12 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             {
                 var response = await _httpProducerFeesService.CalculateProducerFeesAsync(request);
                 return response;
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateProducerFeesInternalAsync));
+
+                throw new ValidationException(ex.Message);
             }
             catch (Exception ex)
             {

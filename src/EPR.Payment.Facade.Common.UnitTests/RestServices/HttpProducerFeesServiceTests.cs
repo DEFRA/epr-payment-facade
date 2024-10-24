@@ -9,6 +9,7 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -288,8 +289,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+                await act.Should().ThrowAsync<ValidationException>();
 
                 handlerMock.Protected().Verify(
                     "SendAsync",

@@ -8,6 +8,7 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.I
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme;
 using FluentAssertions;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -98,6 +99,34 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
                     LogLevel.Error,
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees)),
+                    exception,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_HttpServiceThrowsValidationException_ShouldLogAndThrowValidationException(
+            ComplianceSchemeFeesRequestDto request)
+        {
+            // Arrange
+            var exceptionMessage = "Validation error";
+            var exception = new ValidationException(exceptionMessage);
+
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
+
+            // Assert
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage(exceptionMessage);
+
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(exceptionMessage)),
                     exception,
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
