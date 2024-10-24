@@ -46,16 +46,6 @@ namespace EPR.Payment.Facade.Controllers.Payments
                 return BadRequest(ModelState);
             }
 
-            if (request.Amount <= 0)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Validation Error",
-                    Detail = ExceptionMessages.AmountMustBeGreaterThanZero,
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
             try
             {
                 await _offlinePaymentsService.OfflinePaymentAsync(request, cancellationToken);

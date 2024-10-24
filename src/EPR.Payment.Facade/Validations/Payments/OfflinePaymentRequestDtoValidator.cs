@@ -18,7 +18,7 @@ namespace EPR.Payment.Facade.Validations.Payments
 
             RuleFor(x => x.Amount)
             .NotNull()
-            .WithMessage(ValidationMessages.OfflinePaymentReferenceRequired);
+            .WithMessage(ValidationMessages.OfflinePaymentAmountRequired);
         }
     }
 }
