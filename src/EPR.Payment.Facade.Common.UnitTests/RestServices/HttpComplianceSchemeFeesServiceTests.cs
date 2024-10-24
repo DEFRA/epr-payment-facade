@@ -47,6 +47,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             {
                 Regulator = "GB-ENG",
                 ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.Now,
                 ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
                 {
                     new ComplianceSchemeMemberDto
