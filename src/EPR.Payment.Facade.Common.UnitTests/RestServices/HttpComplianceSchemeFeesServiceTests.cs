@@ -55,6 +55,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                         MemberId = "123",
                         MemberType = "LARGE",
                         IsOnlineMarketplace = true,
+                        IsLateFeeApplicable = true,
                         NumberOfSubsidiaries = 150,
                         NoOfSubsidiariesOnlineMarketplace = 10
 
@@ -75,6 +76,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                         MemberId = "123",
                         MemberRegistrationFee = 165800,
                         MemberOnlineMarketPlaceFee = 257900,
+                        MemberLateRegistrationFee = 33200,
                         SubsidiariesFee = 4815000,
                         TotalMemberFee = 5238700,
                         SubsidiariesFeeBreakdown = new SubsidiariesFeeBreakdown
