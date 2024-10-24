@@ -26,10 +26,10 @@ namespace EPR.Payment.Facade.Helpers
 
             services.AddScoped<IPaymentServiceHealthService, PaymentServiceHealthService>();
 
-            RegisterHttpService<IHttpPaymentServiceHealthCheckService, HttpPaymentServiceHealthCheckService>(
+            RegisterHttpService<IHttpPaymentServiceHealthCheckService, HttpOnlinePaymentServiceHealthCheckService>(
                 services, nameof(ServicesConfiguration.PaymentService), "health");
 
-            RegisterHttpService<IHttpPaymentsService, HttpPaymentsService>(
+            RegisterHttpService<IHttpOnlinePaymentsService, HttpOnlinePaymentsService>(
                 services, nameof(ServicesConfiguration.PaymentService));
 
             RegisterHttpService<IHttpGovPayService, HttpGovPayService>(

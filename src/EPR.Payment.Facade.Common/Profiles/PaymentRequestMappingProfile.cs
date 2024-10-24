@@ -11,21 +11,21 @@ namespace EPR.Payment.Common.Mapping
     {
         public PaymentRequestMappingProfile()
         {
-            CreateMap<PaymentRequestDto, GovPayRequestDto>()
+            CreateMap<OnlinePaymentRequestDto, GovPayRequestDto>()
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount!.Value))
                 .ForMember(dest => dest.OrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId!.Value))
                 .ForMember(dest => dest.return_url, opt => opt.Ignore())
                 .ForMember(dest => dest.Description, opt => opt.Ignore());
 
-            CreateMap<PaymentRequestDto, InsertPaymentRequestDto>()
+            CreateMap<OnlinePaymentRequestDto, InsertOnlinePaymentRequestDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId!.Value))
                 .ForMember(dest => dest.OrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount!.Value))
                 .ForMember(dest => dest.ReasonForPayment, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore());
 
-            CreateMap<PaymentRequestDto, UpdatePaymentRequestDto>()
+            CreateMap<OnlinePaymentRequestDto, UpdateOnlinePaymentRequestDto>()
                 .ForMember(dest => dest.ExternalPaymentId, opt => opt.Ignore())
                 .ForMember(dest => dest.GovPayPaymentId, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => PaymentStatus.InProgress))
@@ -34,7 +34,7 @@ namespace EPR.Payment.Common.Mapping
                 .ForMember(dest => dest.ErrorCode, opt => opt.Ignore())
                 .ForMember(dest => dest.ErrorMessage, opt => opt.Ignore());
 
-            CreateMap<PaymentDetailsDto, UpdatePaymentRequestDto>()
+            CreateMap<OnlinePaymentDetailsDto, UpdateOnlinePaymentRequestDto>()
                 .ForMember(dest => dest.UpdatedByUserId, opt => opt.MapFrom(src => src.UpdatedByUserId))
                 .ForMember(dest => dest.UpdatedByOrganisationId, opt => opt.MapFrom(src => src.UpdatedByOrganisationId))
                 .ForMember(dest => dest.ExternalPaymentId, opt => opt.MapFrom(src => src.ExternalPaymentId))

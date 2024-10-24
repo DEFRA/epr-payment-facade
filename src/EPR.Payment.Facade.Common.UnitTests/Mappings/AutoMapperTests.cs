@@ -35,88 +35,88 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
         }
 
         [TestMethod, AutoMoqData]
-        public void PaymentRequestDto_To_GovPayRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
+        public void PaymentRequestDto_To_GovPayRequestDto_Mapping_IsValid(OnlinePaymentRequestDto onlinePaymentRequestDto)
         {
-            var govPayRequestDto = _mapper.Map<GovPayRequestDto>(paymentRequestDto);
+            var govPayRequestDto = _mapper.Map<GovPayRequestDto>(onlinePaymentRequestDto);
 
             using (new AssertionScope())
             {
-                if (paymentRequestDto.Amount.HasValue)
+                if (onlinePaymentRequestDto.Amount.HasValue)
                 {
-                    govPayRequestDto.Amount.Should().Be(paymentRequestDto.Amount.Value);
+                    govPayRequestDto.Amount.Should().Be(onlinePaymentRequestDto.Amount.Value);
                 }
 
-                govPayRequestDto.Reference.Should().Be(paymentRequestDto.Reference);
+                govPayRequestDto.Reference.Should().Be(onlinePaymentRequestDto.Reference);
 
-                if (paymentRequestDto.OrganisationId.HasValue)
+                if (onlinePaymentRequestDto.OrganisationId.HasValue)
                 {
-                    govPayRequestDto.OrganisationId.Should().Be(paymentRequestDto.OrganisationId.Value);
+                    govPayRequestDto.OrganisationId.Should().Be(onlinePaymentRequestDto.OrganisationId.Value);
                 }
 
-                if (paymentRequestDto.UserId.HasValue)
+                if (onlinePaymentRequestDto.UserId.HasValue)
                 {
-                    govPayRequestDto.UserId.Should().Be(paymentRequestDto.UserId.Value);
+                    govPayRequestDto.UserId.Should().Be(onlinePaymentRequestDto.UserId.Value);
                 }
 
-                govPayRequestDto.Regulator.Should().Be(paymentRequestDto.Regulator);
+                govPayRequestDto.Regulator.Should().Be(onlinePaymentRequestDto.Regulator);
                 govPayRequestDto.return_url.Should().BeNull(); // Ignored in mapping
                 govPayRequestDto.Description.Should().BeNull(); // Ignored in mapping
             }
         }
 
         [TestMethod, AutoMoqData]
-        public void PaymentRequestDto_To_InsertPaymentRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
+        public void PaymentRequestDto_To_InsertPaymentRequestDto_Mapping_IsValid(OnlinePaymentRequestDto onlinePaymentRequestDto)
         {
-            var insertPaymentRequestDto = _mapper.Map<InsertPaymentRequestDto>(paymentRequestDto);
+            var insertOnlinePaymentRequestDto = _mapper.Map<InsertOnlinePaymentRequestDto>(onlinePaymentRequestDto);
 
             using (new AssertionScope())
             {
-                if (paymentRequestDto.Amount.HasValue)
+                if (onlinePaymentRequestDto.Amount.HasValue)
                 {
-                    insertPaymentRequestDto.Amount.Should().Be(paymentRequestDto.Amount.Value);
+                    insertOnlinePaymentRequestDto.Amount.Should().Be(onlinePaymentRequestDto.Amount.Value);
                 }
 
-                insertPaymentRequestDto.Reference.Should().Be(paymentRequestDto.Reference);
+                insertOnlinePaymentRequestDto.Reference.Should().Be(onlinePaymentRequestDto.Reference);
 
-                if (paymentRequestDto.OrganisationId.HasValue)
+                if (onlinePaymentRequestDto.OrganisationId.HasValue)
                 {
-                    insertPaymentRequestDto.OrganisationId.Should().Be(paymentRequestDto.OrganisationId.Value);
+                    insertOnlinePaymentRequestDto.OrganisationId.Should().Be(onlinePaymentRequestDto.OrganisationId.Value);
                 }
 
-                if (paymentRequestDto.UserId.HasValue)
+                if (onlinePaymentRequestDto.UserId.HasValue)
                 {
-                    insertPaymentRequestDto.UserId.Should().Be(paymentRequestDto.UserId.Value);
+                    insertOnlinePaymentRequestDto.UserId.Should().Be(onlinePaymentRequestDto.UserId.Value);
                 }
 
-                insertPaymentRequestDto.Regulator.Should().Be(paymentRequestDto.Regulator);
-                insertPaymentRequestDto.ReasonForPayment.Should().BeNull(); // Ignored in mapping
-                insertPaymentRequestDto.Status.Should().Be(PaymentStatus.Initiated); // Default value for enum, ignored in mapping
+                insertOnlinePaymentRequestDto.Regulator.Should().Be(onlinePaymentRequestDto.Regulator);
+                insertOnlinePaymentRequestDto.ReasonForPayment.Should().BeNull(); // Ignored in mapping
+                insertOnlinePaymentRequestDto.Status.Should().Be(PaymentStatus.Initiated); // Default value for enum, ignored in mapping
             }
         }
 
         [TestMethod, AutoMoqData]
-        public void PaymentRequestDto_To_UpdatePaymentRequestDto_Mapping_IsValid(PaymentRequestDto paymentRequestDto)
+        public void PaymentRequestDto_To_UpdatePaymentRequestDto_Mapping_IsValid(OnlinePaymentRequestDto onlinePaymentRequestDto)
         {
-            var updatePaymentRequestDto = _mapper.Map<UpdatePaymentRequestDto>(paymentRequestDto);
+            var updateOnlinePaymentRequestDto = _mapper.Map<UpdateOnlinePaymentRequestDto>(onlinePaymentRequestDto);
 
             using (new AssertionScope())
             {
-                updatePaymentRequestDto.Reference.Should().Be(paymentRequestDto.Reference);
+                updateOnlinePaymentRequestDto.Reference.Should().Be(onlinePaymentRequestDto.Reference);
 
-                if (paymentRequestDto.OrganisationId.HasValue)
+                if (onlinePaymentRequestDto.OrganisationId.HasValue)
                 {
-                    updatePaymentRequestDto.UpdatedByOrganisationId.Should().Be(paymentRequestDto.OrganisationId.Value);
+                    updateOnlinePaymentRequestDto.UpdatedByOrganisationId.Should().Be(onlinePaymentRequestDto.OrganisationId.Value);
                 }
 
-                if (paymentRequestDto.UserId.HasValue)
+                if (onlinePaymentRequestDto.UserId.HasValue)
                 {
-                    updatePaymentRequestDto.UpdatedByUserId.Should().Be(paymentRequestDto.UserId.Value);
+                    updateOnlinePaymentRequestDto.UpdatedByUserId.Should().Be(onlinePaymentRequestDto.UserId.Value);
                 }
 
-                updatePaymentRequestDto.Status.Should().Be(PaymentStatus.InProgress); // Default value for enum, ignored in mapping
-                updatePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
-                updatePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
-                updatePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
+                updateOnlinePaymentRequestDto.Status.Should().Be(PaymentStatus.InProgress); // Default value for enum, ignored in mapping
+                updateOnlinePaymentRequestDto.GovPayPaymentId.Should().BeNull(); // Ignored in mapping
+                updateOnlinePaymentRequestDto.ErrorCode.Should().BeNull(); // Ignored in mapping
+                updateOnlinePaymentRequestDto.ErrorMessage.Should().BeNull(); // Ignored in mapping
             }
         }
     }

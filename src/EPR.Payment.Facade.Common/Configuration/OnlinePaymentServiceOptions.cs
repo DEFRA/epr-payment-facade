@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.Common.Configuration
 {
-    public class PaymentServiceOptions
+    public class OnlinePaymentServiceOptions
     {
         [Required(ErrorMessage = "Return URL is required")]
         [ValidUrl]

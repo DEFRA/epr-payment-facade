@@ -22,8 +22,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
             : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceBaseUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.PaymentServiceEndPointNameMissing))
+                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
+                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.BearerTokenNull);

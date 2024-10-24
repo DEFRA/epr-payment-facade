@@ -2,7 +2,7 @@
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
-    public class PaymentRequestDto
+    public class OnlinePaymentRequestDto
     {
         public Guid? UserId { get; set; }
 
