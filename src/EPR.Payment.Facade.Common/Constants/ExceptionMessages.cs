@@ -1,4 +1,6 @@
-﻿namespace EPR.Payment.Facade.Common.Constants
+﻿using System.Runtime.Serialization;
+
+namespace EPR.Payment.Facade.Common.Constants
 {
     public static class ExceptionMessages
     {
@@ -9,7 +11,7 @@
         public const string ErrorInitiatingPayment = "Error occurred while initiating payment.";
         public const string ErrorRetrievingPaymentStatus = "Error occurred while retrieving payment status.";
 
-        // HttpPaymentsService exceptions
+        // HttpOnlinePaymentsService exceptions
         public const string OnlinePaymentServiceBaseUrlMissing = "PaymentService BaseUrl configuration is missing";
         public const string OnlinePaymentServiceEndPointNameMissing = "PaymentService EndPointName configuration is missing";
         public const string OnlinePaymentServiceHttpClientNameMissing = "PaymentService HttpClientName configuration is missing";
@@ -20,6 +22,12 @@
         public const string ErrorRetrievingOnlinePaymentDetails = "Error occurred while retrieving payment details.";
         public const string ErrorGettingOnlinePaymentDetails = "Error occurred while getting payment details.";
 
+        // HttpOfflinePaymentsService exceptions
+        public const string OfflinePaymentServiceBaseUrlMissing = "OfflinePaymentService BaseUrl configuration is missing";
+        public const string OfflinePaymentServiceEndPointNameMissing = "OfflinePaymentService EndPointName configuration is missing";
+        public const string ErrorInsertingOfflinePayment = "Error occurred while inserting payment status.";
+        public const string UnexpectedErrorInsertingOfflinePayment = "An unexpected error occurred while inserting the offline payment.";
+
         // PaymentsService exceptions
         public const string ReturnUrlNotConfigured = "ReturnUrl is not configured.";
         public const string DescriptionNotConfigured = "Description is not configured.";
@@ -27,6 +35,7 @@
         public const string SuccessStatusWithErrorCode = "Error code should be null or empty for a success status.";
         public const string FailedStatusWithoutErrorCode = "Error code cannot be null or empty for a failed status.";
         public const string ErrorStatusWithoutErrorCode = "Error code cannot be null or empty for an error status.";
+
 
         // BaseHttpService exceptions
         public const string ApiResponseError = "Error occurred calling API with error code: {0}. Message: {1}";
