@@ -45,18 +45,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
             [Frozen] Mock<IOfflinePaymentsService> _offlinePaymentsServiceMock,
-            [Frozen] Mock<ILogger<OfflinePaymentsController>> _loggerMock,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock,
-            [Frozen] OfflinePaymentServiceOptions _offlinePaymentServiceOptions)
+            [Frozen] Mock<ILogger<OfflinePaymentsController>> _loggerMock)
         {
-            // Arrange
-            _offlinePaymentServiceOptionsMock.Setup(o => o.Value).Returns(_offlinePaymentServiceOptions);
-
             // Act
             var controller = new OfflinePaymentsController(
                 _offlinePaymentsServiceMock.Object,
-                _loggerMock.Object,
-                _offlinePaymentServiceOptionsMock.Object
+                _loggerMock.Object
             );
 
             // Assert
@@ -66,15 +60,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullOfflinePaymentsService_ShouldThrowArgumentNullException(
-            [Frozen] Mock<ILogger<OfflinePaymentsController>> _loggerMock,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock)
+            [Frozen] Mock<ILogger<OfflinePaymentsController>> _loggerMock)
         {
 
             // Act
             Action act = () => new OfflinePaymentsController(
                 null!,
-                _loggerMock.Object,
-                _offlinePaymentServiceOptionsMock.Object
+                _loggerMock.Object
             );
 
             // Assert
@@ -84,15 +76,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IOfflinePaymentsService> _offlinePaymentsServiceMock,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock)
+            [Frozen] Mock<IOfflinePaymentsService> _offlinePaymentsServiceMock)
         {
 
             // Act
             Action act = () => new OfflinePaymentsController(
                 _offlinePaymentsServiceMock.Object,
-                null!,
-                _offlinePaymentServiceOptionsMock.Object
+                null!
             );
 
             // Assert
@@ -172,7 +162,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task OfflinePayment_ThrowsException_ReturnsErrorUrl(
+        public async Task OfflinePayment_ThrowsException_ReturnsInternalServerError(
             [Frozen] Mock<IOfflinePaymentsService> offlinePaymentsServiceMock,
             [Greedy] OfflinePaymentsController controller,
             [Frozen] OfflinePaymentRequestDto request)
@@ -180,7 +170,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Arrange
             var exception = new Exception("Some error");
             var cancellationToken = new CancellationToken();
-            var errorUrl = "https://example.com/error";
 
             offlinePaymentsServiceMock.Setup(s => s.OfflinePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
 
@@ -188,15 +177,16 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var result = await controller.OfflinePayment(request, cancellationToken);
 
             // Assert
-            Assert.Fail("not sure what it should do but certainly not Error URL");
-
             using (new AssertionScope())
-            {
-                result.Should().BeOfType<ContentResult>();
-                var contentResult = result as ContentResult;
-                contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
-                contentResult?.ContentType.Should().Be("text/html");
-                contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
+            { 
+                result.Should().BeOfType<ObjectResult>();
+                var objectResult = result as ObjectResult;
+                var problemDetails = objectResult?.Value as ProblemDetails;
+
+                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Title.Should().Be("Unexpected Error");
+                problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErrorInsertingOfflinePayment);
             }
         }
     }

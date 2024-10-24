@@ -17,20 +17,17 @@ namespace EPR.Payment.Facade.Services.Payments
     {
         private readonly IHttpOfflinePaymentsService _httpOfflinePaymentsService;
         private readonly ILogger<OfflinePaymentsService> _logger;
-        private readonly OfflinePaymentServiceOptions _offlinePaymentServiceOptions;
         private readonly IMapper _mapper;
     private readonly IValidator<OfflinePaymentRequestDto> _offlinePaymentRequestDtoValidator;
 
         public OfflinePaymentsService(
             IHttpOfflinePaymentsService httpOfflinePaymentsService,
             ILogger<OfflinePaymentsService> logger,
-            IOptions<OfflinePaymentServiceOptions> offlinePaymentServiceOptions,
             IMapper mapper,
             IValidator<OfflinePaymentRequestDto> offlinePaymentRequestDtoValidator)
         { 
             _httpOfflinePaymentsService = httpOfflinePaymentsService ?? throw new ArgumentNullException(nameof(httpOfflinePaymentsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _offlinePaymentServiceOptions = offlinePaymentServiceOptions.Value ?? throw new ArgumentNullException(nameof(offlinePaymentServiceOptions));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _offlinePaymentRequestDtoValidator = offlinePaymentRequestDtoValidator ?? throw new ArgumentNullException(nameof(offlinePaymentRequestDtoValidator));
         }

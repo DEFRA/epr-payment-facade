@@ -30,7 +30,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
         private IFixture _fixture = null!;
         private Mock<IHttpOfflinePaymentsService> _httpOfflinePaymentsServiceMock = null!;
         private Mock<ILogger<OfflinePaymentsService>> _loggerMock = null!;
-        private Mock<IOptions<OfflinePaymentServiceOptions>> _optionsMock = null!;
         private OfflinePaymentsService _service = null!;
         private IMapper _mapper = null!;
         private Mock<IValidator<OfflinePaymentRequestDto>> _offlinePaymentRequestDtoMock = null!;
@@ -49,12 +48,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
             _httpOfflinePaymentsServiceMock = _fixture.Freeze<Mock<IHttpOfflinePaymentsService>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<OfflinePaymentsService>>>();
-            _optionsMock = _fixture.Freeze<Mock<IOptions<OfflinePaymentServiceOptions>>>();
 
-            _optionsMock.Setup(o => o.Value).Returns(new OfflinePaymentServiceOptions
-            {
-                Description = "Payment description" //TODO: Do I really need Description in OfflinePaymentServiceOptions????
-            });
+
 
             var mapperConfig = new MapperConfiguration(cfg =>
             {
@@ -65,28 +60,21 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             _service = new OfflinePaymentsService(
                 _httpOfflinePaymentsServiceMock.Object,
                 _loggerMock.Object,
-                _optionsMock.Object,
                 _mapper,
                 _offlinePaymentRequestDtoMock.Object);
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_WhenAllDependenciesAreNotNull_ShouldCreateInstance(
-            [Frozen] OfflinePaymentServiceOptions _offlinePaymentServiceOptions,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock,
             [Frozen] Mock<IHttpOfflinePaymentsService> _httpOfflinePaymentsServiceMock,
             [Frozen] Mock<ILogger<OfflinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock,
             [Frozen] Mock<IValidator<OfflinePaymentRequestDto>> _offlinePaymentRequestDtoValidatorMock)
         {
-            // Arrange
-            _offlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_offlinePaymentServiceOptions);
-
             // Act
             var service = new OfflinePaymentsService(
                 _httpOfflinePaymentsServiceMock.Object,
                 _loggerMock.Object,
-                _offlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
                 _offlinePaymentRequestDtoValidatorMock.Object);
 
@@ -96,20 +84,14 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
         [TestMethod, AutoMoqData]
         public void Constructor_WhenHttpOfflinePaymentsServiceIsNull_ShouldThrowArgumentNullException(
-            [Frozen] OfflinePaymentServiceOptions _offlinePaymentServiceOptions,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock,
             [Frozen] Mock<ILogger<OfflinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock,
             [Frozen] Mock<IValidator<OfflinePaymentRequestDto>> _offlinePaymentRequestDtoValidatorMock)
         {
-            // Arrange
-            _offlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_offlinePaymentServiceOptions);
-
             // Act
             Action act = () => new OfflinePaymentsService(
                 null!,
                 _loggerMock.Object,
-                _offlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
                 _offlinePaymentRequestDtoValidatorMock.Object);
 
@@ -119,20 +101,14 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
         [TestMethod, AutoMoqData]
         public void Constructor_WhenLoggerIsNull_ShouldThrowArgumentNullException(
-            [Frozen] OfflinePaymentServiceOptions _offlinePaymentServiceOptions,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock,
             [Frozen] Mock<IHttpOfflinePaymentsService> _httpOfflinePaymentsServiceMock,
             [Frozen] Mock<IMapper> _mapperMock,
             [Frozen] Mock<IValidator<OfflinePaymentRequestDto>> _offlinePaymentRequestDtoValidatorMock)
         {
-            // Arrange
-            _offlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_offlinePaymentServiceOptions);
-
             // Act
             Action act = () => new OfflinePaymentsService(
                 _httpOfflinePaymentsServiceMock.Object,
                 null!,
-                _offlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
                 _offlinePaymentRequestDtoValidatorMock.Object);
 
@@ -141,44 +117,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_WhenOfflinePaymentServiceOptionsIsNull_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock,
-            [Frozen] Mock<IHttpOfflinePaymentsService> _httpOfflinePaymentsServiceMock,
-            [Frozen] Mock<ILogger<OfflinePaymentsService>> _loggerMock,
-            [Frozen] Mock<IMapper> _mapperMock,
-            [Frozen] Mock<IValidator<OfflinePaymentRequestDto>> _offlinePaymentRequestDtoValidatorMock)
-        {
-            // Arrange
-            _offlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns((OfflinePaymentServiceOptions)null!);
-
-            // Act
-            Action act = () => new OfflinePaymentsService(
-                _httpOfflinePaymentsServiceMock.Object,
-                _loggerMock.Object,
-                _offlinePaymentServiceOptionsMock.Object,
-                _mapperMock.Object,
-                _offlinePaymentRequestDtoValidatorMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("offlinePaymentServiceOptions");
-        }
-
-        [TestMethod, AutoMoqData]
         public void Constructor_WhenMapperIsNull_ShouldThrowArgumentNullException(
-            [Frozen] OfflinePaymentServiceOptions _offlinePaymentServiceOptions,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock,
             [Frozen] Mock<IHttpOfflinePaymentsService> _httpOfflinePaymentsServiceMock,
             [Frozen] Mock<ILogger<OfflinePaymentsService>> _loggerMock,
             [Frozen] Mock<IValidator<OfflinePaymentRequestDto>> _offlinePaymentRequestDtoValidatorMock)
         {
-            // Arrange
-            _offlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_offlinePaymentServiceOptions);
-
             // Act
             Action act = () => new OfflinePaymentsService(
                 _httpOfflinePaymentsServiceMock.Object,
                 _loggerMock.Object,
-                _offlinePaymentServiceOptionsMock.Object,
                 null!,
                 _offlinePaymentRequestDtoValidatorMock.Object);
 
@@ -188,20 +135,14 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
         [TestMethod, AutoMoqData]
         public void Constructor_WhenOfflinePaymentRequestDtoValidatorIsNull_ShouldThrowArgumentNullException(
-            [Frozen] OfflinePaymentServiceOptions _offlinePaymentServiceOptions,
-            [Frozen] Mock<IOptions<OfflinePaymentServiceOptions>> _offlinePaymentServiceOptionsMock,
             [Frozen] Mock<IHttpOfflinePaymentsService> _httpOfflinePaymentsServiceMock,
             [Frozen] Mock<ILogger<OfflinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock)
         {
-            // Arrange
-            _offlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_offlinePaymentServiceOptions);
-
             // Act
             Action act = () => new OfflinePaymentsService(
                 _httpOfflinePaymentsServiceMock.Object,
                 _loggerMock.Object,
-                _offlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
                 null!);
 
@@ -258,27 +199,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Act & Assert
             var exception = await _service.Invoking(async s => await s!.OfflinePaymentAsync(request, new CancellationToken()))
                 .Should().ThrowAsync<ValidationException>();
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task OfflinePayment_DescriptionNotConfigured_ThrowsDescriptionNotConfiguredException(
-            OfflinePaymentRequestDto request)
-        {
-            // Arrange
-            _offlinePaymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
-            var offlinePaymentServiceOptions = new OfflinePaymentServiceOptions { Description = null };
-            _optionsMock.Setup(o => o.Value).Returns(offlinePaymentServiceOptions);
-
-            var service = new OfflinePaymentsService(
-                _httpOfflinePaymentsServiceMock.Object,
-                _loggerMock.Object,
-                _optionsMock.Object,
-                _mapper,
-                _offlinePaymentRequestDtoMock.Object);
-
-            // Act & Assert
-            await service.Invoking(async s => await s.OfflinePaymentAsync(request, new CancellationToken()))
-                .Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.DescriptionNotConfigured);
         }
 
         [TestMethod]
@@ -357,26 +277,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
             // Verify log entry
             _loggerMock.VerifyLog(LogLevel.Error, LogMessages.UnexpectedErrorInsertingOfflinePayment, Times.Once());
-        }
-
-        [TestMethod]
-        public async Task InitiateOfflinePayment_AmountIsZero_ThrowsValidationException()
-        {
-            // Arrange
-            var request = _fixture.Build<OfflinePaymentRequestDto>().With(d => d.Amount, 0).Create();
-
-            var validationFailures = new List<ValidationFailure>
-            {
-                new ValidationFailure(nameof(request.Amount), "Amount is required and must be greater than zero.")
-            };
-
-            _offlinePaymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult(validationFailures));
-
-            // Act & Assert
-            await _service.Invoking(async s => await s.OfflinePaymentAsync(request, new CancellationToken()))
-                .Should().ThrowAsync<ValidationException>();
-
-            Assert.Fail("is this test required - is 0 valid?");
         }
     }
 }

@@ -19,6 +19,7 @@
 
         public const string OfflinePaymentUserIdRequired = "User ID is required.";
         public const string OfflinePaymentReferenceRequired = "Reference is required.";
+        public const string OfflinePaymentAmountRequired = "Amount is required.";
 
         // Common Validation Messages
         public const string RegulatorRequired = "Regulator is required.";

@@ -23,7 +23,6 @@ builder.Services.AddFluentValidation(fv =>
     fv.AutomaticValidationEnabled = false;
 });
 builder.Services.Configure<OnlinePaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));
-builder.Services.Configure<OfflinePaymentServiceOptions>(builder.Configuration.GetSection("OfflinePaymentServiceOptions"));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setupAction =>

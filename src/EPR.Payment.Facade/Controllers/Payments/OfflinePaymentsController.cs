@@ -20,13 +20,11 @@ namespace EPR.Payment.Facade.Controllers.Payments
     {
         private readonly IOfflinePaymentsService _offlinePaymentsService;
         private readonly ILogger<OfflinePaymentsController> _logger;
-        private readonly string _errorUrl;
 
-        public OfflinePaymentsController(IOfflinePaymentsService offlinePaymentsService, ILogger<OfflinePaymentsController> logger, IOptions<OfflinePaymentServiceOptions> offlinePaymentServiceOptions)
+        public OfflinePaymentsController(IOfflinePaymentsService offlinePaymentsService, ILogger<OfflinePaymentsController> logger)
         {
             _offlinePaymentsService = offlinePaymentsService ?? throw new ArgumentNullException(nameof(offlinePaymentsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _errorUrl = offlinePaymentServiceOptions.Value.Description ?? throw new ArgumentNullException(nameof(offlinePaymentServiceOptions));
         }
 
         [HttpPost]
@@ -76,10 +74,11 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(OfflinePayment));
-                return BadRequest(new ProblemDetails
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileInsertingOfflinePayment, nameof(OfflinePayment));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
                 {
-                    Title = "Internal Server Error: Unexpected error occurred.",
+                    Title = "Unexpected Error",
+                    Detail = ExceptionMessages.UnexpectedErrorInsertingOfflinePayment,
                     Status = StatusCodes.Status500InternalServerError
                 });
             }
