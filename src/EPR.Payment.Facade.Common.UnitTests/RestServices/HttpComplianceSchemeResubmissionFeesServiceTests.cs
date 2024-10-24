@@ -68,8 +68,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
         [TestMethod, AutoMoqData]
         public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpClientFactory> httpClientFactoryMock,
-            Mock<IOptions<Service>> configMock)
+            [Frozen] Mock<IHttpClientFactory> httpClientFactoryMock,
+            [Frozen] Mock<IOptions<Service>> configMock)
         {
             // Act
             Action act = () => new HttpComplianceSchemeResubmissionFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
@@ -80,8 +80,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
         [TestMethod, AutoMoqData]
         public void Constructor_HttpClientFactoryIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IOptions<Service>> configMock)
+            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
+            [Frozen] Mock<IOptions<Service>> configMock)
         {
             // Act
             Action act = () => new HttpComplianceSchemeResubmissionFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
@@ -92,8 +92,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
         [TestMethod, AutoMoqData]
         public void Constructor_ConfigUrlIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IHttpClientFactory> httpClientFactoryMock)
+            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
+            [Frozen] Mock<IHttpClientFactory> httpClientFactoryMock)
         {
             // Arrange
             var configMock = new Mock<IOptions<Service>>();
@@ -109,8 +109,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
         [TestMethod, AutoMoqData]
         public void Constructor_ConfigEndPointNameIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IHttpClientFactory> httpClientFactoryMock)
+            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
+            [Frozen] Mock<IHttpClientFactory> httpClientFactoryMock)
         {
             // Arrange
             var configMock = new Mock<IOptions<Service>>();
@@ -127,7 +127,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         [TestMethod, AutoMoqData]
         public async Task CalculateResubmissionFeeAsync_ValidRequest_ReturnsComplianceSchemeResubmissionFeeResult(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            Mock<IOptions<Service>> configMock,
+            [Frozen] Mock<IOptions<Service>> configMock,
             HttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
             CancellationToken cancellationToken)
         {
@@ -159,7 +159,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         [TestMethod, AutoMoqData]
         public async Task CalculateResubmissionFeeAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            Mock<IOptions<Service>> configMock,
+            [Frozen] Mock<IOptions<Service>> configMock,
             HttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
             CancellationToken cancellationToken)
         {

@@ -19,6 +19,40 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
     public class ComplianceSchemeResubmissionControllerTests
     {
         [TestMethod, AutoMoqData]
+        public void Constructor_WithNullResubmissionFeesService_ShouldThrowArgumentNullException(
+                    [Frozen] Mock<ILogger<ComplianceSchemeResubmissionController>> loggerMock,
+                    [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock)
+        {
+            // Act
+            Action act = () => new ComplianceSchemeResubmissionController(
+                null!,
+                loggerMock.Object,
+                resubmissionValidatorMock.Object
+            );
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithParameterName("resubmissionFeesService");
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
+            [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesServiceMock,
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock)
+        {
+            // Act
+            Action act = () => new ComplianceSchemeResubmissionController(
+                resubmissionFeesServiceMock.Object,
+                null!,
+                resubmissionValidatorMock.Object
+            );
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithParameterName("logger");
+        }
+
+        [TestMethod, AutoMoqData]
         public void Constructor_WithNullResubmissionValidator_ShouldThrowArgumentNullException(
             [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesServiceMock,
             [Frozen] Mock<ILogger<ComplianceSchemeResubmissionController>> loggerMock)
