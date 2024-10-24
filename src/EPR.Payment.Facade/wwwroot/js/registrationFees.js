@@ -6,6 +6,7 @@
     const IsLateFeeApplicable = document.getElementById('IsLateFeeApplicable').checked;
     const applicationReferenceNumber = document.getElementById('ApplicationReferenceNumber').value;
     const noOfSubsidiariesOnlineMarketplace = document.getElementById('NoOfSubsidiariesOnlineMarketplace').value;
+    const submissionDate = document.getElementById('SubmissionDate').value;
 
     const requestData = {
         producerType: producerType,
@@ -14,7 +15,8 @@
         isProducerOnlineMarketplace: isProducerOnlineMarketplace,
         IsLateFeeApplicable: IsLateFeeApplicable,
         noOfSubsidiariesOnlineMarketplace: parseInt(noOfSubsidiariesOnlineMarketplace),
-        applicationReferenceNumber: applicationReferenceNumber
+        applicationReferenceNumber: applicationReferenceNumber,
+        submissionDate: new Date(submissionDate)
     };
 
     console.log('Request Data:', requestData);
@@ -55,6 +57,7 @@
 async function calculateComplianceSchemeFees() {
     const regulatorCode = document.getElementById('regulatorCode').value;
     const applicationRefNumber = document.getElementById('applicationRefNumber').value;
+    const submissionDate = document.getElementById('CSSubmissionDate').value;
 
     const members = [];
     for (let i = 1; i <= 3; i++) {
@@ -81,6 +84,7 @@ async function calculateComplianceSchemeFees() {
     const requestData = {
         Regulator: regulatorCode,
         ApplicationReferenceNumber: applicationRefNumber,
+        SubmissionDate: new Date(submissionDate),
         ComplianceSchemeMembers: members
     };
 
