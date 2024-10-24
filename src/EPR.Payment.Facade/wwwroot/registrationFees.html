@@ -1,0 +1,107 @@
+﻿<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Producer and Compliance Scheme Fees Calculation</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/registrationFees.js" defer></script>
+</head>
+<body>
+    <div class="container-wrapper">
+        <div class="container">
+            <h1>Producer Fees Calculation</h1>
+            <label for="producerType">Producer Type (Optional):</label>
+            <input type="text" id="producerType" placeholder="Large, or Small">
+            <label for="numberOfSubsidiaries">Number of Subsidiaries:</label>
+            <input type="number" id="numberOfSubsidiaries" required>
+            <label for="ProducerRegulator">Regulator:</label>
+            <input type="text" id="ProducerRegulator" required placeholder="ie GB-ENG">
+            <label for="NoOfSubsidiariesOnlineMarketplace">No Of Subsidiaries Online Marketplace:</label>
+            <input type="number" id="NoOfSubsidiariesOnlineMarketplace" required>
+            <label for="ApplicationReferenceNumber">Application Reference Number:</label>
+            <input type="text" id="ApplicationReferenceNumber" required placeholder="A123">
+            <div class="checkbox-container">
+                <input type="checkbox" id="IsProducerOnlineMarketplace">
+                <label for="IsProducerOnlineMarketplace">Is Producer Online Marketplace</label>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="IsLateFeeApplicable">
+                <label for="IsLateFeeApplicable">Is Producer Late Fee Applicable</label>
+            </div>
+            <button onclick="calculateFees()">Calculate Fees</button>
+        </div>
+
+        <div class="container">
+            <h1>Compliance Scheme Fees Calculation</h1>
+            <label for="regulatorCode">Regulator:</label>
+            <input type="text" id="regulatorCode" required placeholder="ie GB-ENG">
+            <label for="applicationRefNumber">Application Reference Number:</label>
+            <input type="text" id="applicationRefNumber" required placeholder="A123">
+
+            <div id="membersContainer">
+                <h2>Members</h2>
+                <div class="member" id="member1" style="display: none;">
+                    <label for="memberId1">Member ID:</label>
+                    <input type="text" id="memberId1" placeholder="Member ID" required>
+                    <label for="memberType1">Member Type:</label>
+                    <input type="text" id="memberType1" placeholder="Large, or Small" required>
+                    <label for="subsidiaryCount1">Number of Subsidiaries:</label>
+                    <input type="number" id="subsidiaryCount1" required>
+                    <label for="onlineMarketplaceSubsidiaryCount1">No Of Subsidiaries Online Marketplace:</label>
+                    <input type="number" id="onlineMarketplaceSubsidiaryCount1" required>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="isOnlineMarketplaceMember1">
+                        <label for="isOnlineMarketplaceMember1">Is Member Online Marketplace</label>
+                    </div>
+                </div>
+                <div class="member" id="member2" style="display: none;">
+                    <label for="memberId2">Member ID:</label>
+                    <input type="text" id="memberId2" placeholder="Member ID">
+                    <label for="memberType2">Member Type:</label>
+                    <input type="text" id="memberType2" placeholder="Large, or Small">
+                    <label for="subsidiaryCount2">Number of Subsidiaries:</label>
+                    <input type="number" id="subsidiaryCount2">
+                    <label for="onlineMarketplaceSubsidiaryCount2">No Of Subsidiaries Online Marketplace:</label>
+                    <input type="number" id="onlineMarketplaceSubsidiaryCount2">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="isOnlineMarketplaceMember2">
+                        <label for="isOnlineMarketplaceMember2">Is Member Online Marketplace</label>
+                    </div>
+                </div>
+                <div class="member" id="member3" style="display: none;">
+                    <label for="memberId3">Member ID:</label>
+                    <input type="text" id="memberId3" placeholder="Member ID">
+                    <label for="memberType3">Member Type:</label>
+                    <input type="text" id="memberType3" placeholder="Large, or Small">
+                    <label for="subsidiaryCount3">Number of Subsidiaries:</label>
+                    <input type="number" id="subsidiaryCount3">
+                    <label for="onlineMarketplaceSubsidiaryCount3">No Of Subsidiaries Online Marketplace:</label>
+                    <input type="number" id="onlineMarketplaceSubsidiaryCount3">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="isOnlineMarketplaceMember3">
+                        <label for="isOnlineMarketplaceMember3">Is Member Online Marketplace</label>
+                    </div>
+                </div>
+            </div>
+
+            <button id="addMemberButton" onclick="addMember()">Add Member</button>
+            <button id="calculateFeesButton" onclick="calculateComplianceSchemeFees()">Calculate Fees</button>
+        </div>
+    </div>
+
+
+
+    <!-- Modal for displaying results -->
+    <div id="resultsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Registration Fee Breakdown</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Results will be inserted here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>
