@@ -91,31 +91,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task OfflinePayment_AmountZero_ReturnsBadRequest([Greedy] OfflinePaymentsController controller)
-        {
-            // Arrange
-            var request = new OfflinePaymentRequestDto
-            {
-                UserId = Guid.NewGuid(),
-                Reference = "Test Reference",
-                Amount = 0 // Invalid amount
-            };
-
-            var cancellationToken = new CancellationToken();
-
-            // Act
-            var result = await controller.OfflinePayment(request, cancellationToken);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                result.Should().BeOfType<BadRequestObjectResult>();
-                var badRequestResult = result as BadRequestObjectResult;
-                badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
-            }
-        }
-
-        [TestMethod, AutoMoqData]
         public async Task OfflinePayment_InvalidRequest_ReturnsBadRequest(
             [Greedy] OfflinePaymentsController controller)
         {

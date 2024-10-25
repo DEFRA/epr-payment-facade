@@ -63,5 +63,6 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
             var result = _validator.TestValidate(offlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.Amount);
         }
+        //TODO: validation for other fields
     }
 }
