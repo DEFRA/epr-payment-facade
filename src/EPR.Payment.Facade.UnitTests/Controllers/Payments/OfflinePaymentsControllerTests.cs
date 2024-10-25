@@ -25,12 +25,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public async Task InitiateOfflinePayment_ValidRequest_ReturnsNoContent(
             [Frozen] Mock<IOfflinePaymentsService> offlinePaymentsServiceMock,
             [Greedy] OfflinePaymentsController controller,
-            [Frozen] OfflinePaymentRequestDto request,
-            [Frozen] OfflinePaymentResponseDto expectedResponse)
+            [Frozen] OfflinePaymentRequestDto request)
         {
             // Arrange
             var cancellationToken = new CancellationToken();
-            offlinePaymentsServiceMock.Setup(s => s.OfflinePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
             var result = await controller.OfflinePayment(request, cancellationToken);

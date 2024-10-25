@@ -5,6 +5,6 @@ namespace EPR.Payment.Facade.Services.Payments.Interfaces
 {
     public interface IOfflinePaymentsService
     {
-        Task<OfflinePaymentResponseDto> OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default);
+        Task OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default);
     }
 }

@@ -151,7 +151,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiateOfflinePayment_ValidRequest_ReturnsResponse(
+        public async Task InitiateOfflinePayment_ValidRequest_ReturnsRespons(
             GovPayResponseDto expectedResponse)
         {
             // Arrange
@@ -164,13 +164,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             _offlinePaymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
 
             // Act
-            var result = await _service.OfflinePaymentAsync(request, new CancellationToken());
+            await _service.OfflinePaymentAsync(request, new CancellationToken());
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().NotBeNull();
-                result.PaymentId.Should().Be(externalPaymentId);
+                _httpOfflinePaymentsServiceMock.Verify(s => s.InsertOfflinePaymentAsync(It.IsAny<InsertOfflinePaymentRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
             }
         }
 

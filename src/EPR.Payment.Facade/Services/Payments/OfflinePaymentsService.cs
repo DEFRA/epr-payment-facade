@@ -32,7 +32,7 @@ namespace EPR.Payment.Facade.Services.Payments
             _offlinePaymentRequestDtoValidator = offlinePaymentRequestDtoValidator ?? throw new ArgumentNullException(nameof(offlinePaymentRequestDtoValidator));
         }
 
-        public async Task<OfflinePaymentResponseDto> OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default)
+        public async Task OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default)
         {
         var validatorResult = await _offlinePaymentRequestDtoValidator.ValidateAsync(request, cancellationToken);
 
@@ -41,8 +41,6 @@ namespace EPR.Payment.Facade.Services.Payments
             throw new ValidationException(validatorResult.Errors.Aggregate("", (current, error) => current + $"\n{error.PropertyName} : {error.ErrorMessage}"));
         }
             var externalPaymentId = await InsertOfflinePaymentAsync(request, cancellationToken);
-
-            return new OfflinePaymentResponseDto { PaymentId = externalPaymentId } ;
         }
 
         private async Task<Guid> InsertOfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken)
