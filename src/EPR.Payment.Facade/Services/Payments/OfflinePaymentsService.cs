@@ -34,7 +34,7 @@ namespace EPR.Payment.Facade.Services.Payments
 
         public async Task<OfflinePaymentResponseDto> OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default)
         {
-        var validatorResult = await _offlinePaymentRequestDtoValidator.ValidateAsync(request);
+        var validatorResult = await _offlinePaymentRequestDtoValidator.ValidateAsync(request, cancellationToken);
 
         if (!validatorResult.IsValid)
         {
