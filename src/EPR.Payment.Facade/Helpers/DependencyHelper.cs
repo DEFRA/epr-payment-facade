@@ -5,6 +5,8 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
+using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
@@ -33,7 +35,7 @@ namespace EPR.Payment.Facade.Helpers
                 services, nameof(ServicesConfiguration.PaymentService));
 
             RegisterHttpService<IHttpGovPayService, HttpGovPayService>(
-            services, nameof(ServicesConfiguration.GovPayService));
+                services, nameof(ServicesConfiguration.GovPayService));
 
             RegisterHttpService<IHttpProducerFeesService, HttpProducerFeesService>(
                 services, nameof(ServicesConfiguration.ProducerFeesService));
@@ -43,6 +45,9 @@ namespace EPR.Payment.Facade.Helpers
 
             RegisterHttpService<IHttpProducerResubmissionFeesService, HttpProducerResubmissionFeesService>(
                 services, nameof(ServicesConfiguration.ProducerFeesService));
+
+            RegisterHttpService<IHttpComplianceSchemeResubmissionFeesService, HttpComplianceSchemeResubmissionFeesService>(
+                services, nameof(ServicesConfiguration.ComplianceSchemeFeesService));
 
             return services;
         }
