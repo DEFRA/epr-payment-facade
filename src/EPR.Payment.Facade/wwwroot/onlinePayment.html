@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Initiation</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/onlinePayment.js" defer></script>
+</head>
+<body>
+    <div class="container-wrapper">
+        <div class="container">
+            <h1>Payment Initiation</h1>
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" required>
+            <label for="organisationId">Organisation ID:</label>
+            <input type="text" id="organisationId" required>
+            <label for="regulator">Regulator:</label>
+            <input type="text" id="regulator" required placeholder="ie GB-ENG">
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" required>
+            <label for="reference">Reference:</label>
+            <input type="text" id="reference" required>
+            <button onclick="initiatePayment()">Initiate Payment</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -16,11 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\Request\ResubmissionFees\ComplianceScheme\" />
     <Folder Include="Dtos\Request\ResubmissionFees\Producer\" />
-    <Folder Include="Dtos\Response\ResubmissionFees\ComplianceScheme\" />
     <Folder Include="Dtos\Response\ResubmissionFees\Producer\" />
-    <Folder Include="RESTServices\ResubmissionFees\ComplianceScheme\Interfaces\" />
   </ItemGroup>
 
 </Project>
