@@ -15,7 +15,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
     [ApiVersion(1)]
     [ApiController]
     [Route("api/v{version:apiVersion}/online-payments")]
-    [FeatureGate("EnablePaymentsFeature")]
+    [FeatureGate("EnableOnlinePaymentsFeature")]
     public class OnlinePaymentsController : ControllerBase
     {
         private readonly IOnlinePaymentsService _onlinePaymentsService;

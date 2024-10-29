@@ -34,7 +34,7 @@ async function initiatePayment() {
     console.log('Request Data:', requestData);
 
     try {
-        const response = await fetch('/api/v1/payments', {
+        const response = await fetch('/api/v1/online-payments', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

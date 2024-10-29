@@ -82,13 +82,13 @@ var app = builder.Build();
 var featureManager = app.Services.GetRequiredService<IFeatureManager>();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-bool enablePaymentsFeature = await featureManager.IsEnabledAsync("EnablePaymentsFeature");
+bool enableOnlinePaymentsFeature = await featureManager.IsEnabledAsync("EnableOnlinePaymentsFeature");
 bool enablePaymentInitiation = await featureManager.IsEnabledAsync("EnablePaymentInitiation");
 bool enablePaymentStatus = await featureManager.IsEnabledAsync("EnablePaymentStatus");
 bool enablePaymentStatusInsert = await featureManager.IsEnabledAsync("EnablePaymentStatusInsert");
 bool enableHomePage = await featureManager.IsEnabledAsync("EnableHomePage");
 
-logger.LogInformation("EnablePaymentsFeature: {EnablePaymentsFeature}", enablePaymentsFeature);
+logger.LogInformation("EnableOnlinePaymentsFeature: {EnableOnlinePaymentsFeature}", enableOnlinePaymentsFeature);
 logger.LogInformation("EnablePaymentInitiation: {EnablePaymentInitiation}", enablePaymentInitiation);
 logger.LogInformation("EnablePaymentStatus: {EnablePaymentStatus}", enablePaymentStatus);
 logger.LogInformation("EnablePaymentStatusInsert: {EnablePaymentStatusInsert}", enablePaymentStatusInsert);

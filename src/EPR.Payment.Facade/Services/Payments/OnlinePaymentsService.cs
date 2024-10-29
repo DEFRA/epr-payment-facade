@@ -121,6 +121,7 @@ namespace EPR.Payment.Facade.Services.Payments
             var updateRequest = _mapper.Map<UpdateOnlinePaymentRequestDto>(onlinePaymentDetails);
             updateRequest.GovPayPaymentId = onlinePaymentDetails.GovPayPaymentId;
             updateRequest.Status = status;
+            updateRequest.GovPayStatus = paymentStatusResponse.State?.Status;
             updateRequest.Reference = paymentStatusResponse.Reference;
             updateRequest.ErrorCode = paymentStatusResponse.State?.Code;
             updateRequest.ErrorMessage = paymentStatusResponse.State?.Message;
