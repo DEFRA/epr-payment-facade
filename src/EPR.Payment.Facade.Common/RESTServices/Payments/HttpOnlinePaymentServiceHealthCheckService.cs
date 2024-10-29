@@ -5,9 +5,9 @@ using Microsoft.Extensions.Options;
 
 namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
-    public class HttpPaymentServiceHealthCheckService : BaseHttpService, IHttpPaymentServiceHealthCheckService
+    public class HttpOnlinePaymentServiceHealthCheckService : BaseHttpService, IHttpPaymentServiceHealthCheckService
     {
-        public HttpPaymentServiceHealthCheckService(
+        public HttpOnlinePaymentServiceHealthCheckService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
             IOptions<Service> config)

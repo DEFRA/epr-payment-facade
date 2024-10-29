@@ -19,12 +19,12 @@ using System.Text;
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
-    public class HttpPaymentsServiceTests
+    public class HttpOnlinePaymentsServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptions<Service>> _configMock = null!;
-        private InsertPaymentRequestDto _insertPaymentRequestDto = null!;
-        private UpdatePaymentRequestDto _updatePaymentRequestDto = null!;
+        private InsertOnlinePaymentRequestDto _insertOnlinePaymentRequestDto = null!;
+        private UpdateOnlinePaymentRequestDto _updateOnlinePaymentRequestDto = null!;
         private Guid _paymentId;
 
         [TestInitialize]
@@ -34,7 +34,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var config = new Service
             {
                 Url = "https://example.com",
-                EndPointName = "payments",
+                EndPointName = "online-payments",
                 HttpClientName = "HttpClientName"
             };
 
@@ -42,7 +42,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             _configMock.Setup(x => x.Value).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            _insertPaymentRequestDto = new InsertPaymentRequestDto
+            _insertOnlinePaymentRequestDto = new InsertOnlinePaymentRequestDto
             {
                 UserId = Guid.NewGuid(),
                 OrganisationId = Guid.NewGuid(),
@@ -52,7 +52,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 ReasonForPayment = "Payment description",
                 Status = Common.Enums.PaymentStatus.Initiated
             };
-            _updatePaymentRequestDto = new UpdatePaymentRequestDto
+            _updateOnlinePaymentRequestDto = new UpdateOnlinePaymentRequestDto
             {
                 ExternalPaymentId = Guid.NewGuid(),
                 GovPayPaymentId = "govpay123",
@@ -64,18 +64,18 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             _paymentId = Guid.NewGuid();
         }
 
-        private HttpPaymentsService CreateHttpPaymentsService(HttpClient httpClient)
+        private HttpOnlinePaymentsService CreateHttpOnlinePaymentsService(HttpClient httpClient)
         {
-            return new HttpPaymentsService(
+            return new HttpOnlinePaymentsService(
                 _httpContextAccessorMock!.Object,
                 new HttpClientFactoryMock(httpClient),
                 _configMock!.Object);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InsertPaymentAsync_Success_ReturnsGuid(
+        public async Task InsertOnlinePaymentAsync_Success_ReturnsGuid(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpPaymentsService httpPaymentsService,
+            HttpOnlinePaymentsService httpOnlinePaymentsService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -88,10 +88,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpPaymentsService = CreateHttpPaymentsService(httpClient);
+            httpOnlinePaymentsService = CreateHttpOnlinePaymentsService(httpClient);
 
             // Act
-            var result = await httpPaymentsService.InsertPaymentAsync(_insertPaymentRequestDto, cancellationToken);
+            var result = await httpOnlinePaymentsService.InsertOnlinePaymentAsync(_insertOnlinePaymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -107,26 +107,26 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InsertPaymentAsync_Failure_ThrowsException(
+        public async Task InsertOnlinePaymentAsync_Failure_ThrowsException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpPaymentsService httpPaymentsService,
+            HttpOnlinePaymentsService httpOnlinePaymentsService,
             CancellationToken cancellationToken)
         {
             // Arrange
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorInsertingPayment));
+                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorInsertingOnlinePayment));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpPaymentsService = CreateHttpPaymentsService(httpClient);
+            httpOnlinePaymentsService = CreateHttpOnlinePaymentsService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpPaymentsService.InsertPaymentAsync(_insertPaymentRequestDto, cancellationToken);
+            Func<Task> act = async () => await httpOnlinePaymentsService.InsertOnlinePaymentAsync(_insertOnlinePaymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorInsertingPayment);
+                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorInsertingOnlinePayment);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
@@ -138,9 +138,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task UpdatePaymentAsync_Success_UpdatesPaymentStatus(
+        public async Task UpdateOnlinePaymentAsync_Success_UpdatesPaymentStatus(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpPaymentsService httpPaymentsService,
+            HttpOnlinePaymentsService httpOnlinePaymentsService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -152,10 +152,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpPaymentsService = CreateHttpPaymentsService(httpClient);
+            httpOnlinePaymentsService = CreateHttpOnlinePaymentsService(httpClient);
 
             // Act
-            await httpPaymentsService.UpdatePaymentAsync(_paymentId, _updatePaymentRequestDto, cancellationToken);
+            await httpOnlinePaymentsService.UpdateOnlinePaymentAsync(_paymentId, _updateOnlinePaymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -170,28 +170,28 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task UpdatePayment_Failure_ThrowsException(
+        public async Task UpdateOnlinePayment_Failure_ThrowsException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpPaymentsService httpPaymentsService,
+            HttpOnlinePaymentsService httpOnlinePaymentsService,
             CancellationToken cancellationToken)
         {
             // Arrange
-            var updatePaymentRequestDto = _updatePaymentRequestDto!;
+            var updateOnlinePaymentRequestDto = _updateOnlinePaymentRequestDto!;
 
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorUpdatingPayment));
+                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorUpdatingOnlinePayment));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpPaymentsService = CreateHttpPaymentsService(httpClient);
+            httpOnlinePaymentsService = CreateHttpOnlinePaymentsService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpPaymentsService.UpdatePaymentAsync(updatePaymentRequestDto.ExternalPaymentId, updatePaymentRequestDto, cancellationToken);
+            Func<Task> act = async () => await httpOnlinePaymentsService.UpdateOnlinePaymentAsync(updateOnlinePaymentRequestDto.ExternalPaymentId, updateOnlinePaymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorUpdatingPayment);
+                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorUpdatingOnlinePayment);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
@@ -203,14 +203,14 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetPaymentDetailsAsync_Success_ReturnsPaymentDetailsDto(
+        public async Task GetOnlinePaymentDetailsAsync_Success_ReturnsPaymentDetailsDto(
     [Frozen] Mock<HttpMessageHandler> handlerMock,
-    HttpPaymentsService httpPaymentsService,
+    HttpOnlinePaymentsService httpOnlinePaymentsService,
     CancellationToken cancellationToken)
         {
             // Arrange
             var externalPaymentId = Guid.NewGuid();
-            var paymentDetails = new PaymentDetailsDto
+            var onlinePaymentDetails = new OnlinePaymentDetailsDto
             {
                 ExternalPaymentId = externalPaymentId,
                 GovPayPaymentId = "govpay123",
@@ -223,19 +223,19 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.OK,
-                           Content = new StringContent(JsonConvert.SerializeObject(paymentDetails), Encoding.UTF8, "application/json")
+                           Content = new StringContent(JsonConvert.SerializeObject(onlinePaymentDetails), Encoding.UTF8, "application/json")
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpPaymentsService = CreateHttpPaymentsService(httpClient);
+            httpOnlinePaymentsService = CreateHttpOnlinePaymentsService(httpClient);
 
             // Act
-            var result = await httpPaymentsService.GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
+            var result = await httpOnlinePaymentsService.GetOnlinePaymentDetailsAsync(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().BeEquivalentTo(paymentDetails);
+                result.Should().BeEquivalentTo(onlinePaymentDetails);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
@@ -246,9 +246,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetPaymentDetailsAsync_Failure_ThrowsException(
+        public async Task GetOnlinePaymentDetailsAsync_Failure_ThrowsException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpPaymentsService httpPaymentsService,
+            HttpOnlinePaymentsService httpOnlinePaymentsService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -256,18 +256,18 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorGettingPaymentDetails));
+                       .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorGettingOnlinePaymentDetails));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpPaymentsService = CreateHttpPaymentsService(httpClient);
+            httpOnlinePaymentsService = CreateHttpOnlinePaymentsService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpPaymentsService.GetPaymentDetailsAsync(externalPaymentId, cancellationToken);
+            Func<Task> act = async () => await httpOnlinePaymentsService.GetOnlinePaymentDetailsAsync(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorGettingPaymentDetails);
+                await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorGettingOnlinePaymentDetails);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
