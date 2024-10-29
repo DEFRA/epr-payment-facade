@@ -25,7 +25,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         [Required(ErrorMessage = "Status is required")]
         [JsonConverter(typeof(StringEnumConverter))]
         public PaymentStatus Status { get; set; }
-        public string? GovPayStatus { get; set; }
 
         public string? ErrorCode { get; set; }
         public string? ErrorMessage { get; set; }
