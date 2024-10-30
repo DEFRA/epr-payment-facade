@@ -30,6 +30,7 @@ namespace EPR.Payment.Facade.Extension
             // Register payments services
             services.AddScoped<IOnlinePaymentsService, OnlinePaymentsService>();
 
+            services.AddScoped<IProducerFeesService, ProducerFeesService>();
             services.AddScoped<IProducerResubmissionFeesService, ProducerResubmissionFeesService>();
             services.AddScoped<IComplianceSchemeCalculatorService, ComplianceSchemeCalculatorService>();
             services.AddScoped<IComplianceSchemeResubmissionFeesService, ComplianceSchemeResubmissionFeesService>();
