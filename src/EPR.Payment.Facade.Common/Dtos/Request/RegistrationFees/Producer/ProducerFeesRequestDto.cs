@@ -15,5 +15,6 @@
         public bool IsLateFeeApplicable { get; set; } // True or False
 
         public required string ApplicationReferenceNumber { get; set; }
+        public required DateTime SubmissionDate { get; set; }
     }
 }

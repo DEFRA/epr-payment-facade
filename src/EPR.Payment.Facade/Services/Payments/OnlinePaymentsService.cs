@@ -40,7 +40,7 @@ namespace EPR.Payment.Facade.Services.Payments
 
         public async Task<OnlinePaymentResponseDto> InitiateOnlinePaymentAsync(OnlinePaymentRequestDto request, CancellationToken cancellationToken = default)
         {
-        var validatorResult = await _onlinePaymentRequestDtoValidator.ValidateAsync(request);
+        var validatorResult = await _onlinePaymentRequestDtoValidator.ValidateAsync(request, cancellationToken);
 
         if (!validatorResult.IsValid)
         {
@@ -147,7 +147,7 @@ namespace EPR.Payment.Facade.Services.Payments
         }
 
 
-        private CompleteOnlinePaymentResponseDto CreateCompleteOnlinePaymentResponse(OnlinePaymentDetailsDto onlinePaymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
+        private static CompleteOnlinePaymentResponseDto CreateCompleteOnlinePaymentResponse(OnlinePaymentDetailsDto onlinePaymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
         {
             return new CompleteOnlinePaymentResponseDto
             {
@@ -216,7 +216,7 @@ namespace EPR.Payment.Facade.Services.Payments
             }
         }
 
-        private OnlinePaymentResponseDto CreateOnlinePaymentResponse(GovPayResponseDto govPayResponse)
+        private static OnlinePaymentResponseDto CreateOnlinePaymentResponse(GovPayResponseDto govPayResponse)
         {
             return new OnlinePaymentResponseDto
             {

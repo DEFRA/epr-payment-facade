@@ -10,9 +10,9 @@
         public const string ErrorRetrievingPaymentStatus = "Error occurred while retrieving payment status.";
 
         // HttpPaymentsService exceptions
-        public const string OnlinePaymentServiceBaseUrlMissing = "PaymentService BaseUrl configuration is missing";
-        public const string OnlinePaymentServiceEndPointNameMissing = "PaymentService EndPointName configuration is missing";
-        public const string OnlinePaymentServiceHttpClientNameMissing = "PaymentService HttpClientName configuration is missing";
+        public const string OnlinePaymentServiceBaseUrlMissing = "OnlinePaymentService BaseUrl configuration is missing";
+        public const string OnlinePaymentServiceEndPointNameMissing = "OnlinePaymentService EndPointName configuration is missing";
+        public const string OnlinePaymentServiceHttpClientNameMissing = "OnlinePaymentService HttpClientName configuration is missing";
         public const string ErrorInsertingOnlinePayment = "Error occurred while inserting payment status.";
         public const string ErrorUpdatingOnlinePayment = "Error occurred while updating payment status.";
         public const string UnexpectedErrorInsertingOnlinePayment = "An unexpected error occurred while inserting the payment.";

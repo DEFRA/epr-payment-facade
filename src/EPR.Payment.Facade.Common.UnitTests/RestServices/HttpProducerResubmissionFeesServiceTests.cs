@@ -49,7 +49,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 Regulator = "GB-ENG",
                 IsProducerOnlineMarketplace = false,
                 IsLateFeeApplicable = false,
-                ApplicationReferenceNumber = "A123"
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.Now
             };
 
             _producerFeesResponseDto = new ProducerFeesResponseDto

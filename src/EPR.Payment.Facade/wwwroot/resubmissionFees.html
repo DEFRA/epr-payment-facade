@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resubmission Fee</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/resubmissionFees.js" defer></script>
+</head>
+<body>
+    <div class="container-wrapper">
+        <!-- Producer Resubmission Form -->
+        <div class="container">
+            <h1>Producer Resubmission Fee</h1>
+            <label for="resubmissionRegulator">Regulator:</label>
+            <input type="text" id="resubmissionRegulator" required placeholder="ie GB-ENG">
+            <button onclick="getResubmissionFee()">Get Resubmission Fee</button>
+            <div id="resubmissionFeeResult" class="result"></div>
+        </div>
+
+        <!-- Compliance Scheme Resubmission Form -->
+        <div class="container">
+            <h1>Compliance Scheme Resubmission Fee</h1>
+            <label for="complianceRegulator">Regulator:</label>
+            <input type="text" id="complianceRegulator" required placeholder="ie GB-ENG">
+
+            <label for="complianceResubmissionDate">Resubmission Date:</label>
+            <input type="date" id="complianceResubmissionDate" required>
+
+            <label for="complianceReferenceNumber">Reference Number:</label>
+            <input type="text" id="complianceReferenceNumber" required placeholder="A123">
+
+            <label for="complianceMemberCount">Member Count:</label>
+            <input type="number" id="complianceMemberCount" required>
+
+            <button onclick="calculateComplianceResubmissionFee()">Calculate Compliance Resubmission Fee</button>
+            <div id="complianceResubmissionFeeResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- Modal for displaying results -->
+    <div id="complianceResultsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Compliance Resubmission Fee Breakdown</h2>
+                <span class="close" onclick="closeComplianceModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="complianceModalBody">
+                <!-- Compliance resubmission results will be inserted here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>
