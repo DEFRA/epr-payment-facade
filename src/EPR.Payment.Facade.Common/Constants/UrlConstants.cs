@@ -20,5 +20,8 @@
 
         // Compliance scheme fees service endpoints
         public const string CalculateComplianceSchemeFee = "compliance-scheme/registration-fee";
+
+        // Compliance scheme resubmission fee endpoints
+        public const string GetComplianceSchemeResubmissionFee = "compliance-scheme/resubmission-fee";
     }
 }

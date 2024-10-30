@@ -25,7 +25,7 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Services.Payments
 {
     [TestClass]
-    public class PaymentsServiceTests
+    public class OnlinePaymentsServiceTests
     {
         private IFixture _fixture = null!;
         private Mock<IHttpGovPayService> _httpGovPayServiceMock = null!;

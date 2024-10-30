@@ -22,13 +22,12 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        public async Task<Guid> InsertOfflinePaymentAsync(InsertOfflinePaymentRequestDto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)
+        public async Task InsertOfflinePaymentAsync(OfflinePaymentRequestDto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.OfflinePaymentsInsert;
             try
             {
-                var response = await Post<Guid>(url, offlinePaymentStatusInsertRequest, cancellationToken);
-                return response;
+                await Post<Guid>(url, offlinePaymentStatusInsertRequest, cancellationToken);
             }
             catch (Exception ex)
             {

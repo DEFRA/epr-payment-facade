@@ -23,7 +23,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptions<Service>> _configMock = null!;
-        private InsertOfflinePaymentRequestDto _insertOfflinePaymentRequestDto = null!;
+        private OfflinePaymentRequestDto _offlinePaymentRequestDto = null!;
         private Guid _paymentId;
 
         [TestInitialize]
@@ -41,7 +41,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             _configMock.Setup(x => x.Value).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            _insertOfflinePaymentRequestDto = new InsertOfflinePaymentRequestDto
+            _offlinePaymentRequestDto = new OfflinePaymentRequestDto
             {
                 UserId = Guid.NewGuid(),
                 Reference = "123456",
@@ -79,12 +79,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpOfflinePaymentsService = CreateHttpOfflinePaymentsService(httpClient);
 
             // Act
-            var result = await httpOfflinePaymentsService.InsertOfflinePaymentAsync(_insertOfflinePaymentRequestDto, cancellationToken);
+            await httpOfflinePaymentsService.InsertOfflinePaymentAsync(_offlinePaymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().Be(_paymentId);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
@@ -109,7 +108,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpOfflinePaymentsService = CreateHttpOfflinePaymentsService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpOfflinePaymentsService.InsertOfflinePaymentAsync(_insertOfflinePaymentRequestDto, cancellationToken);
+            Func<Task> act = async () => await httpOfflinePaymentsService.InsertOfflinePaymentAsync(_offlinePaymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())

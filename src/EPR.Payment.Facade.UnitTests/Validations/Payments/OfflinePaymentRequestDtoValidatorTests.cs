@@ -19,8 +19,8 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_UserId_Is_Null()
         {
-            var offlinePaymentStatusInsertRequestDto = new OfflinePaymentRequestDto { UserId = null };
-            var result = _validator.TestValidate(offlinePaymentStatusInsertRequestDto);
+            var paymentStatusInsertRequestDto = new OfflinePaymentRequestDto { UserId = null };
+            var result = _validator.TestValidate(paymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.UserId);
         }
 
@@ -63,6 +63,21 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
             var result = _validator.TestValidate(offlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.Amount);
         }
-        //TODO: validation for other fields
+
+        [TestMethod]
+        public void Should_Have_Error_When_Regulator_Is_Empty()
+        {
+            var paymentStatusInsertRequestDto = new OfflinePaymentRequestDto { Regulator = string.Empty };
+            var result = _validator.TestValidate(paymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.Regulator);
+        }
+
+        [TestMethod]
+        public void Should_Have_Error_When_Regulator_Is_NotSupported()
+        {
+            var paymentStatusInsertRequestDto = new OfflinePaymentRequestDto { Regulator = RegulatorConstants.GBSCT };
+            var result = _validator.TestValidate(paymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.Regulator);
+        }
     }
 }

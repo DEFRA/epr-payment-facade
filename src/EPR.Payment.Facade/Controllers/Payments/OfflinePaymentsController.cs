@@ -1,14 +1,11 @@
 ﻿using Asp.Versioning;
-using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using FluentValidation;
 
 namespace EPR.Payment.Facade.Controllers.Payments
 {

@@ -147,7 +147,7 @@ namespace EPR.Payment.Facade.Services.Payments
         }
 
 
-        private CompleteOnlinePaymentResponseDto CreateCompleteOnlinePaymentResponse(OnlinePaymentDetailsDto onlinePaymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
+        private static CompleteOnlinePaymentResponseDto CreateCompleteOnlinePaymentResponse(OnlinePaymentDetailsDto onlinePaymentDetails, PaymentStatusResponseDto paymentStatusResponse, PaymentStatus status)
         {
             return new CompleteOnlinePaymentResponseDto
             {
@@ -216,7 +216,7 @@ namespace EPR.Payment.Facade.Services.Payments
             }
         }
 
-        private OnlinePaymentResponseDto CreateOnlinePaymentResponse(GovPayResponseDto govPayResponse)
+        private static OnlinePaymentResponseDto CreateOnlinePaymentResponse(GovPayResponseDto govPayResponse)
         {
             return new OnlinePaymentResponseDto
             {
