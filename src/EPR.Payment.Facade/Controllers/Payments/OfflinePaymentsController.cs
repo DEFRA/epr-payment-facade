@@ -17,11 +17,15 @@ namespace EPR.Payment.Facade.Controllers.Payments
     {
         private readonly IOfflinePaymentsService _offlinePaymentsService;
         private readonly ILogger<OfflinePaymentsController> _logger;
+        private readonly IValidator<OfflinePaymentRequestDto> _offlinePaymentRequestValidator;
 
-        public OfflinePaymentsController(IOfflinePaymentsService offlinePaymentsService, ILogger<OfflinePaymentsController> logger)
+        public OfflinePaymentsController(IOfflinePaymentsService offlinePaymentsService, 
+            ILogger<OfflinePaymentsController> logger,
+            IValidator<OfflinePaymentRequestDto> offlinePaymentRequestValidator)
         {
             _offlinePaymentsService = offlinePaymentsService ?? throw new ArgumentNullException(nameof(offlinePaymentsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _offlinePaymentRequestValidator = offlinePaymentRequestValidator ?? throw new ArgumentNullException(nameof(offlinePaymentRequestValidator));
         }
 
         [HttpPost]
@@ -36,16 +40,23 @@ namespace EPR.Payment.Facade.Controllers.Payments
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ContentResult))]
         [FeatureGate("EnableOfflinePayment")]
-        public async Task<IActionResult> OfflinePayment([FromBody] OfflinePaymentRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> OfflinePayment([FromBody] OfflinePaymentRequestDto offlinePaymentRequestDto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
+            var validatorResult = _offlinePaymentRequestValidator.Validate(offlinePaymentRequestDto);
+
+            if (!validatorResult.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Validation Error",
+                    Detail = string.Join("; ", validatorResult.Errors.Select(e => e.ErrorMessage)),
+                    Status = StatusCodes.Status400BadRequest
+                });
             }
 
             try
             {
-                await _offlinePaymentsService.OfflinePaymentAsync(request, cancellationToken);
+                await _offlinePaymentsService.OfflinePaymentAsync(offlinePaymentRequestDto, cancellationToken);
 
                 return NoContent();
             }

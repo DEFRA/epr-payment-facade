@@ -2,7 +2,6 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
@@ -45,8 +44,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             {
                 UserId = Guid.NewGuid(),
                 Reference = "123456",
+                Regulator = RegulatorConstants.GBENG,
                 Amount = 100,
-                Description = "Payment description"
+                Description = RegulatorConstants.GBENG
             };
 
             _paymentId = Guid.NewGuid();

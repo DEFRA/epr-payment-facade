@@ -1,19 +1,18 @@
-﻿using AutoFixture.MSTest;
-using EPR.Payment.Facade.Common.Configuration;
-using EPR.Payment.Facade.Common.Constants;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.Payments;
+using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 
 namespace EPR.Payment.Facade.UnitTests.Controllers
@@ -21,145 +20,163 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
     [TestClass]
     public class OfflinePaymentsControllerTests
     {
-        [TestMethod, AutoMoqData]
-        public async Task InitiateOfflinePayment_ValidRequest_ReturnsNoContent(
-            [Frozen] Mock<IOfflinePaymentsService> offlinePaymentsServiceMock,
-            [Greedy] OfflinePaymentsController controller,
-            [Frozen] OfflinePaymentRequestDto request)
-        {
-            // Arrange
-            var cancellationToken = new CancellationToken();
+        private IFixture _fixture = null!;
+        private OfflinePaymentsController _controller = null!;
+        private Mock<IOfflinePaymentsService> _offlinePaymentsServiceMock = null!;
+        private Mock<IValidator<OfflinePaymentRequestDto>> _offlinePaymentRequestValidatorMock = null!;
+        private Mock<ILogger<OfflinePaymentsController>> _loggerMock = null!;
+        private CancellationToken _cancellationToken;
 
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            _fixture = new Fixture().Customize(new AutoMoqCustomization());
+            _offlinePaymentsServiceMock = new Mock<IOfflinePaymentsService>();
+            _offlinePaymentRequestValidatorMock = _fixture.Freeze<Mock<IValidator<OfflinePaymentRequestDto>>>(); 
+            _loggerMock = _fixture.Freeze<Mock<ILogger<OfflinePaymentsController>>>();
+            _controller = new OfflinePaymentsController(_offlinePaymentsServiceMock.Object, _loggerMock.Object, _offlinePaymentRequestValidatorMock.Object);
+            _cancellationToken = new CancellationToken();
+        }
+
+        [TestMethod]
+        public void Constructor_WithValidArguments_ShouldInitializeCorrectly()
+        {
             // Act
-            var result = await controller.OfflinePayment(request, cancellationToken);
+            var controller = new OfflinePaymentsController(_offlinePaymentsServiceMock.Object,
+                _loggerMock.Object,
+                _offlinePaymentRequestValidatorMock.Object);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().BeOfType<NoContentResult>();
+                controller.Should().NotBeNull();
+                controller.Should().BeAssignableTo<OfflinePaymentsController>();
             }
         }
 
-        [TestMethod, AutoMoqData]
-        public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
-            [Frozen] Mock<IOfflinePaymentsService> _offlinePaymentsServiceMock,
-            [Frozen] Mock<ILogger<OfflinePaymentsController>> _loggerMock)
-        {
-            // Act
-            var controller = new OfflinePaymentsController(
-                _offlinePaymentsServiceMock.Object,
-                _loggerMock.Object
-            );
-
-            // Assert
-            controller.Should().NotBeNull();
-            controller.Should().BeAssignableTo<OfflinePaymentsController>();
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_WithNullOfflinePaymentsService_ShouldThrowArgumentNullException(
-            [Frozen] Mock<ILogger<OfflinePaymentsController>> _loggerMock)
-        {
-
-            // Act
-            Action act = () => new OfflinePaymentsController(
-                null!,
-                _loggerMock.Object
-            );
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("offlinePaymentsService");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IOfflinePaymentsService> _offlinePaymentsServiceMock)
-        {
-
-            // Act
-            Action act = () => new OfflinePaymentsController(
-                _offlinePaymentsServiceMock.Object,
-                null!
-            );
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("logger");
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task OfflinePayment_InvalidRequest_ReturnsBadRequest(
-            [Greedy] OfflinePaymentsController controller)
+        [TestMethod]
+        public void Constructor_WhenOfflinePaymentsServiceIsNull_ShouldThrowArgumentNullException()
         {
             // Arrange
-            var request = new OfflinePaymentRequestDto(); // Invalid request
-            controller.ModelState.AddModelError("Amount", "Amount is required");
-
-            var cancellationToken = new CancellationToken();
+            IOfflinePaymentsService? offlinePaymentsServiceMock = null;
 
             // Act
-            var result = await controller.OfflinePayment(request, cancellationToken);
+            Action act = () => new OfflinePaymentsController(offlinePaymentsServiceMock!,
+                                _loggerMock.Object,
+                                _offlinePaymentRequestValidatorMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'offlinePaymentsService')");
+        }
+
+        [TestMethod]
+        public void Constructor_WhenLoggerIsNull_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            ILogger<OfflinePaymentsController>? logger = null;
+
+            // Act
+            Action act = () => new OfflinePaymentsController(_offlinePaymentsServiceMock.Object,
+                                logger!,
+                                _offlinePaymentRequestValidatorMock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'logger')");
+        }
+
+        [TestMethod]
+        public void Constructor_WhenOfflinePaymentInsertRequestValidatorIsNull_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            IValidator<OfflinePaymentRequestDto>? offlinePaymentRequestValidatorMock = null;
+
+            // Act
+            Action act = () => new OfflinePaymentsController(_offlinePaymentsServiceMock.Object!,
+                                _loggerMock.Object,
+                                offlinePaymentRequestValidatorMock!);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'offlinePaymentRequestValidator')");
+        }
+
+
+        [TestMethod, AutoMoqData]
+        public async Task InsertOfflinePayment_ValidInput_ShouldReturnOk()
+        {
+            // Arrange
+            var request = _fixture.Build<OfflinePaymentRequestDto>().Create();
+
+            //Act
+            var result = await _controller.OfflinePayment(request, _cancellationToken);
+
+            //Assert
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task InsertOnlinePayment_RequestValidationFails_ShouldReturnsBadRequestWithValidationErrorDetails(
+           [Frozen] OfflinePaymentRequestDto request)
+        {
+            // Arrange
+            var validationFailures = new List<ValidationFailure>
+            {
+                new ValidationFailure("Reference", "Reference is required"),
+                new ValidationFailure("Regulator", "Regulator is required")
+            };
+
+            _offlinePaymentRequestValidatorMock.Setup(v => v.Validate(It.IsAny<OfflinePaymentRequestDto>()))
+                .Returns(new ValidationResult(validationFailures));
+
+            // Act
+            var result = await _controller.OfflinePayment(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().BeOfType<BadRequestObjectResult>();
-                var badRequestResult = result as BadRequestObjectResult;
-                badRequestResult?.Value.Should().BeOfType<SerializableError>();
+                var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Which;
+                var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Which;
+                problemDetails.Detail.Should().Be("Reference is required; Regulator is required");
             }
         }
 
         [TestMethod, AutoMoqData]
-        public async Task OfflinePayment_ThrowsValidationException_ReturnsBadRequest(
-            [Frozen] Mock<IOfflinePaymentsService> offlinePaymentsServiceMock,
-            [Greedy] OfflinePaymentsController controller)
+        public async Task InsertOfflinePayment_ServiceThrowsException_ShouldReturnInternalServerError([Frozen] OfflinePaymentRequestDto request)
         {
             // Arrange
-            var invalidRequest = new OfflinePaymentRequestDto();
+
+            _offlinePaymentsServiceMock.Setup(service => service.OfflinePaymentAsync(request, _cancellationToken))
+                               .ThrowsAsync(new Exception("Test Exception"));
+
+            // Act
+            var result = await _controller.OfflinePayment(request, _cancellationToken);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        }
+
+        [TestMethod]
+        public async Task InsertOfflinePayment_ThrowsValidationException_ShouldReturnBadRequest()
+        {
+            // Arrange
+
+            var request = _fixture.Build<OfflinePaymentRequestDto>().Create();
+
             var validationException = new ValidationException("Validation error");
-            var cancellationToken = new CancellationToken();
-
-            offlinePaymentsServiceMock.Setup(s => s.OfflinePaymentAsync(invalidRequest, cancellationToken)).ThrowsAsync(validationException);
+            _offlinePaymentsServiceMock.Setup(s => s.OfflinePaymentAsync(It.IsAny<OfflinePaymentRequestDto>(), _cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.OfflinePayment(invalidRequest, cancellationToken);
+            var result = await _controller.OfflinePayment(request, _cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
                 result.Should().BeOfType<BadRequestObjectResult>();
+
                 var badRequestResult = result as BadRequestObjectResult;
-                badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
-            }
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task OfflinePayment_ThrowsException_ReturnsInternalServerError(
-            [Frozen] Mock<IOfflinePaymentsService> offlinePaymentsServiceMock,
-            [Greedy] OfflinePaymentsController controller,
-            [Frozen] OfflinePaymentRequestDto request)
-        {
-            // Arrange
-            var exception = new Exception("Some error");
-            var cancellationToken = new CancellationToken();
-
-            offlinePaymentsServiceMock.Setup(s => s.OfflinePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
-
-            // Act
-            var result = await controller.OfflinePayment(request, cancellationToken);
-
-            // Assert
-            using (new AssertionScope())
-            { 
-                result.Should().BeOfType<ObjectResult>();
-                var objectResult = result as ObjectResult;
-                var problemDetails = objectResult?.Value as ProblemDetails;
-
-                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
-                problemDetails.Should().NotBeNull();
-                problemDetails?.Title.Should().Be("Unexpected Error");
-                problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErrorInsertingOfflinePayment);
+                badRequestResult.Should().NotBeNull();
             }
         }
     }

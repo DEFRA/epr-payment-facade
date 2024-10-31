@@ -17,6 +17,8 @@
         public const string RegulatorInvalid = "Invalid Regulator.";
         public const string RegulatorNotENG = "Online payment is not supported for this regulator.";
         public const string DescriptionRequired = "Description is required.";
+        public const string InvalidDescription = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee'";
+        public const string InvalidRegulatorOffline = "Regulator is invalid; acceptable values are 'GB-ENG', 'GB-SCT', 'GB-WLS' and 'GB-NIR'.";
 
         // Common Validation Messages
         public const string RegulatorRequired = "Regulator is required.";

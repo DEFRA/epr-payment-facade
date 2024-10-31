@@ -1,32 +1,26 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+﻿using EPR.Payment.Facade.Common.Constants;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
-using FluentValidation;
 
 namespace EPR.Payment.Facade.Services.Payments
 {
     public class OfflinePaymentsService : IOfflinePaymentsService
     {
         private readonly IHttpOfflinePaymentsService _httpOfflinePaymentsService;
-        private readonly IValidator<OfflinePaymentRequestDto> _offlinePaymentRequestDtoValidator;
 
         public OfflinePaymentsService(
-            IHttpOfflinePaymentsService httpOfflinePaymentsService,
-            IValidator<OfflinePaymentRequestDto> offlinePaymentRequestDtoValidator)
+            IHttpOfflinePaymentsService httpOfflinePaymentsService)
         { 
             _httpOfflinePaymentsService = httpOfflinePaymentsService ?? throw new ArgumentNullException(nameof(httpOfflinePaymentsService));
-            _offlinePaymentRequestDtoValidator = offlinePaymentRequestDtoValidator ?? throw new ArgumentNullException(nameof(offlinePaymentRequestDtoValidator));
         }
 
         public async Task OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default)
         {
-            var validatorResult = await _offlinePaymentRequestDtoValidator.ValidateAsync(request, cancellationToken);
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorResubmissionFees);
 
-            if (!validatorResult.IsValid)
-            {
-                throw new ValidationException(validatorResult.Errors.Aggregate("", (current, error) => current + $"\n{error.PropertyName} : {error.ErrorMessage}"));
-            }
-                await _httpOfflinePaymentsService.InsertOfflinePaymentAsync(request, cancellationToken);
+            await _httpOfflinePaymentsService.InsertOfflinePaymentAsync(request, cancellationToken);
         }
     }
 }
