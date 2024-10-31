@@ -10,15 +10,15 @@
         public const string ErrorRetrievingPaymentStatus = "Error occurred while retrieving payment status.";
 
         // HttpPaymentsService exceptions
-        public const string PaymentServiceBaseUrlMissing = "PaymentService BaseUrl configuration is missing";
-        public const string PaymentServiceEndPointNameMissing = "PaymentService EndPointName configuration is missing";
-        public const string PaymentServiceHttpClientNameMissing = "PaymentService HttpClientName configuration is missing";
-        public const string ErrorInsertingPayment = "Error occurred while inserting payment status.";
-        public const string ErrorUpdatingPayment = "Error occurred while updating payment status.";
-        public const string UnexpectedErrorInsertingPayment = "An unexpected error occurred while inserting the payment.";
-        public const string UnexpectedErrorUpdatingPayment = "An unexpected error occurred while updating the payment status.";
-        public const string ErrorRetrievingPaymentDetails = "Error occurred while retrieving payment details.";
-        public const string ErrorGettingPaymentDetails = "Error occurred while getting payment details.";
+        public const string OnlinePaymentServiceBaseUrlMissing = "OnlinePaymentService BaseUrl configuration is missing";
+        public const string OnlinePaymentServiceEndPointNameMissing = "OnlinePaymentService EndPointName configuration is missing";
+        public const string OnlinePaymentServiceHttpClientNameMissing = "OnlinePaymentService HttpClientName configuration is missing";
+        public const string ErrorInsertingOnlinePayment = "Error occurred while inserting payment status.";
+        public const string ErrorUpdatingOnlinePayment = "Error occurred while updating payment status.";
+        public const string UnexpectedErrorInsertingOnlinePayment = "An unexpected error occurred while inserting the payment.";
+        public const string UnexpectedErrorUpdatingOnlinePayment = "An unexpected error occurred while updating the payment status.";
+        public const string ErrorRetrievingOnlinePaymentDetails = "Error occurred while retrieving payment details.";
+        public const string ErrorGettingOnlinePaymentDetails = "Error occurred while getting payment details.";
 
         // PaymentsService exceptions
         public const string ReturnUrlNotConfigured = "ReturnUrl is not configured.";

@@ -15,7 +15,7 @@ using System.Net;
 namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 {
     [TestClass]
-    public class HttpPaymentServiceHealthCheckServiceTests
+    public class HttpOnlinePaymentServiceHealthCheckServiceTests
     {
         private IOptions<Service> _config = null!;
 
@@ -36,7 +36,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock)
         {
             // Arrange
-            var service = new HttpPaymentServiceHealthCheckService(
+            var service = new HttpOnlinePaymentServiceHealthCheckService(
                 _httpContextAccessorMock.Object,
                 _httpClientFactoryMock.Object,
                 _config);
@@ -52,7 +52,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock)
         {
             // Arrange
-            Action act = () => new HttpPaymentServiceHealthCheckService(
+            Action act = () => new HttpOnlinePaymentServiceHealthCheckService(
                 null!,
                 _httpClientFactoryMock.Object,
                 _config);
@@ -68,7 +68,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock)
         {
             // Arrange
-            Action act = () => new HttpPaymentServiceHealthCheckService(
+            Action act = () => new HttpOnlinePaymentServiceHealthCheckService(
                 _httpContextAccessorMock.Object,
                 null!,
                 _config);
@@ -90,7 +90,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 EndPointName = null
             });
 
-            Action act = () => new HttpPaymentServiceHealthCheckService(
+            Action act = () => new HttpOnlinePaymentServiceHealthCheckService(
                 _httpContextAccessorMock.Object,
                 _httpClientFactoryMock.Object,
                 _config);
@@ -113,7 +113,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             });
 
             // Act & Assert
-            Action act = () => new HttpPaymentServiceHealthCheckService(
+            Action act = () => new HttpOnlinePaymentServiceHealthCheckService(
                 _httpContextAccessorMock.Object,
                 _httpClientFactoryMock.Object,
                 _config);
@@ -135,7 +135,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             });
 
             // Act & Assert
-            Action act = () => new HttpPaymentServiceHealthCheckService(
+            Action act = () => new HttpOnlinePaymentServiceHealthCheckService(
                 _httpContextAccessorMock.Object,
                 _httpClientFactoryMock.Object,
                 _config);
@@ -188,7 +188,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
             var httpClient = new HttpClient(_handlerMock.Object);
 
-            var service = new HttpPaymentServiceHealthCheckService(
+            var service = new HttpOnlinePaymentServiceHealthCheckService(
                 _httpContextAccessorMock.Object,
                 new HttpClientFactoryMock(httpClient),
                 _config);

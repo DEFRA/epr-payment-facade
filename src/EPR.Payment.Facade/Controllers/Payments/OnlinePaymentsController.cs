@@ -14,19 +14,19 @@ namespace EPR.Payment.Facade.Controllers.Payments
 {
     [ApiVersion(1)]
     [ApiController]
-    [Route("api/v{version:apiVersion}/payments")]
-    [FeatureGate("EnablePaymentsFeature")]
-    public class PaymentsController : ControllerBase
+    [Route("api/v{version:apiVersion}/online-payments")]
+    [FeatureGate("EnableOnlinePaymentsFeature")]
+    public class OnlinePaymentsController : ControllerBase
     {
-        private readonly IPaymentsService _paymentsService;
-        private readonly ILogger<PaymentsController> _logger;
+        private readonly IOnlinePaymentsService _onlinePaymentsService;
+        private readonly ILogger<OnlinePaymentsController> _logger;
         private readonly string _errorUrl;
 
-        public PaymentsController(IPaymentsService paymentsService, ILogger<PaymentsController> logger, IOptions<PaymentServiceOptions> paymentServiceOptions)
+        public OnlinePaymentsController(IOnlinePaymentsService onlinePaymentsService, ILogger<OnlinePaymentsController> logger, IOptions<OnlinePaymentServiceOptions> onlinePaymentServiceOptions)
         {
-            _paymentsService = paymentsService ?? throw new ArgumentNullException(nameof(paymentsService));
+            _onlinePaymentsService = onlinePaymentsService ?? throw new ArgumentNullException(nameof(onlinePaymentsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _errorUrl = paymentServiceOptions.Value.ErrorUrl ?? throw new ArgumentNullException(nameof(paymentServiceOptions));
+            _errorUrl = onlinePaymentServiceOptions.Value.ErrorUrl ?? throw new ArgumentNullException(nameof(onlinePaymentServiceOptions));
         }
 
         [HttpPost]
@@ -41,7 +41,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, returns an HTML content result with a redirect script to the error URL.", typeof(ContentResult))]
         [FeatureGate("EnablePaymentInitiation")]
-        public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> InitiateOnlinePayment([FromBody] OnlinePaymentRequestDto request, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
@@ -60,7 +60,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
 
             try
             {
-                var result = await _paymentsService.InitiatePaymentAsync(request, cancellationToken);
+                var result = await _onlinePaymentsService.InitiateOnlinePaymentAsync(request, cancellationToken);
 
                 if (result.NextUrl == null)
                 {
@@ -84,7 +84,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
             catch (ValidationException ex)
             {
-                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiatePayment));
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiateOnlinePayment));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",
@@ -94,7 +94,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiatePayment));
+                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiateOnlinePayment));
                 return new ContentResult
                 {
                     Content = CreateHtmlContent(_errorUrl),
@@ -105,17 +105,17 @@ namespace EPR.Payment.Facade.Controllers.Payments
         }
 
         [HttpPost("{externalPaymentId}/complete")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompletePaymentResponseDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompleteOnlinePaymentResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
         [SwaggerOperation(
             Summary = "Completes the payment process",
             Description = "Completes the payment process for the externalPaymentId requested. In case of an error, redirects to the error URL.")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.", typeof(CompletePaymentResponseDto))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.", typeof(CompleteOnlinePaymentResponseDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, returns an HTML content result with a redirect script to the error URL.", typeof(ContentResult))]
         [FeatureGate("EnablePaymentCompletion")]
-        public async Task<IActionResult> CompletePayment(Guid externalPaymentId, CancellationToken cancellationToken)
+        public async Task<IActionResult> CompleteOnlinePayment(Guid externalPaymentId, CancellationToken cancellationToken)
         {
             if (externalPaymentId == Guid.Empty)
             {
@@ -129,12 +129,12 @@ namespace EPR.Payment.Facade.Controllers.Payments
 
             try
             {
-                var result = await _paymentsService.CompletePaymentAsync(externalPaymentId, cancellationToken);
+                var result = await _onlinePaymentsService.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken);
                 return Ok(result);
             }
             catch (ValidationException ex)
             {
-                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CompletePayment));
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CompleteOnlinePayment));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",
@@ -144,7 +144,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(CompletePayment));
+                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(CompleteOnlinePayment));
                 return new ContentResult
                 {
                     Content = CreateHtmlContent(_errorUrl),
