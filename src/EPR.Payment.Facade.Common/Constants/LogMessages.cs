@@ -15,6 +15,13 @@
         public const string ValidationErrorInsertingOnlinePayment = "Validation error occurred while inserting payment.";
         public const string UnexpectedErrorInsertingOnlinePayment = "An unexpected error occurred while inserting payment.";
 
+
+        // Log Messages for OfflinePaymentsService
+        public const string ValidationErrorInsertingOfflinePayment = "Validation error occurred while inserting offline payment.";
+        public const string UnexpectedErrorInsertingOfflinePayment = "An unexpected error occurred while inserting offline payment.";
+        public const string ErrorOccuredWhileInsertingOfflinePayment = "An error occurred while inserting offline payment in {MethodName} request";
+
+
         // Log Messages for PaymentsController
         public const string NextUrlNull = "Next URL is null.";
 
