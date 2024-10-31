@@ -16,11 +16,6 @@ namespace EPR.Payment.Facade.Validations.Payments
                 .NotEmpty()
                 .WithMessage(ValidationMessages.OfflineReferenceRequired);
 
-            RuleFor(x => x.Amount)
-                .NotNull()
-                .GreaterThan(0)
-                .WithMessage(ValidationMessages.AmountRequiredAndGreaterThanZero);
-
             RuleFor(x => x.Description)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
