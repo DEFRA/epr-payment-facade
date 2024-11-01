@@ -67,6 +67,7 @@ async function calculateComplianceSchemeFees() {
             const memberType = document.getElementById(`memberType${i}`).value;
             const subsidiaryCount = document.getElementById(`subsidiaryCount${i}`).value;
             const isOnlineMarketplace = document.getElementById(`isOnlineMarketplaceMember${i}`).checked;
+            const isLateFeeApplicable = document.getElementById(`isLateFeeApplicableMember${i}`).checked;
             const onlineMarketplaceSubsidiaryCount = document.getElementById(`onlineMarketplaceSubsidiaryCount${i}`).value;
 
             if (memberId && memberType && subsidiaryCount) {
@@ -74,6 +75,7 @@ async function calculateComplianceSchemeFees() {
                     MemberId: memberId,
                     MemberType: memberType,
                     IsOnlineMarketplace: isOnlineMarketplace,
+                    IsLateFeeApplicable: isLateFeeApplicable,
                     NumberOfSubsidiaries: parseInt(subsidiaryCount),
                     NoOfSubsidiariesOnlineMarketplace: parseInt(onlineMarketplaceSubsidiaryCount),
                 });
@@ -165,6 +167,14 @@ function displayFees(data) {
                 </tr>
             `).join('');
 
+        // Add late fee row for each member if applicable
+        const lateFeeRow = member.memberLateRegistrationFee ? `
+                <tr class="reg-info">
+                    <td>Member Late Registration Fee</td>
+                    <td>£${formatCurrency(member.memberLateRegistrationFee)}</td>
+                </tr>
+            ` : '';
+
         return `
             <h3>Member ID: ${member.memberId}</h3>
             <table>
@@ -177,6 +187,7 @@ function displayFees(data) {
                         <td>Member Online Marketplace Fee</td>
                         <td>£${formatCurrency(member.memberOnlineMarketPlaceFee)}</td>
                     </tr>
+                    ${lateFeeRow}
                     <tr class="reg-info">
                         <td>Subsidiaries Fee</td>
                         <td>£${formatCurrency(member.subsidiariesFee)}</td>
@@ -203,6 +214,7 @@ function displayFees(data) {
 
     modal.style.display = "block";
 }
+
 
 function closeModal() {
     document.getElementById("resultsModal").style.display = "none";
