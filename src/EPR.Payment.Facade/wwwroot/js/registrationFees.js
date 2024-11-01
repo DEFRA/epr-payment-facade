@@ -182,7 +182,7 @@ function displayFees(data) {
                     <tr class="reg-info">
                         <td>Member Registration Fee</td>
                         <td>£${formatCurrency(member.memberRegistrationFee)}</td>
-                    </tr>                    
+                    </tr>
                     <tr class="reg-info">
                         <td>Member Online Marketplace Fee</td>
                         <td>£${formatCurrency(member.memberOnlineMarketPlaceFee)}</td>
@@ -191,8 +191,8 @@ function displayFees(data) {
                     <tr class="reg-info">
                         <td>Subsidiaries Fee</td>
                         <td>£${formatCurrency(member.subsidiariesFee)}</td>
-                    </tr>                    
-                    ${breakdownRows}                    
+                    </tr>
+                    ${breakdownRows}
                     <tr class="calc-info">
                         <td>Total Member Fee</td>
                         <td>£${formatCurrency(member.totalMemberFee)}</td>
