@@ -34,6 +34,9 @@ namespace EPR.Payment.Facade.Helpers
             RegisterHttpService<IHttpOnlinePaymentsService, HttpOnlinePaymentsService>(
                 services, nameof(ServicesConfiguration.PaymentService));
 
+            RegisterHttpService<IHttpOfflinePaymentsService, HttpOfflinePaymentsService>(
+                services, nameof(ServicesConfiguration.OfflinePaymentService));
+
             RegisterHttpService<IHttpGovPayService, HttpGovPayService>(
                 services, nameof(ServicesConfiguration.GovPayService));
 
