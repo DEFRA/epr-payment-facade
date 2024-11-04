@@ -29,14 +29,14 @@ namespace EPR.Payment.Facade.Controllers.Payments
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ContentResult))]
+        [ProducesResponseType(StatusCodes.Status204NoContent, Type = typeof(NoContentResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
         [SwaggerOperation(
             Summary = "Saves a new offlinepayment",
             Description = "Initiates a new payment with mandatory payment request data.  "
         )]
-        [SwaggerResponse(StatusCodes.Status200OK, $"Returns No Content", typeof(NoContentResult))]
+        [SwaggerResponse(StatusCodes.Status204NoContent, $"Returns No Content", typeof(NoContentResult))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ContentResult))]
         [FeatureGate("EnableOfflinePayment")]
