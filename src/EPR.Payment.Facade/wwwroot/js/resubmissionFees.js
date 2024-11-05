@@ -1,47 +1,72 @@
-﻿async function getResubmissionFee() {
+﻿async function getProducerResubmissionFee() {
     const regulator = document.getElementById('resubmissionRegulator').value;
+    const referenceNumber = document.getElementById('referenceNumber').value;
+    const resubmissionDate = document.getElementById('resubmissionDate').value;
     const resultContainer = document.getElementById('resubmissionFeeResult');
 
-    if (!regulator) {
-        resultContainer.textContent = '';
-        resultContainer.style.display = "none";
-        return;
-    }
+    // Prepare request data
+    const requestData = {
+        regulator: regulator,
+        referenceNumber: referenceNumber,
+        resubmissionDate: new Date(resubmissionDate).toISOString()
+    };
 
     try {
-        const response = await fetch(`/api/v1/producer/resubmission-fee?regulator=${regulator}`, {
-            method: 'GET',
+        const response = await fetch('/api/v1/producer/resubmission-fee', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify(requestData)
         });
 
         if (response.ok) {
             const data = await response.json();
-            resultContainer.textContent = `Resubmission Fee: £${formatCurrency(data)}`;
-            resultContainer.style.display = "block";
+            displayProducerResubmissionFee(data); // Show results in the modal
         } else {
             const errorData = await response.json();
-            console.error('Error fetching resubmission fee:', errorData);
-
-            let errorMessage = 'Failed to fetch resubmission fee.';
-            if (errorData.errors) {
-                errorMessage = Object.values(errorData.errors).flat().join('\n');
-            } else if (errorData.detail) {
-                errorMessage = errorData.detail;
-            }
-
-            alert(`Error: ${errorMessage}`);
+            displayServerErrors(errorData); // Handle server-side validation errors
         }
-
     } catch (error) {
         console.error('Network error:', error);
         alert('Network error occurred.');
     }
 }
 
+function displayProducerResubmissionFee(data) {
+    const modal = document.getElementById("resubmissionResultsModal");
+    const modalBody = document.getElementById("resubmissionModalBody");
 
-// New Compliance Scheme Resubmission Function
+    const resultText = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="total-fee">
+                    <td>Total Resubmission Fee</td>
+                    <td>£${formatCurrency(data.totalResubmissionFee)}</td>
+                </tr>
+                <tr class="total-fee">
+                    <td>Previous Payments</td>
+                    <td>£${formatCurrency(data.previousPayments)}</td>
+                </tr>
+                <tr class="total-fee">
+                    <td>Outstanding Payment</td>
+                    <td>£${formatCurrency(data.outstandingPayment)}</td>
+                </tr>
+            </tbody>
+        </table>
+    `;
+
+    modalBody.innerHTML = resultText;
+    modal.style.display = "block";
+}
+
+// Compliance Scheme Resubmission Function
 async function calculateComplianceResubmissionFee() {
     const regulator = document.getElementById('complianceRegulator').value;
     const resubmissionDate = document.getElementById('complianceResubmissionDate').value;
@@ -143,6 +168,11 @@ function displayComplianceResubmissionFee(data) {
 function closeComplianceModal() {
     document.getElementById("complianceResultsModal").style.display = "none";
 }
+
+function closeResubmissionModal() {
+    document.getElementById("resubmissionResultsModal").style.display = "none";
+}
+
 
 // Utility function for currency formatting (convert from pence to pounds)
 function formatCurrency(amountInPence) {
