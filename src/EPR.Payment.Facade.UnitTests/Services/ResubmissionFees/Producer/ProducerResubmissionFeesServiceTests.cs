@@ -33,6 +33,27 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
                 _loggerMock.Object);
         }
 
+        [TestMethod]
+        public void Constructor_WithNullHttpProducerResubmissionFeesService_ShouldThrowArgumentNullException()
+        {
+            // Act & Assert
+            Action act = () => new ProducerResubmissionFeesService(null!, new Mock<ILogger<ProducerResubmissionFeesService>>().Object);
+
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'httpProducerResubmissionFeesService')");
+        }
+
+        [TestMethod]
+        public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
+        {
+            // Act & Assert
+            Action act = () => new ProducerResubmissionFeesService(new Mock<IHttpProducerResubmissionFeesService>().Object, null!);
+
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'logger')");
+        }
+
+
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ReturnsAResult_ShouldReturnResponse(
             [Frozen] ProducerResubmissionFeeRequestDto request,
