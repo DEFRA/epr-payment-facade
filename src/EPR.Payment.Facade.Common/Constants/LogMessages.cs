@@ -10,10 +10,17 @@
         // General-purpose error log message template.
 
         // Log Messages for PaymentsService
-        public const string ValidationErrorUpdatingPayment = "Validation error occurred while updating payment status.";
-        public const string UnexpectedErrorUpdatingPayment = "An unexpected error occurred while updating payment status.";
-        public const string ValidationErrorInsertingPayment = "Validation error occurred while inserting payment.";
-        public const string UnexpectedErrorInsertingPayment = "An unexpected error occurred while inserting payment.";
+        public const string ValidationErrorUpdatingOnlinePayment = "Validation error occurred while updating payment status.";
+        public const string UnexpectedErrorUpdatingOnlinePayment = "An unexpected error occurred while updating payment status.";
+        public const string ValidationErrorInsertingOnlinePayment = "Validation error occurred while inserting payment.";
+        public const string UnexpectedErrorInsertingOnlinePayment = "An unexpected error occurred while inserting payment.";
+
+
+        // Log Messages for OfflinePaymentsService
+        public const string ValidationErrorInsertingOfflinePayment = "Validation error occurred while inserting offline payment.";
+        public const string UnexpectedErrorInsertingOfflinePayment = "An unexpected error occurred while inserting offline payment.";
+        public const string ErrorOccuredWhileInsertingOfflinePayment = "An error occurred while inserting offline payment in {MethodName} request";
+
 
         // Log Messages for PaymentsController
         public const string NextUrlNull = "Next URL is null.";

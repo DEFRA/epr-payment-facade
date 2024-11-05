@@ -18,8 +18,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.TestHelpers
                 new SupportMutableValueTypesCustomization()));
 
             // Configure the fixture to use the correct PaymentServiceOptions
-            var optionsMock = fixture.Freeze<Mock<IOptions<PaymentServiceOptions>>>();
-            optionsMock.Setup(o => o.Value).Returns(new PaymentServiceOptions
+            var optionsMock = fixture.Freeze<Mock<IOptions<OnlinePaymentServiceOptions>>>();
+            optionsMock.Setup(o => o.Value).Returns(new OnlinePaymentServiceOptions
             {
                 ReturnUrl = "https://example.com/return",
                 Description = "Payment description",
