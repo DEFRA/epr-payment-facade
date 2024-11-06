@@ -24,7 +24,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptions<Service>> _configMock = null!;
         private ComplianceSchemeResubmissionFeeRequestDto _requestDto = null!;
-        private ComplianceSchemeResubmissionFeeResult _responseDto = null!;
+        private ComplianceSchemeResubmissionFeeResponse _responseDto = null!;
 
         [TestInitialize]
         public void Initialize()
@@ -49,7 +49,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 MemberCount = 5
             };
 
-            _responseDto = new ComplianceSchemeResubmissionFeeResult
+            _responseDto = new ComplianceSchemeResubmissionFeeResponse
             {
                 TotalResubmissionFee = 215000,
                 PreviousPayments = 50000,

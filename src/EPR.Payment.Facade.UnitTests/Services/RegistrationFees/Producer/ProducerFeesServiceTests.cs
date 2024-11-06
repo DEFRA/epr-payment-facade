@@ -14,7 +14,7 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
 {
     [TestClass]
-    public class ProducerResubmissionFeesServiceTests
+    public class ProducerFeesServiceTests
     {
         private IFixture _fixture = null!;
         private Mock<IHttpProducerFeesService> _httpProducerFeesService = null!;
