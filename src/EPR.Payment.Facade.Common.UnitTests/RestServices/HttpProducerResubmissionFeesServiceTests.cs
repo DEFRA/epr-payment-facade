@@ -1,9 +1,8 @@
 ﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
@@ -24,8 +23,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptions<Service>> _configMock = null!;
-        private ProducerFeesRequestDto _producerFeesRequestDto = null!;
-        private ProducerFeesResponseDto _producerFeesResponseDto = null!;
+        private ProducerResubmissionFeeRequestDto _requestDto = null!;
+        private ProducerResubmissionFeeResponseDto _responseDto = null!;
 
         [TestInitialize]
         public void Initialize()
@@ -34,7 +33,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             var config = new Service
             {
                 Url = "https://api.example.com",
-                EndPointName = "registration-fee",
+                EndPointName = "producer/resubmission-fee",
                 HttpClientName = "HttpClientName"
             };
 
@@ -42,56 +41,25 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             _configMock.Setup(x => x.Value).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            _producerFeesRequestDto = new ProducerFeesRequestDto
+            _requestDto = new ProducerResubmissionFeeRequestDto
             {
-                ProducerType = "LARGE",
-                NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
-                IsProducerOnlineMarketplace = false,
-                IsLateFeeApplicable = false,
-                ApplicationReferenceNumber = "A123",
-                SubmissionDate = DateTime.Now
+                ResubmissionDate = DateTime.UtcNow,
+                ReferenceNumber = "PROD-REF-1234"
             };
 
-            _producerFeesResponseDto = new ProducerFeesResponseDto
+            _responseDto = new ProducerResubmissionFeeResponseDto
             {
-                TotalFee = 1000,
-                SubsidiariesFeeBreakdown = new SubsidiariesFeeBreakdown
-                {
-                    FeeBreakdowns = new List<FeeBreakdown>
-                    {
-                        new FeeBreakdown
-                        {
-                            BandNumber = 1,
-                            UnitCount = 2,
-                            UnitPrice = 500,
-                            TotalPrice = 1000
-                        },
-                        new FeeBreakdown
-                        {
-                            BandNumber = 2,
-                            UnitCount = 3,
-                            UnitPrice = 200,
-                            TotalPrice = 600
-                        },
-                        new FeeBreakdown
-                        {
-                            BandNumber = 3,
-                            UnitCount = 0,
-                            UnitPrice = 500,
-                            TotalPrice = 0
-                        }
-                    }
-                }
+                TotalResubmissionFee = 1000,
+                PreviousPayments = 200,
+                OutstandingPayment = 800
             };
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsRegistrationFee(
+        public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsResubmissionFee(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Greedy] HttpProducerResubmissionFeesService httpProducerResubmissionFeesService,
-            [Frozen] RegulatorDto request,
-            [Frozen] decimal expectedAmount,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -100,24 +68,23 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.OK,
-                           Content = new StringContent(JsonConvert.SerializeObject(expectedAmount), Encoding.UTF8, "application/json")
+                           Content = new StringContent(JsonConvert.SerializeObject(_responseDto), Encoding.UTF8, "application/json")
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpProducerResubmissionFeesService = CreateHttpProducerRegistrationFeesService(httpClient);
+            httpProducerResubmissionFeesService = CreateHttpProducerResubmissionFeesService(httpClient);
 
             // Act
-            var result = await httpProducerResubmissionFeesService.GetResubmissionFeeAsync(request, cancellationToken);
+            var result = await httpProducerResubmissionFeesService.GetResubmissionFeeAsync(_requestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().Be(expectedAmount);
+                result.Should().BeEquivalentTo(_responseDto);
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Get),
+                    ItExpr.Is<HttpRequestMessage>(msg => msg.Method == HttpMethod.Post),
                     ItExpr.IsAny<CancellationToken>());
             }
         }
@@ -125,9 +92,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            [Frozen] Mock<IOptions<Service>> configMock,
             [Greedy] HttpProducerResubmissionFeesService httpProducerResubmissionFeesService,
-            [Frozen] RegulatorDto request,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -136,10 +101,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                        .ThrowsAsync(new HttpRequestException("Unexpected error"));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpProducerResubmissionFeesService = CreateHttpProducerRegistrationFeesService(httpClient);
+            httpProducerResubmissionFeesService = CreateHttpProducerResubmissionFeesService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpProducerResubmissionFeesService.GetResubmissionFeeAsync(request, cancellationToken);
+            Func<Task> act = async () => await httpProducerResubmissionFeesService.GetResubmissionFeeAsync(_requestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -147,12 +112,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 await act.Should().ThrowAsync<ServiceException>()
                     .WithMessage(ExceptionMessages.ErrorResubmissionFees);
 
-
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Get),
+                    ItExpr.Is<HttpRequestMessage>(msg => msg.Method == HttpMethod.Post),
                     ItExpr.IsAny<CancellationToken>());
             }
         }
@@ -160,9 +123,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_UnsuccessfulStatusCode_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            [Frozen] Mock<IOptions<Service>> configMock,
             [Greedy] HttpProducerResubmissionFeesService httpProducerResubmissionFeesService,
-            [Frozen] RegulatorDto request,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -171,31 +132,30 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
-                           Content = new StringContent(JsonConvert.SerializeObject("GB-ENG"), Encoding.UTF8, "application/json")
+                           Content = new StringContent("Error message", Encoding.UTF8, "application/json")
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpProducerResubmissionFeesService = CreateHttpProducerRegistrationFeesService(httpClient);
+            httpProducerResubmissionFeesService = CreateHttpProducerResubmissionFeesService(httpClient);
 
             // Act
-            Func<Task> act = async () => await httpProducerResubmissionFeesService.GetResubmissionFeeAsync(request, cancellationToken);
+            Func<Task> act = async () => await httpProducerResubmissionFeesService.GetResubmissionFeeAsync(_requestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorResubmissionFees);
+                    .WithMessage(ExceptionMessages.ErrorResubmissionFees);
 
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Get),
+                    ItExpr.Is<HttpRequestMessage>(msg => msg.Method == HttpMethod.Post),
                     ItExpr.IsAny<CancellationToken>());
             }
         }
 
-        private HttpProducerResubmissionFeesService CreateHttpProducerRegistrationFeesService(HttpClient httpClient)
+        private HttpProducerResubmissionFeesService CreateHttpProducerResubmissionFeesService(HttpClient httpClient)
         {
             return new HttpProducerResubmissionFeesService(
                 _httpContextAccessorMock!.Object,

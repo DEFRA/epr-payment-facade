@@ -13,8 +13,15 @@
         <div class="container">
             <h1>Producer Resubmission Fee</h1>
             <label for="resubmissionRegulator">Regulator:</label>
-            <input type="text" id="resubmissionRegulator" required placeholder="ie GB-ENG">
-            <button onclick="getResubmissionFee()">Get Resubmission Fee</button>
+            <input type="text" id="resubmissionRegulator" required placeholder="e.g., GB-ENG">
+
+            <label for="referenceNumber">Reference Number:</label>
+            <input type="text" id="referenceNumber" required placeholder="A123">
+
+            <label for="resubmissionDate">Resubmission Date:</label>
+            <input type="date" id="resubmissionDate" required>
+
+            <button onclick="getProducerResubmissionFee()">Get Resubmission Fee</button>
             <div id="resubmissionFeeResult" class="result"></div>
         </div>
 
@@ -50,5 +57,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Resubmission Fee Modal -->
+    <div id="resubmissionResultsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Producer Resubmission Fee Breakdown</h2>
+                <span class="close" onclick="closeResubmissionModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="resubmissionModalBody">
+                <!-- Results will be displayed here -->
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
