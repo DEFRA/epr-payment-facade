@@ -70,7 +70,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
 
         [TestMethod, AutoMoqData]
         public async Task CalculateResubmissionFeeAsync_RequestIsValid_ShouldReturnResponse(
-            ComplianceSchemeResubmissionFeeResult expectedResponse,
+            ComplianceSchemeResubmissionFeeResponse expectedResponse,
             ComplianceSchemeResubmissionFeeRequestDto request)
         {
             // Arrange

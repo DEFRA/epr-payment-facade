@@ -35,7 +35,7 @@ namespace EPR.Payment.Facade.Controllers.ResubmissionFees.ComplianceScheme
         [FeatureGate("EnableResubmissionFeesCalculation")]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
-        [ProducesResponseType(typeof(ComplianceSchemeResubmissionFeeResult), 200)]
+        [ProducesResponseType(typeof(ComplianceSchemeResubmissionFeeResponse), 200)]
         [SwaggerOperation(
             Summary = "Compliance Scheme resubmission fee calculation",
             Description = "Calculates the compliance scheme resubmission fee based on the provided request details.")]

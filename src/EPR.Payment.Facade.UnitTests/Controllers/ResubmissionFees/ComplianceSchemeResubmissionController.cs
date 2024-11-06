@@ -74,7 +74,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
             [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesService,
             [Frozen] ComplianceSchemeResubmissionFeeRequestDto request,
             [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
-            [Frozen] ComplianceSchemeResubmissionFeeResult expectedResult,
+            [Frozen] ComplianceSchemeResubmissionFeeResponse expectedResult,
             [Greedy] ComplianceSchemeResubmissionController controller)
         {
             // Arrange
