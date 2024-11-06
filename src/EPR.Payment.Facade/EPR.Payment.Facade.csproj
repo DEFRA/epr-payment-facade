@@ -40,7 +40,6 @@
 
   <ItemGroup>
     <Folder Include="Configuration\" />
-    <Folder Include="Validations\ResubmissionFees\Producer\" />
   </ItemGroup>
 
 	<ItemGroup>

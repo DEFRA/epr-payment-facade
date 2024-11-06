@@ -22,11 +22,11 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceSche
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        public async Task<ComplianceSchemeResubmissionFeeResult> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ComplianceSchemeResubmissionFeeResponse> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default)
         {
             try
             {
-                return await Post<ComplianceSchemeResubmissionFeeResult>(UrlConstants.GetComplianceSchemeResubmissionFee, request, cancellationToken);
+                return await Post<ComplianceSchemeResubmissionFeeResponse>(UrlConstants.GetComplianceSchemeResubmissionFee, request, cancellationToken);
             }
             catch (Exception ex)
             {

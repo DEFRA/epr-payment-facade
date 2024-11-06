@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Services.ResubmissionFees.Producer.Interfaces;
 using FluentValidation;
 using FluentValidation.Results;
@@ -16,33 +17,35 @@ namespace EPR.Payment.Facade.Controllers.ResubmissionFees.Producer
     [FeatureGate("EnableProducersResubmissionFeesFeature")]
     public class ProducerResubmissionController : ControllerBase
     {
-        private readonly IValidator<RegulatorDto> _resubmissionValidator;
+        private readonly IValidator<ProducerResubmissionFeeRequestDto> _resubmissionValidator;
         private readonly IProducerResubmissionFeesService _producerResubmissionFeesService;
         private readonly ILogger<ProducerResubmissionController> _logger;
 
         public ProducerResubmissionController(
             IProducerResubmissionFeesService producerResubmissionFeesService,
             ILogger<ProducerResubmissionController> logger,
-            IValidator<RegulatorDto> resubmissionValidator
-            )
+            IValidator<ProducerResubmissionFeeRequestDto> resubmissionValidator)
         {
             _resubmissionValidator = resubmissionValidator ?? throw new ArgumentNullException(nameof(resubmissionValidator));
             _producerResubmissionFeesService = producerResubmissionFeesService ?? throw new ArgumentNullException(nameof(producerResubmissionFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [HttpGet("resubmission-fee")]
+        [HttpPost("resubmission-fee")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerResubmissionFeeResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
         [SwaggerOperation(
-            Summary = "Producer registration resubmission fee by regulator",
-            Description = "Return producer registration resubmission fee by regulator."
+            Summary = "Calculate producer resubmission fee",
+            Description = "Calculates the resubmission fee for a producer based on provided request details."
         )]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returns the calculated resubmission fees", typeof(ProducerResubmissionFeeResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad Request due to validation errors or invalid input", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error occurred while calculating the fee", typeof(ProblemDetails))]
         [FeatureGate("EnableProducerResubmissionFee")]
-        public async Task<IActionResult> GetResubmissionFeeAsync([FromQuery] RegulatorDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetResubmissionFeeAsync([FromBody] ProducerResubmissionFeeRequestDto request, CancellationToken cancellationToken)
         {
+            // Validate the request
             ValidationResult validationResult = _resubmissionValidator.Validate(request);
             if (!validationResult.IsValid)
             {
@@ -57,8 +60,8 @@ namespace EPR.Payment.Facade.Controllers.ResubmissionFees.Producer
 
             try
             {
-                var registrationFeesResponse = await _producerResubmissionFeesService.GetResubmissionFeeAsync(request, cancellationToken);
-                return Ok(registrationFeesResponse);
+                var response = await _producerResubmissionFeesService.GetResubmissionFeeAsync(request, cancellationToken);
+                return Ok(response);
             }
             catch (ValidationException ex)
             {

@@ -20,7 +20,7 @@ namespace EPR.Payment.Facade.Services.ResubmissionFees.ComplianceScheme
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Task<ComplianceSchemeResubmissionFeeResult> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default)
+        public Task<ComplianceSchemeResubmissionFeeResponse> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorResubmissionFees);
@@ -28,7 +28,7 @@ namespace EPR.Payment.Facade.Services.ResubmissionFees.ComplianceScheme
             return CalculateComplianceSchemeResubmissionFeeInternalAsync(request, cancellationToken);
         }
 
-        private async Task<ComplianceSchemeResubmissionFeeResult> CalculateComplianceSchemeResubmissionFeeInternalAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken)
+        private async Task<ComplianceSchemeResubmissionFeeResponse> CalculateComplianceSchemeResubmissionFeeInternalAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken)
         {
             try
             {
