@@ -9,6 +9,7 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -50,7 +51,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 IsProducerOnlineMarketplace = false,
                 IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123",
-                SubmissionDate = DateTime.Now
+                SubmissionDate = DateTime.UtcNow
             };
 
             _producerFeesResponseDto = new ProducerFeesResponseDto
@@ -264,7 +265,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_UnsuccessfulStatusCode_ThrowsServiceException(
+        public async Task CalculateProducerFeesAsync_UnsuccessfulStatusCode_ThrowsValidationException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
             HttpProducerFeesService httpRegistrationFeesService,
@@ -273,11 +274,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Arrange
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ReturnsAsync(new HttpResponseMessage
-                       {
-                           StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
-                           Content = new StringContent(JsonConvert.SerializeObject(_producerFeesResponseDto), Encoding.UTF8, "application/json")
-                       });
+                       .ThrowsAsync(new ResponseCodeException(HttpStatusCode.BadRequest, "Invalid input parameter."));
 
             var httpClient = new HttpClient(handlerMock.Object);
             httpRegistrationFeesService = CreateHttpProducerFeesService(httpClient);
@@ -288,8 +285,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+                await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("Invalid input parameter.");
 
                 handlerMock.Protected().Verify(
                     "SendAsync",

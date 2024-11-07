@@ -43,10 +43,10 @@ namespace EPR.Payment.Facade.Controllers.ResubmissionFees.Producer
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad Request due to validation errors or invalid input", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error occurred while calculating the fee", typeof(ProblemDetails))]
         [FeatureGate("EnableProducerResubmissionFee")]
-        public async Task<IActionResult> GetResubmissionFeeAsync([FromBody] ProducerResubmissionFeeRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetResubmissionFeeAsync([FromBody] ProducerResubmissionFeeRequestDto producerResubmissionFeeRequestDto, CancellationToken cancellationToken)
         {
             // Validate the request
-            ValidationResult validationResult = _resubmissionValidator.Validate(request);
+            ValidationResult validationResult = _resubmissionValidator.Validate(producerResubmissionFeeRequestDto);
             if (!validationResult.IsValid)
             {
                 _logger.LogError(LogMessages.ValidationErrorOccured, nameof(GetResubmissionFeeAsync));
@@ -60,7 +60,7 @@ namespace EPR.Payment.Facade.Controllers.ResubmissionFees.Producer
 
             try
             {
-                var response = await _producerResubmissionFeesService.GetResubmissionFeeAsync(request, cancellationToken);
+                var response = await _producerResubmissionFeesService.GetResubmissionFeeAsync(producerResubmissionFeeRequestDto, cancellationToken);
                 return Ok(response);
             }
             catch (ValidationException ex)

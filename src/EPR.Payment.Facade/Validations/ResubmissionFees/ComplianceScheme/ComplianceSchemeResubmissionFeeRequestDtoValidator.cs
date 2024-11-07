@@ -14,10 +14,10 @@ namespace EPR.Payment.Facade.Validations.ResubmissionFees.ComplianceScheme
                 .Must(RegulatorValidationHelper.IsValidRegulator).WithMessage(ValidationMessages.RegulatorInvalid);
 
             RuleFor(x => x.ResubmissionDate)
+                .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage(ValidationMessages.ResubmissionDateRequired)
                 .Must(BeInUtc).WithMessage(ValidationMessages.ResubmissionDateMustBeUtc)
-                .Must(BeValidDate).WithMessage(ValidationMessages.ResubmissionDateDefaultInvalid)
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage(ValidationMessages.ResubmissionDateInvalid);
+                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage(ValidationMessages.FutureResubmissionDate);
 
             RuleFor(x => x.ReferenceNumber)
                 .NotEmpty().WithMessage(ValidationMessages.ReferenceNumberRequired);
@@ -25,16 +25,9 @@ namespace EPR.Payment.Facade.Validations.ResubmissionFees.ComplianceScheme
             RuleFor(x => x.MemberCount)
                 .GreaterThan(0).WithMessage(ValidationMessages.MemberCountGreaterThanZero);
         }
-
-        private bool BeInUtc(DateTime dateTime)
+        private static bool BeInUtc(DateTime dateTime)
         {
             return dateTime.Kind == DateTimeKind.Utc;
-        }
-
-        private bool BeValidDate(DateTime dateTime)
-        {
-            // Here we check if the date is valid and if it is in a reasonable range
-            return dateTime != DateTime.MinValue && dateTime != default(DateTime);
         }
     }
 }
