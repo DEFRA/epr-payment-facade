@@ -33,13 +33,7 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees.Producer
 
             RuleFor(x => x.SubmissionDate)
                 .Cascade(CascadeMode.Stop)
-                .NotEmpty().WithMessage(ValidationMessages.InvalidSubmissionDate)
-                .Must(BeInUtc).WithMessage(ValidationMessages.SubmissionDateMustBeUtc)
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage(ValidationMessages.FutureSubmissionDate);
-        }
-        private static bool BeInUtc(DateTime dateTime)
-        {
-            return dateTime.Kind == DateTimeKind.Utc;
+                .MustBeValidSubmissionDate(); 
         }
     }
 }
