@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using EPR.Payment.Facade.Common.Constants;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
@@ -8,6 +9,8 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interface
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer;
 using FluentAssertions;
+using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -113,6 +116,29 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
                     exception,
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
+            ProducerFeesRequestDto request)
+        {
+            // Arrange
+            var exceptionMessage = "Validation error";
+            var validationException = new ValidationException(exceptionMessage);
+
+            _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(validationException);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateProducerFeesAsync(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var thrownException = await act.Should().ThrowAsync<ValidationException>();
+
+                thrownException.Which.Message.Should().Be(exceptionMessage);
+            }
         }
     }
 }

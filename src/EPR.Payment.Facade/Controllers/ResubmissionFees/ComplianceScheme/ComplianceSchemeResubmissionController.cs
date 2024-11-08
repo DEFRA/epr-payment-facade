@@ -41,9 +41,9 @@ namespace EPR.Payment.Facade.Controllers.ResubmissionFees.ComplianceScheme
             Description = "Calculates the compliance scheme resubmission fee based on the provided request details.")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
-        public async Task<IActionResult> CalculateResubmissionFeeAsync([FromBody] ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CalculateResubmissionFeeAsync([FromBody] ComplianceSchemeResubmissionFeeRequestDto complianceSchemeResubmissionFeeRequestDto, CancellationToken cancellationToken)
         {
-            ValidationResult validationResult = await _resubmissionValidator.ValidateAsync(request, cancellationToken);
+            ValidationResult validationResult = await _resubmissionValidator.ValidateAsync(complianceSchemeResubmissionFeeRequestDto, cancellationToken);
             if (!validationResult.IsValid)
             {
                 _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateResubmissionFeeAsync));
@@ -57,7 +57,7 @@ namespace EPR.Payment.Facade.Controllers.ResubmissionFees.ComplianceScheme
 
             try
             {
-                var resubmissionFeesResponse = await _resubmissionFeesService.CalculateResubmissionFeeAsync(request, cancellationToken);
+                var resubmissionFeesResponse = await _resubmissionFeesService.CalculateResubmissionFeeAsync(complianceSchemeResubmissionFeeRequestDto, cancellationToken);
                 return Ok(resubmissionFeesResponse);
             }
             catch (ValidationException ex)

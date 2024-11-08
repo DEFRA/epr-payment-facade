@@ -27,16 +27,16 @@
         public const string InvalidComplianceSchemeMember = "Invalid ComplianceSchemeMember entry.";
         public const string InvalidMemberId = "MemberId is required.";
         public const string MemberTypeRequired = "MemberType is required.";
-        public const string InvalidMemberType = "Member Type must be one of the following: ";
-        public const string InvalidSubmissionDate = "Submission Date is required. It must be a valid UTC date.";
-        public const string FutureSubmissionDate = "Submission Date can not be future dated.";
+        public const string InvalidMemberType = "Member Type must be one of the following: "; 
+        public const string InvalidSubmissionDate = "Submission date is mandatory and must be a valid date.";
+        public const string FutureSubmissionDate = "Submission date cannot be a date in the future.";
+        public const string SubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
+
 
         // Compliance Scheme Resubmission Fee Validation Messages
-        public const string ResubmissionDateRequired = "Resubmission Date is required.";
-        public const string ResubmissionDateInvalid = "Resubmission Date cannot be in the future.";
-        public const string ResubmissionDateMustBeUtc = "Resubmission Date must be in UTC.";
-        public const string ResubmissionDateInvalidFormat = "Resubmission Date should be in the format YYYY-MM-DD HH:MM:SS.";
-        public const string ResubmissionDateDefaultInvalid = "Resubmission Date must be a valid date.";
+        public const string ResubmissionDateRequired = "Resubmission date is mandatory and must be a valid date.";
+        public const string FutureResubmissionDate = "Resubmission date cannot be a date in the future.";
+        public const string ResubmissionDateMustBeUtc = "Resubmission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string ReferenceNumberRequired = "Reference Number is required.";
         public const string MemberCountGreaterThanZero = "Member Count must be greater than zero.";
     }

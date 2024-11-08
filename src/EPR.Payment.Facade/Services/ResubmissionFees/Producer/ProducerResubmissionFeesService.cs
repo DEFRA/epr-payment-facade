@@ -3,6 +3,7 @@ using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
 using EPR.Payment.Facade.Services.ResubmissionFees.Producer.Interfaces;
+using FluentValidation;
 
 namespace EPR.Payment.Facade.Services.ResubmissionFees.Producer
 {
@@ -27,6 +28,12 @@ namespace EPR.Payment.Facade.Services.ResubmissionFees.Producer
             try
             {
                 return await _httpProducerResubmissionFeesService.GetResubmissionFeeAsync(request, cancellationToken);
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(GetResubmissionFeeAsync));
+
+                throw new ValidationException(ex.Message);
             }
             catch (Exception ex)
             {

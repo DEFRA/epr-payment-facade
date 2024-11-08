@@ -1,12 +1,15 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Services.ResubmissionFees.Producer;
 using FluentAssertions;
+using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -103,16 +106,42 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             Func<Task> act = async () => await service.GetResubmissionFeeAsync(request, CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<Exception>().WithMessage("Test Exception");
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<Exception>().WithMessage("Test Exception");
 
-            loggerMock.Verify(
-                log => log.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((o, t) => string.Equals("An unexpected error occurred while calculating the fees.", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+                loggerMock.Verify(
+                    log => log.Log(
+                        LogLevel.Error,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((o, t) => string.Equals("An unexpected error occurred while calculating the fees.", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
+                        exception,
+                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                    Times.Once);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetResubmissionFeeAsync_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
+            ProducerResubmissionFeeRequestDto request)
+        {
+            // Arrange
+            var exceptionMessage = "Validation error";
+            var validationException = new ValidationException(exceptionMessage);
+
+            _httpProducerResubmissionFeesService.Setup(s => s.GetResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(validationException);
+
+            // Act
+            Func<Task> act = async () => await _service.GetResubmissionFeeAsync(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var thrownException = await act.Should().ThrowAsync<ValidationException>();
+
+                thrownException.Which.Message.Should().Be(exceptionMessage);
+            }
         }
 
     }
