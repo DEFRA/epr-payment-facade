@@ -14,23 +14,11 @@ namespace EPR.Payment.Facade.Validations.ResubmissionFees.Producer
                 .Must(RegulatorValidationHelper.IsValidRegulator).WithMessage(ValidationMessages.RegulatorInvalid);
 
             RuleFor(x => x.ResubmissionDate)
-                .NotEmpty().WithMessage(ValidationMessages.ResubmissionDateRequired)
-                .Must(BeInUtc).WithMessage(ValidationMessages.ResubmissionDateMustBeUtc)
-                .Must(BeValidDate).WithMessage(ValidationMessages.ResubmissionDateDefaultInvalid)
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage(ValidationMessages.ResubmissionDateInvalid);
+                 .Cascade(CascadeMode.Stop)
+                 .MustBeValidResubmissionDate();
 
             RuleFor(x => x.ReferenceNumber)
                 .NotEmpty().WithMessage(ValidationMessages.ReferenceNumberRequired);
-        }
-
-        private bool BeInUtc(DateTime dateTime)
-        {
-            return dateTime.Kind == DateTimeKind.Utc;
-        }
-
-        private bool BeValidDate(DateTime dateTime)
-        {
-            return dateTime != DateTime.MinValue && dateTime != default(DateTime);
         }
     }
 }

@@ -92,7 +92,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.ResubmissionFees
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.ResubmissionDate)
-                .WithErrorMessage(ValidationMessages.ResubmissionDateInvalid);
+                .WithErrorMessage(ValidationMessages.FutureResubmissionDate);
         }
 
         [TestMethod]
@@ -115,6 +115,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.ResubmissionFees
                 .WithErrorMessage(ValidationMessages.ResubmissionDateMustBeUtc);
         }
 
+
         [TestMethod]
         public void Validate_ResubmissionDateDefault_ShouldHaveError()
         {
@@ -132,7 +133,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.ResubmissionFees
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.ResubmissionDate)
-                .WithErrorMessage(ValidationMessages.ResubmissionDateDefaultInvalid);
+                .WithErrorMessage(ValidationMessages.ResubmissionDateRequired);
         }
 
         [TestMethod]

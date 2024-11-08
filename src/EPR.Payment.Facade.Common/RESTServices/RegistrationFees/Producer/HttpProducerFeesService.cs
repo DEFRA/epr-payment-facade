@@ -4,8 +4,10 @@ using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using System.Net;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
 {
@@ -29,6 +31,10 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
             {
                 var response = await Post<ProducerFeesResponseDto>(url, request, cancellationToken);
                 return response;
+            }
+            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
+            {
+                throw new ValidationException(ex.Message.Trim('"'));
             }
             catch (Exception ex)
             {

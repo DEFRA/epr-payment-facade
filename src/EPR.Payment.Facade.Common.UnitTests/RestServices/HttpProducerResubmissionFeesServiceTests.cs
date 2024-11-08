@@ -8,6 +8,7 @@ using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -129,11 +130,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             // Arrange
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ReturnsAsync(new HttpResponseMessage
-                       {
-                           StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
-                           Content = new StringContent("Error message", Encoding.UTF8, "application/json")
-                       });
+                       .ThrowsAsync(new ResponseCodeException(HttpStatusCode.BadRequest, "Invalid input parameter."));
 
             var httpClient = new HttpClient(handlerMock.Object);
             httpProducerResubmissionFeesService = CreateHttpProducerResubmissionFeesService(httpClient);
@@ -144,8 +141,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             // Assert
             using (new AssertionScope())
             {
-                await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorResubmissionFees);
+                await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("Invalid input parameter.");
 
                 handlerMock.Protected().Verify(
                     "SendAsync",

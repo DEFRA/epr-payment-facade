@@ -6,6 +6,8 @@ using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using FluentValidation;
+using System.Net;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme
 {
@@ -30,6 +32,10 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
             catch (HttpRequestException ex)
             {
                 throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
+            }
+            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
+            {
+                throw new ValidationException(ex.Message.Trim('"'));
             }
             catch (Exception ex)
             {

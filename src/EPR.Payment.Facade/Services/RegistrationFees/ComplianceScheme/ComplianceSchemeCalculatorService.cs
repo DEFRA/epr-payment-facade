@@ -4,6 +4,7 @@ using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme.Interfaces;
+using FluentValidation;
 
 namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
 {
@@ -25,6 +26,12 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
             try
             {
                 return await _httpComplianceSchemeFeesService.CalculateFeesAsync(request, cancellationToken);
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
+
+                throw new ValidationException(ex.Message);
             }
             catch (Exception ex)
             {
