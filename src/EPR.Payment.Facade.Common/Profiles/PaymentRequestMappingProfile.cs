@@ -16,13 +16,13 @@ namespace EPR.Payment.Common.Mapping
                 .ForMember(dest => dest.OrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId!.Value))
                 .ForMember(dest => dest.return_url, opt => opt.Ignore())
-                .ForMember(dest => dest.Description, opt => opt.Ignore());
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
 
             CreateMap<OnlinePaymentRequestDto, InsertOnlinePaymentRequestDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId!.Value))
                 .ForMember(dest => dest.OrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount!.Value))
-                .ForMember(dest => dest.ReasonForPayment, opt => opt.Ignore())
+                .ForMember(dest => dest.ReasonForPayment, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Status, opt => opt.Ignore());
 
             CreateMap<OnlinePaymentRequestDto, UpdateOnlinePaymentRequestDto>()
