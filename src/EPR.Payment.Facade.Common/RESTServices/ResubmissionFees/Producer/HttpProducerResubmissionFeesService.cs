@@ -1,6 +1,7 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -21,13 +22,12 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        public async Task<decimal?> GetResubmissionFeeAsync(RegulatorDto request, CancellationToken cancellationToken = default)
+        public async Task<ProducerResubmissionFeeResponseDto> GetResubmissionFeeAsync(
+            ProducerResubmissionFeeRequestDto request, CancellationToken cancellationToken = default)
         {
-            var url = UrlConstants.GetProducerResubmissionFee.Replace("{regulator}", request.Regulator);
             try
             {
-                var response = await Get<decimal>(url, cancellationToken, false);
-                return response;
+                return await Post<ProducerResubmissionFeeResponseDto>(UrlConstants.GetProducerResubmissionFee, request, cancellationToken);
             }
             catch (Exception ex)
             {

@@ -1,6 +1,6 @@
 ﻿namespace EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.ComplianceScheme
 {
-    public class ComplianceSchemeResubmissionFeeResult
+    public class ComplianceSchemeResubmissionFeeResponse
     {
         public decimal TotalResubmissionFee { get; set; }
         public decimal PreviousPayments { get; set; }

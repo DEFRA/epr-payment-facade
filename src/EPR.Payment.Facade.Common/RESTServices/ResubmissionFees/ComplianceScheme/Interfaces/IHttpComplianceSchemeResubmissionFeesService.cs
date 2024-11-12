@@ -5,6 +5,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceSche
 {
     public interface IHttpComplianceSchemeResubmissionFeesService
     {
-        Task<ComplianceSchemeResubmissionFeeResult> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default);
+        Task<ComplianceSchemeResubmissionFeeResponse> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default);
     }
 }
