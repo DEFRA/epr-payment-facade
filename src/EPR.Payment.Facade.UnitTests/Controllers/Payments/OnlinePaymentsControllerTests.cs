@@ -138,7 +138,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 Regulator = "Test Regulator",
                 Reference = "Test Reference",
                 Amount = 0, // Invalid amount
-                Description = OfflinePayDescConstants.RegistrationFee
+                Description = PaymentDescConstants.RegistrationFee
             };
 
             var cancellationToken = new CancellationToken();
@@ -166,7 +166,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 Regulator = "Test Regulator",
                 Reference = "Test Reference",
                 Amount = -1, // Invalid amount
-                Description = OfflinePayDescConstants.RegistrationFee
+                Description = PaymentDescConstants.RegistrationFee
             };
 
             var cancellationToken = new CancellationToken();
@@ -224,7 +224,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             [Greedy] OnlinePaymentsController controller)
         {
             // Arrange
-            var request = new OnlinePaymentRequestDto { Description = OfflinePayDescConstants.RegistrationFee }; // Invalid request
+            var request = new OnlinePaymentRequestDto { Description = PaymentDescConstants.RegistrationFee }; // Invalid request
             controller.ModelState.AddModelError("Amount", "Amount is required");
 
             var cancellationToken = new CancellationToken();
@@ -247,7 +247,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             [Greedy] OnlinePaymentsController controller)
         {
             // Arrange
-            var invalidRequest = new OnlinePaymentRequestDto { Description = OfflinePayDescConstants.RegistrationFee };
+            var invalidRequest = new OnlinePaymentRequestDto { Description = PaymentDescConstants.RegistrationFee };
             var validationException = new ValidationException("Validation error");
             var cancellationToken = new CancellationToken();
 
