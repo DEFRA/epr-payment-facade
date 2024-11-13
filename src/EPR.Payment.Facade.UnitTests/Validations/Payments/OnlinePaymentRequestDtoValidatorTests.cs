@@ -19,7 +19,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_UserId_Is_Null()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { UserId = null };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { UserId = null, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.UserId);
         }
@@ -27,7 +27,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Not_Have_Error_When_UserId_Is_Valid()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { UserId = Guid.NewGuid() };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { UserId = Guid.NewGuid(), Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.UserId);
         }
@@ -35,7 +35,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_OrganisationId_Is_Null()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { OrganisationId = null };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { OrganisationId = null, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.OrganisationId);
         }
@@ -43,7 +43,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Not_Have_Error_When_OrganisationId_Is_Valid()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { OrganisationId = Guid.NewGuid() };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { OrganisationId = Guid.NewGuid(), Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.OrganisationId);
         }
@@ -51,7 +51,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_Reference_Is_Empty()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Reference = string.Empty };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Reference = string.Empty, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.Reference);
         }
@@ -59,7 +59,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Not_Have_Error_When_Reference_Is_Valid()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Reference = "Test Reference" };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Reference = "Test Reference", Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.Reference);
         }
@@ -67,7 +67,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_Regulator_Is_Empty()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = string.Empty };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = string.Empty, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.Regulator);
         }
@@ -75,7 +75,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_Regulator_Is_NotSupported()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = RegulatorConstants.GBSCT };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = RegulatorConstants.GBSCT, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.Regulator);
         }
@@ -83,7 +83,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Not_Have_Error_When_ReasonForPayment_Is_Valid()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = RegulatorConstants.GBENG };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = RegulatorConstants.GBENG, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
         }
@@ -91,7 +91,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_Amount_Is_Null()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Amount = null };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Amount = null, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.Amount);
         }
@@ -99,7 +99,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Have_Error_When_Amount_Is_Less_Then_One()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Amount = 0 };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Amount = 0, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldHaveValidationErrorFor(x => x.Amount);
         }
@@ -107,9 +107,49 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void Should_Not_Have_Error_When_Amount_Is_Valid()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Amount = 10 };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Amount = 10, Description = PaymentDescConstants.RegistrationFee };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.Amount);
+        }
+
+        [TestMethod]
+        public void Should_Have_Error_When_Description_Is_Null()
+        {
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Description = "null" };
+            var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.Description);
+        }
+
+        [TestMethod]
+        public void Should_Have_Error_When_Description_Is_Empty()
+        {
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Description = "" };
+            var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.Description);
+        }
+
+        [TestMethod]
+        public void Should_Have_Error_When_Description_Is_Not_Valid()
+        {
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Description = "Test Description" };
+            var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.Description);
+        }
+
+        [TestMethod]
+        public void Should_Not_Have_Error_When_Description_Is_RegistrationFee()
+        {
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Description = PaymentDescConstants.RegistrationFee };
+            var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
+            result.ShouldNotHaveValidationErrorFor(x => x.Description);
+        }
+
+        [TestMethod]
+        public void Should_Not_Have_Error_When_Description_Is_PackagingResubmissionFee()
+        {
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Description = PaymentDescConstants.PackagingResubmissionFee };
+            var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
+            result.ShouldNotHaveValidationErrorFor(x => x.Description);
         }
     }
 }
