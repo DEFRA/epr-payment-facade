@@ -2,13 +2,16 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -47,7 +50,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             {
                 Regulator = "GB-ENG",
                 ApplicationReferenceNumber = "A123",
-                SubmissionDate = DateTime.Now,
+                SubmissionDate = DateTime.UtcNow,
                 ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
                 {
                     new ComplianceSchemeMemberDto
@@ -247,7 +250,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateFeesAsync_UnsuccessfulStatusCode_ThrowsServiceException(
+        public async Task CalculateFeesAsync_UnsuccessfulStatusCode_ThrowsValidationException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
             HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
@@ -256,11 +259,40 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             // Arrange
             handlerMock.Protected()
                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                       .ReturnsAsync(new HttpResponseMessage
-                       {
-                           StatusCode = HttpStatusCode.BadRequest, // Simulate unsuccessful status code
-                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
-                       });
+                       .ThrowsAsync(new ResponseCodeException(HttpStatusCode.BadRequest, "Invalid input parameter."));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("Invalid input parameter.");
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_Exception_ThrowsException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new Exception("Unexpected error."));
 
             var httpClient = new HttpClient(handlerMock.Object);
             httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
@@ -272,7 +304,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
+                .WithMessage("An unexpected error occurred while calculating Compliance Scheme fees.");
 
                 handlerMock.Protected().Verify(
                     "SendAsync",
