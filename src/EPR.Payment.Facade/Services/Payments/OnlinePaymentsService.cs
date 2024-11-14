@@ -158,7 +158,8 @@ namespace EPR.Payment.Facade.Services.Payments
                 OrganisationId = onlinePaymentDetails.UpdatedByOrganisationId,
                 Regulator = onlinePaymentDetails.Regulator,
                 Amount = onlinePaymentDetails.Amount,
-                Email = paymentStatusResponse?.Email
+                Email = paymentStatusResponse?.Email,
+                Description = onlinePaymentDetails.Description
             };
         }
 
