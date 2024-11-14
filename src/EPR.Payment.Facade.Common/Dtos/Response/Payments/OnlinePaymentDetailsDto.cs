@@ -12,6 +12,5 @@
         public string? Reference { get; set; }
         public decimal Amount { get; set; }
         public string? Regulator { get; set; }
-        public string? Description { get; set; }
     }
 }
