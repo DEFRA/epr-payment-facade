@@ -20,7 +20,7 @@ namespace EPR.Payment.Facade.Validations.Payments
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage(ValidationMessages.DescriptionRequired)
-                .Must(text => text == OfflinePayDescConstants.RegistrationFee || text == OfflinePayDescConstants.PackagingResubmissionFee)
+                .Must(text => text == PaymentDescConstants.RegistrationFee || text == PaymentDescConstants.PackagingResubmissionFee)
                 .WithMessage(ValidationMessages.InvalidDescription);
 
             RuleFor(x => x.Regulator)

@@ -22,7 +22,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.TestHelpers
             optionsMock.Setup(o => o.Value).Returns(new OnlinePaymentServiceOptions
             {
                 ReturnUrl = "https://example.com/return",
-                Description = "Payment description",
                 ErrorUrl = "https://example.com/error"
             });
 
