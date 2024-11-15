@@ -25,7 +25,7 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Services.Payments
 {
     [TestClass]
-    public class PaymentsServiceTests
+    public class OnlinePaymentsServiceTests
     {
         private IFixture _fixture = null!;
         private Mock<IHttpGovPayService> _httpGovPayServiceMock = null!;
@@ -55,8 +55,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
             _optionsMock.Setup(o => o.Value).Returns(new OnlinePaymentServiceOptions
             {
-                ReturnUrl = "https://example.com/return",
-                Description = "Payment description"
+                ReturnUrl = "https://example.com/return"
             });
 
             var mapperConfig = new MapperConfiguration(cfg =>
@@ -373,8 +372,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
             _optionsMock.Setup(o => o.Value).Returns(new OnlinePaymentServiceOptions
             {
-                ReturnUrl = "https://example.com/return",
-                Description = "Payment description"
+                ReturnUrl = "https://example.com/return"
             });
 
             var mapperConfig = new MapperConfiguration(cfg =>
@@ -612,7 +610,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             var paymentServiceOptions = new OnlinePaymentServiceOptions
             {
                 ReturnUrl = null, // ReturnUrl is not configured
-                Description = "Payment description"
             };
 
             _optionsMock.Setup(o => o.Value).Returns(paymentServiceOptions);
@@ -628,29 +625,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             await service.Invoking(async s => await s.InitiateOnlinePaymentAsync(request, new CancellationToken()))
                 .Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage(ExceptionMessages.ReturnUrlNotConfigured);
-        }
-
-
-        [TestMethod, AutoMoqData]
-        public async Task InitiateOnlinePayment_DescriptionNotConfigured_ThrowsDescriptionNotConfiguredException(
-            OnlinePaymentRequestDto request)
-        {
-            // Arrange
-            _onlinePaymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
-            var onlinePaymentServiceOptions = new OnlinePaymentServiceOptions { ReturnUrl = "https://example.com/return", Description = null };
-            _optionsMock.Setup(o => o.Value).Returns(onlinePaymentServiceOptions);
-
-            var service = new OnlinePaymentsService(
-                _httpGovPayServiceMock.Object,
-                _httpOnlinePaymentsServiceMock.Object,
-                _loggerMock.Object,
-                _optionsMock.Object,
-                _mapper,
-                _onlinePaymentRequestDtoMock.Object);
-
-            // Act & Assert
-            await service.Invoking(async s => await s.InitiateOnlinePaymentAsync(request, new CancellationToken()))
-                .Should().ThrowAsync<InvalidOperationException>().WithMessage(ExceptionMessages.DescriptionNotConfigured);
         }
 
         [TestMethod]
@@ -782,7 +756,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
                 loggerMock.Object,
-                Options.Create(new OnlinePaymentServiceOptions { ReturnUrl = "https://example.com/return", Description = "Payment description" }),
+                Options.Create(new OnlinePaymentServiceOptions { ReturnUrl = "https://example.com/return" }),
                 new MapperConfiguration(cfg => cfg.AddProfile<PaymentRequestMappingProfile>()).CreateMapper(),
                 _onlinePaymentRequestDtoMock.Object);
 
@@ -815,8 +789,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             _onlinePaymentRequestDtoMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
             var onlinePaymentServiceOptions = Options.Create(new OnlinePaymentServiceOptions
             {
-                ReturnUrl = "https://example.com/return",
-                Description = "Payment description"
+                ReturnUrl = "https://example.com/return"
             });
 
             mapperMock.Setup(m => m.Map<UpdateOnlinePaymentRequestDto>(request)).Returns(new UpdateOnlinePaymentRequestDto
@@ -873,8 +846,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             _httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayRequestDto>(), cancellationToken)).ReturnsAsync(govPayResponse);
             _optionsMock.Setup(o => o.Value).Returns(new OnlinePaymentServiceOptions
             {
-                ReturnUrl = "https://example.com/return",
-                Description = "Payment description"
+                ReturnUrl = "https://example.com/return"
             });
 
             // Act
@@ -896,8 +868,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             _httpGovPayServiceMock.Setup(s => s.InitiatePaymentAsync(It.IsAny<GovPayRequestDto>(), cancellationToken)).ReturnsAsync(govPayResponse);
             _optionsMock.Setup(o => o.Value).Returns(new OnlinePaymentServiceOptions
             {
-                ReturnUrl = "https://example.com/return",
-                Description = "Payment description"
+                ReturnUrl = "https://example.com/return"
             });
 
             // Act
@@ -953,8 +924,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
             var onlinePaymentServiceOptions = new OnlinePaymentServiceOptions
             {
-                ReturnUrl = "https://example.com/return",
-                Description = "Payment description"
+                ReturnUrl = "https://example.com/return"
             };
             _optionsMock.Setup(o => o.Value).Returns(onlinePaymentServiceOptions);
 

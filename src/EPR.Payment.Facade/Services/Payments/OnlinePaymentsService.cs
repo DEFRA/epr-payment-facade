@@ -171,11 +171,8 @@ namespace EPR.Payment.Facade.Services.Payments
             }
             returnUrl = $"{returnUrl}?id={externalPaymentId}";
 
-            var description = _onlinePaymentServiceOptions.Description ?? throw new InvalidOperationException(ExceptionMessages.DescriptionNotConfigured);
-
             var govPayRequest = _mapper.Map<GovPayRequestDto>(request);
             govPayRequest.return_url = returnUrl;
-            govPayRequest.Description = description;
 
             return govPayRequest;
         }
@@ -227,7 +224,6 @@ namespace EPR.Payment.Facade.Services.Payments
         private async Task<Guid> InsertOnlinePaymentAsync(OnlinePaymentRequestDto request, CancellationToken cancellationToken)
         {
             var insertRequest = _mapper.Map<InsertOnlinePaymentRequestDto>(request);
-            insertRequest.ReasonForPayment = _onlinePaymentServiceOptions.Description;
             insertRequest.Status = PaymentStatus.Initiated;
 
             try
