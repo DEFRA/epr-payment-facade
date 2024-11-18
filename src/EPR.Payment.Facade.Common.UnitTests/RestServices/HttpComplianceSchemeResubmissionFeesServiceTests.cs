@@ -1,13 +1,16 @@
 ﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -179,6 +182,39 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             {
                 await act.Should().ThrowAsync<ServiceException>()
                     .WithMessage(ExceptionMessages.ErrorResubmissionFees);
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_UnsuccessfulStatusCode_ThrowsValidationException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            [Frozen] Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new ResponseCodeException(HttpStatusCode.BadRequest, "Invalid input parameter."));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeResubmissionFeesService = CreateHttpComplianceSchemeResubmissionFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpComplianceSchemeResubmissionFeesService.CalculateResubmissionFeeAsync(_requestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("Invalid input parameter.");
 
                 handlerMock.Protected().Verify(
                     "SendAsync",

@@ -32,10 +32,8 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees.Producer
                 .NotEmpty().WithMessage(ValidationMessages.ApplicationReferenceNumberRequired);
 
             RuleFor(x => x.SubmissionDate)
-                .Must(date => date != default(DateTime))
-                .WithMessage(ValidationMessages.InvalidSubmissionDate)
-                .Must(date => date <= DateTime.Now)
-                .WithMessage(ValidationMessages.FutureSubmissionDate);
+                .Cascade(CascadeMode.Stop)
+                .MustBeValidSubmissionDate(); 
         }
     }
 }

@@ -4,6 +4,7 @@ using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Services.ResubmissionFees.ComplianceScheme.Interfaces;
+using FluentValidation;
 
 namespace EPR.Payment.Facade.Services.ResubmissionFees.ComplianceScheme
 {
@@ -33,6 +34,12 @@ namespace EPR.Payment.Facade.Services.ResubmissionFees.ComplianceScheme
             try
             {
                 return await _httpComplianceSchemeResubmissionFeesService.CalculateResubmissionFeeAsync(request, cancellationToken);
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateComplianceSchemeResubmissionFeeInternalAsync));
+
+                throw new ValidationException(ex.Message);
             }
             catch (Exception ex)
             {
