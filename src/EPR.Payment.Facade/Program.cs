@@ -1,13 +1,15 @@
 using Asp.Versioning;
 using EPR.Payment.Common.Mapping;
-using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
 using EPR.Payment.Facade.Validations.Payments;
 using EPR.Payment.Facade.Validations.RegistrationFees.Producer;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.FeatureManagement;
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using System.Security.Authentication;
 
@@ -30,6 +32,29 @@ builder.Services.AddSwaggerGen(setupAction =>
     setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v1" });
     setupAction.DocumentFilter<FeatureEnabledDocumentFilter>();
     setupAction.OperationFilter<FeatureGateOperationFilter>();
+    setupAction.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' followed by a space and your JWT token."
+    });
+    setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 builder.Services.AddApplicationInsightsTelemetry();
@@ -77,22 +102,37 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddFeatureManagement();
 builder.Services.AddLogging();
 
+// Conditional Authentication based on Feature Flag
+using var serviceProvider = builder.Services.BuildServiceProvider();
+var featureManager = serviceProvider.GetRequiredService<IFeatureManager>();
+if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
+{
+    // Authentication
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApi(
+            options =>
+            {
+                builder.Configuration.Bind(Constants.AzureAdB2C, options);
+            },
+            options =>
+            {
+                builder.Configuration.Bind(Constants.AzureAdB2C, options);
+            });
+
+    // Authorization - Enforce authentication for all requests
+    builder.Services.AddAuthorization(options =>
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    });
+}
+
 var app = builder.Build();
 
-var featureManager = app.Services.GetRequiredService<IFeatureManager>();
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-
 bool enableOnlinePaymentsFeature = await featureManager.IsEnabledAsync("EnableOnlinePaymentsFeature");
-bool enablePaymentInitiation = await featureManager.IsEnabledAsync("EnablePaymentInitiation");
-bool enablePaymentStatus = await featureManager.IsEnabledAsync("EnablePaymentStatus");
-bool enablePaymentStatusInsert = await featureManager.IsEnabledAsync("EnablePaymentStatusInsert");
 bool enableHomePage = await featureManager.IsEnabledAsync("EnableHomePage");
-
-logger.LogInformation("EnableOnlinePaymentsFeature: {EnableOnlinePaymentsFeature}", enableOnlinePaymentsFeature);
-logger.LogInformation("EnablePaymentInitiation: {EnablePaymentInitiation}", enablePaymentInitiation);
-logger.LogInformation("EnablePaymentStatus: {EnablePaymentStatus}", enablePaymentStatus);
-logger.LogInformation("EnablePaymentStatusInsert: {EnablePaymentStatusInsert}", enablePaymentStatusInsert);
-logger.LogInformation("EnableHomePage: {EnableHomePage}", enableHomePage);
 
 if (app.Environment.IsDevelopment())
 {
@@ -114,8 +154,14 @@ if (enableHomePage)
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowAll");
-app.UseHealthChecks();
-app.UseAuthorization();
+
+// Conditionally apply Authentication and Authorization
+if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+
 app.UseMiddleware<ConditionalEndpointMiddleware>();
 
 // Check if the homepage is enabled and serve index.html accordingly
