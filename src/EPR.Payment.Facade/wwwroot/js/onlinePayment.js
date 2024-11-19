@@ -22,13 +22,15 @@ async function initiatePayment() {
     const regulator = document.getElementById('regulator').value;
     const amount = document.getElementById('amount').value;
     const reference = document.getElementById('reference').value;
+    const description = document.getElementById('description').value;
 
     const requestData = {
         userId: userId,
         organisationId: organisationId,
         regulator: regulator,
         amount: parseFloat(amount),
-        reference: reference
+        reference: reference,
+        description: description
     };
 
     console.log('Request Data:', requestData);
