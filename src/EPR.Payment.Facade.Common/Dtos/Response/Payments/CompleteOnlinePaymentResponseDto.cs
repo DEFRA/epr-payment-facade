@@ -12,5 +12,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.Payments
         public string? Regulator { get; set; }
         public decimal Amount { get; set; } = 0;
         public string? Email { get; set; }
+        public string? Description { get; set; }
     }
 }
