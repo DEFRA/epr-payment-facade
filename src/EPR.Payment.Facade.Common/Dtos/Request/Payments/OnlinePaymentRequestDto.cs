@@ -13,5 +13,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         public string? Regulator { get; set; }
 
         public int? Amount { get; set; }
+
+        public required string Description { get; set; }
     }
 }

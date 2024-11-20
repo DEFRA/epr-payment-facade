@@ -60,7 +60,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
 
                 govPayRequestDto.Regulator.Should().Be(onlinePaymentRequestDto.Regulator);
                 govPayRequestDto.return_url.Should().BeNull(); // Ignored in mapping
-                govPayRequestDto.Description.Should().BeNull(); // Ignored in mapping
+                govPayRequestDto.Description.Should().Be(onlinePaymentRequestDto.Description);
             }
         }
 
@@ -89,7 +89,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.Mappings
                 }
 
                 insertOnlinePaymentRequestDto.Regulator.Should().Be(onlinePaymentRequestDto.Regulator);
-                insertOnlinePaymentRequestDto.ReasonForPayment.Should().BeNull(); // Ignored in mapping
+                insertOnlinePaymentRequestDto.ReasonForPayment.Should().Be(onlinePaymentRequestDto.Description);
                 insertOnlinePaymentRequestDto.Status.Should().Be(PaymentStatus.Initiated); // Default value for enum, ignored in mapping
             }
         }

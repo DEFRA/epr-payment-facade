@@ -39,6 +39,13 @@ namespace EPR.Payment.Facade.Validations.Payments
                 .When(x => string.Equals(x.Regulator, RegulatorConstants.GBSCT, StringComparison.Ordinal)
                        || string.Equals(x.Regulator, RegulatorConstants.GBWLS, StringComparison.Ordinal)
                        || string.Equals(x.Regulator, RegulatorConstants.GBNIR, StringComparison.Ordinal));
+
+            RuleFor(x => x.Description)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty()
+                .WithMessage(ValidationMessages.DescriptionRequired)
+                .Must(text => text == PaymentDescConstants.RegistrationFee || text == PaymentDescConstants.PackagingResubmissionFee)
+                .WithMessage(ValidationMessages.InvalidDescription);
         }
     }
 }
