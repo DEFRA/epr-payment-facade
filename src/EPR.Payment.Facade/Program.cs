@@ -1,17 +1,22 @@
 using Asp.Versioning;
 using EPR.Payment.Common.Mapping;
-using EPR.Payment.Facade.AppStart;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Extension;
 using EPR.Payment.Facade.Helpers;
 using EPR.Payment.Facade.Validations.Payments;
 using EPR.Payment.Facade.Validations.RegistrationFees.Producer;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.FeatureManagement;
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using System.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Azure AD B2C configuration
+var azureAdB2CConfig = builder.Configuration.GetSection("AzureAdB2C");
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -30,6 +35,41 @@ builder.Services.AddSwaggerGen(setupAction =>
     setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v1" });
     setupAction.DocumentFilter<FeatureEnabledDocumentFilter>();
     setupAction.OperationFilter<FeatureGateOperationFilter>();
+
+    // Configure OAuth2 for Swagger
+    setupAction.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/authorize"),
+                TokenUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/token"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { azureAdB2CConfig["Scopes"], "Access the Payment API" }
+                }
+            }
+        },
+        Description = "Authenticate with Azure AD B2C to access this API."
+    });
+
+    // Require authentication for all endpoints in Swagger
+    setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "OAuth2"
+                }
+            },
+            new[] { azureAdB2CConfig["Scopes"] }
+        }
+    });
 });
 
 builder.Services.AddApplicationInsightsTelemetry();
@@ -102,6 +142,12 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi v1");
         c.RoutePrefix = "swagger";
+
+        // OAuth2 settings for Swagger UI
+        c.OAuthClientId(azureAdB2CConfig["ClientId"]);
+        c.OAuthUsePkce(); // Use PKCE for secure authentication
+        c.OAuthScopeSeparator(" ");
+        c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
     });
 }
 
@@ -114,8 +160,14 @@ if (enableHomePage)
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowAll");
-app.UseHealthChecks();
-app.UseAuthorization();
+
+// Conditionally apply Authentication and Authorization
+if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+
 app.UseMiddleware<ConditionalEndpointMiddleware>();
 
 // Check if the homepage is enabled and serve index.html accordingly
