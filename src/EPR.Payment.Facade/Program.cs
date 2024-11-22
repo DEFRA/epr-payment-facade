@@ -117,9 +117,35 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddFeatureManagement();
 builder.Services.AddLogging();
 
+// Conditional Authentication based on Feature Flag
+using var serviceProvider = builder.Services.BuildServiceProvider();
+var featureManager = serviceProvider.GetRequiredService<IFeatureManager>();
+if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
+{
+    // Authentication
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApi(
+            options =>
+            {
+                builder.Configuration.Bind(Constants.AzureAdB2C, options);
+            },
+            options =>
+            {
+                builder.Configuration.Bind(Constants.AzureAdB2C, options);
+            });
+
+    // Authorization - Enforce authentication for all requests
+    builder.Services.AddAuthorization(options =>
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    });
+}
+
 var app = builder.Build();
 
-var featureManager = app.Services.GetRequiredService<IFeatureManager>();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 bool enableOnlinePaymentsFeature = await featureManager.IsEnabledAsync("EnableOnlinePaymentsFeature");
