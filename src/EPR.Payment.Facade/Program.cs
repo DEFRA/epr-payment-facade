@@ -48,7 +48,7 @@ builder.Services.AddSwaggerGen(setupAction =>
                 TokenUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/token"),
                 Scopes = new Dictionary<string, string>
                 {
-                    { azureAdB2CConfig["Scopes"], "Access the Payment API" }
+                    { azureAdB2CConfig["Scopes"]!, "Access the Payment API" }
                 }
             }
         },
@@ -135,15 +135,12 @@ if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
                 builder.Configuration.Bind(Constants.AzureAdB2C, options);
             });
 
-    // Authorization - Enforce authentication for all requests
-    builder.Services.AddAuthorization(options =>
-    {
-        options.FallbackPolicy = new AuthorizationPolicyBuilder()
-            .RequireAuthenticatedUser()
-            .Build();
-    });
-}
 
+    builder.Services.AddAuthorizationBuilder().AddFallbackPolicy("EprPaymentFallBackPolicy", new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build());
+
+}
 var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
