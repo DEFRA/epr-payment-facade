@@ -48,7 +48,7 @@ builder.Services.AddSwaggerGen(setupAction =>
                 TokenUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/token"),
                 Scopes = new Dictionary<string, string>
                 {
-                    { azureAdB2CConfig["Scopes"], "Access the Payment API" }
+                    { azureAdB2CConfig["Scopes"]!, "Access the Payment API" }
                 }
             }
         },
@@ -117,11 +117,6 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddFeatureManagement();
 builder.Services.AddLogging();
 
-// Conditional Authentication based on Feature Flag
-using var serviceProvider = builder.Services.BuildServiceProvider();
-var featureManager = serviceProvider.GetRequiredService<IFeatureManager>();
-if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
-{
     // Authentication
     builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -136,15 +131,14 @@ if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
             });
 
     // Authorization - Enforce authentication for all requests
-    builder.Services.AddAuthorization(options =>
-    {
-        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+    builder.Services.AddAuthorizationBuilder()
+        .SetDefaultPolicy(new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
-            .Build();
-    });
-}
+            .Build());
+
 
 var app = builder.Build();
+var featureManager = app.Services.GetRequiredService<IFeatureManager>();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
