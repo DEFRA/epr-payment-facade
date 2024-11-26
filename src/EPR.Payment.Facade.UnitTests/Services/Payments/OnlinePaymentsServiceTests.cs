@@ -424,7 +424,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 OrganisationId = paymentDetails.UpdatedByOrganisationId,
                 Regulator = paymentDetails.Regulator,
                 Amount = paymentDetails.Amount,
-                Email = paymentStatusResponse.Email
+                Email = paymentStatusResponse.Email,
+                Description = paymentDetails.Description
             });
         }
 
