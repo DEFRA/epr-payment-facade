@@ -53,7 +53,7 @@
 
 	<ItemGroup>
 		<SonarQubeSetting Include="sonar.exclusions">
-			<Value>gulpfile.js, Program.cs</Value>
+			<Value>Program.cs</Value>
 		</SonarQubeSetting>
 	</ItemGroup>
 
