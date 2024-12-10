@@ -2,6 +2,7 @@ using Asp.Versioning;
 using EPR.Payment.Common.Mapping;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Extension;
+using EPR.Payment.Facade.HealthCheck;
 using EPR.Payment.Facade.Helpers;
 using EPR.Payment.Facade.Validations.Payments;
 using EPR.Payment.Facade.Validations.RegistrationFees.Producer;
@@ -207,5 +208,5 @@ app.MapGet("/", async context =>
 });
 
 app.MapControllers();
-
+app.MapHealthChecks("/admin/health", HealthCheckOptionsBuilder.Build()).AllowAnonymous();
 await app.RunAsync();
