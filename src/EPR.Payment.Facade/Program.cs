@@ -167,7 +167,6 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "swagger";
 
         // OAuth2 settings for Swagger UI
-        c.OAuthClientId(azureAdB2CConfig["ClientId"]);
         c.OAuthUsePkce(); // Use PKCE for secure authentication
         c.OAuthScopeSeparator(" ");
         c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
