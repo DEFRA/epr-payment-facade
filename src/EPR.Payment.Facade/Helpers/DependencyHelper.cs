@@ -10,10 +10,8 @@ using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
-using EPR.Payment.Facade.Services.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
+using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Helpers
@@ -31,8 +29,15 @@ namespace EPR.Payment.Facade.Helpers
             // Register the authorization handler
             services.AddTransient<TokenAuthorizationHandler>();
 
-            // Register the scoped services
-            services.AddScoped<IPaymentServiceHealthService, PaymentServiceHealthService>();
+            // Validate all configurations
+            var serviceProvider = services.BuildServiceProvider();
+            var servicesConfig = serviceProvider.GetRequiredService<IOptions<ServicesConfiguration>>().Value;
+
+            //foreach (var property in typeof(ServicesConfiguration).GetProperties())
+            //{
+            //    var serviceConfig = property.GetValue(servicesConfig) as Service;
+            //    ValidateServiceConfiguration(serviceConfig, property.Name);
+            //}
 
             // Register HTTP services
             RegisterHttpService<IHttpPaymentServiceHealthCheckService, HttpOnlinePaymentServiceHealthCheckService>(
@@ -71,32 +76,14 @@ namespace EPR.Payment.Facade.Helpers
             var serviceOptions = CreateServiceOptions(services, configName, endPointOverride);
 
             // Configure HttpClient with the token authorization handler
-            services.AddHttpClient<TInterface, TImplementation>()
-                .ConfigureHttpClient(client =>
-                {
-                    if (!string.IsNullOrWhiteSpace(serviceOptions.Value.Url))
-                    {
-                        client.BaseAddress = new Uri(serviceOptions.Value.Url);
-                    }
-                })
-                .AddHttpMessageHandler<TokenAuthorizationHandler>();
-
-            // Add scoped instance for TInterface
-            services.AddScoped<TInterface>(s =>
+            services.AddHttpClient<TInterface, TImplementation>(client =>
             {
-                Trace.TraceInformation($"Registering service {typeof(TImplementation).Name} for {configName}");
-
-                var instance = Activator.CreateInstance(typeof(TImplementation),
-                    s.GetRequiredService<IHttpContextAccessor>(),
-                    s.GetRequiredService<IHttpClientFactory>(),
-                    serviceOptions);
-
-                Trace.TraceError(instance == null ? $"Failed to create instance of {typeof(TImplementation).Name}" : $"Successfully created instance of {typeof(TImplementation).Name}");
-
-                return instance == null
-                    ? throw new InvalidOperationException($"Failed to create instance of {typeof(TImplementation).Name}")
-                    : (TInterface)(TImplementation)instance;
-            });
+                if (!string.IsNullOrWhiteSpace(serviceOptions.Value.Url))
+                {
+                    client.BaseAddress = new Uri(serviceOptions.Value.Url);
+                }
+            })
+            .AddHttpMessageHandler<TokenAuthorizationHandler>();
         }
 
         private static IOptions<Service> CreateServiceOptions(IServiceCollection services, string configName, string? endPointOverride)
@@ -106,28 +93,37 @@ namespace EPR.Payment.Facade.Helpers
 
             var serviceConfig = (Service?)servicesConfig.GetType().GetProperty(configName)?.GetValue(servicesConfig);
 
+            if (serviceConfig == null)
+            {
+                throw new InvalidOperationException($"Service configuration for {configName} is null.");
+            }
+
             ValidateServiceConfiguration(serviceConfig, configName);
 
-            var endPointName = endPointOverride ?? serviceConfig?.EndPointName;
+            var endPointName = endPointOverride ?? serviceConfig.EndPointName;
+
+            Console.WriteLine($"Creating service options for {configName}: {JsonConvert.SerializeObject(serviceConfig)}");
 
             return Options.Create(new Service
             {
-                Url = serviceConfig?.Url,
-                EndPointName = endPointName,
-                BearerToken = serviceConfig?.BearerToken,
-                HttpClientName = serviceConfig?.HttpClientName,
-                Retries = serviceConfig?.Retries
+                Url = serviceConfig.Url ?? "https://default-url/", // Default value
+                EndPointName = endPointName ?? "default-endpoint",
+                BearerToken = serviceConfig.BearerToken,
+                HttpClientName = serviceConfig.HttpClientName,
+                Retries = serviceConfig.Retries ?? 3, // Default retries
+                ServiceClientId = serviceConfig.ServiceClientId
             });
         }
 
+
         private static void ValidateServiceConfiguration(Service? serviceConfig, string configName)
         {
-            if (serviceConfig?.Url == null)
+            if (string.IsNullOrWhiteSpace(serviceConfig?.Url))
             {
                 throw new InvalidOperationException($"{configName} Url configuration is missing.");
             }
 
-            if (serviceConfig.EndPointName == null)
+            if (string.IsNullOrWhiteSpace(serviceConfig?.EndPointName))
             {
                 throw new InvalidOperationException($"{configName} EndPointName configuration is missing.");
             }

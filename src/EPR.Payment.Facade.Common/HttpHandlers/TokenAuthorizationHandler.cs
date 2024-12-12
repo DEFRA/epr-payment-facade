@@ -13,12 +13,12 @@ namespace EPR.Payment.Facade.Common.HttpHandlers
 
         public TokenAuthorizationHandler(IOptions<Service> serviceConfig)
         {
-            if (string.IsNullOrEmpty(serviceConfig.Value.BearerToken))
+            if (string.IsNullOrEmpty(serviceConfig.Value.ServiceClientId))
             {
                 return;
             }
 
-            _tokenRequestContext = new TokenRequestContext(new[] { serviceConfig.Value.BearerToken });
+            _tokenRequestContext = new TokenRequestContext(new[] { serviceConfig.Value.ServiceClientId });
             _credentials = new DefaultAzureCredential();
         }
 

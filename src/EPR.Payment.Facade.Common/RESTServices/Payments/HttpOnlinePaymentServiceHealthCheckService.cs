@@ -8,19 +8,18 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
     public class HttpOnlinePaymentServiceHealthCheckService : BaseHttpService, IHttpPaymentServiceHealthCheckService
     {
         public HttpOnlinePaymentServiceHealthCheckService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), "PaymentServiceHealthCheck BaseUrl configuration is missing"),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), "PaymentServiceHealthCheck EndPointName configuration is missing"))
+            : base(httpClient,
+                   httpContextAccessor,
+                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), "PaymentServiceHealthCheck BaseUrl configuration is missing"))
         {
         }
 
         public async Task<HttpResponseMessage> GetHealthAsync(CancellationToken cancellationToken)
         {
-            return await Get<HttpResponseMessage>(string.Empty, cancellationToken,false);
+            return await Get<HttpResponseMessage>(string.Empty, cancellationToken, false);
         }
-
     }
 }

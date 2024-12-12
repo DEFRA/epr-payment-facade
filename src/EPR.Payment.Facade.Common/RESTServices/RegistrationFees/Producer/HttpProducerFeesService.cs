@@ -14,19 +14,21 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
     public class HttpProducerFeesService : BaseHttpService, IHttpProducerFeesService
     {
         public HttpProducerFeesService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
+            : base(httpClient,
+                   httpContextAccessor,
+                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing))
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            // Additional setup if needed
         }
 
-        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(
+            ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.CalculateProducerRegistrationFees;
+
             try
             {
                 var response = await Post<ProducerFeesResponseDto>(url, request, cancellationToken);

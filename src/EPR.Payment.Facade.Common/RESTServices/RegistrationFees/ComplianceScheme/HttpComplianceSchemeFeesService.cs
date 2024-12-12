@@ -4,9 +4,9 @@ using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using FluentValidation;
 using System.Net;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme
@@ -14,16 +14,18 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
     public class HttpComplianceSchemeFeesService : BaseHttpService, IHttpComplianceSchemeFeesService
     {
         public HttpComplianceSchemeFeesService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.ComplianceSchemeServiceUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing))
+            : base(httpClient,
+                   httpContextAccessor,
+                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.ComplianceSchemeServiceUrlMissing))
         {
+            // Additional setup if required
         }
 
-        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(
+            ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             try
             {
