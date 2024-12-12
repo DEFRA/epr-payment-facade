@@ -22,7 +22,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             IOptions<Service> config)
             : base(httpClient,
                    httpContextAccessor,
-                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing))
+                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
+                   config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
             // Define the retry policy for InitiatePaymentAsync
             int retries = config.Value.Retries ?? 1;
