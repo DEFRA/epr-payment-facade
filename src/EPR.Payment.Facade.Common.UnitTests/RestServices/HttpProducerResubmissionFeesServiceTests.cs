@@ -23,7 +23,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
     public class HttpProducerResubmissionFeesServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
-        private Mock<IOptions<Service>> _configMock = null!;
+        private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private ProducerResubmissionFeeRequestDto _requestDto = null!;
         private ProducerResubmissionFeeResponseDto _responseDto = null!;
 
@@ -38,8 +38,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 HttpClientName = "HttpClientName"
             };
 
-            _configMock = new Mock<IOptions<Service>>();
-            _configMock.Setup(x => x.Value).Returns(config);
+            _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
+            _configMonitorMock.Setup(x => x.Get("ProducerResubmissionFeesService")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             _requestDto = new ProducerResubmissionFeeRequestDto
@@ -155,9 +155,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         private HttpProducerResubmissionFeesService CreateHttpProducerResubmissionFeesService(HttpClient httpClient)
         {
             return new HttpProducerResubmissionFeesService(
+                httpClient,
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
+                _configMonitorMock!.Object);
         }
     }
 }

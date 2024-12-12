@@ -13,11 +13,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
         public HttpOfflinePaymentsService(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IOptions<Service> config)
+            IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OfflinePaymentServiceBaseUrlMissing))
+                   configMonitor.Get("OfflinePaymentService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceBaseUrlMissing))
         {
+            var config = configMonitor.Get("OfflinePaymentService");
+            Console.WriteLine($"HttpOfflinePaymentsService initialized with BaseUrl: {config.Url}");
         }
 
         public async Task InsertOfflinePaymentAsync(OfflinePaymentRequestDto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)

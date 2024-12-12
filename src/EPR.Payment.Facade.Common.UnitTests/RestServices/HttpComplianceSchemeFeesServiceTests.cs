@@ -2,11 +2,9 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
@@ -26,7 +24,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
     public class HttpComplianceSchemeFeesServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
-        private Mock<IOptions<Service>> _configMock = null!;
+        private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private ComplianceSchemeFeesRequestDto _complianceSchemeFeesRequestDto = null!;
         private ComplianceSchemeFeesResponseDto _complianceSchemeFeesResponseDto = null!;
 
@@ -41,8 +39,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 HttpClientName = "HttpClientName"
             };
 
-            _configMock = new Mock<IOptions<Service>>();
-            _configMock.Setup(x => x.Value).Returns(config);
+            _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
+            _configMonitorMock.Setup(x => x.Get("ComplianceSchemeFeesService")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
@@ -74,7 +72,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 OutstandingPayment = 6619100,
                 ComplianceSchemeMembersWithFees = new List<ComplianceSchemeMembersWithFeesDto>
                 {
-                    new ComplianceSchemeMembersWithFeesDto 
+                    new ComplianceSchemeMembersWithFeesDto
                     {
                         MemberId = "123",
                         MemberRegistrationFee = 165800,
@@ -120,67 +118,21 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         private HttpComplianceSchemeFeesService CreateHttpComplianceSchemeFeesService(HttpClient httpClient)
         {
             return new HttpComplianceSchemeFeesService(
+                httpClient,
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
+                _configMonitorMock!.Object);
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpClientFactory> httpClientFactoryMock,
-            Mock<IOptions<Service>> configMock)
-        {
-            // Act
-            Action act = () => new HttpComplianceSchemeFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_HttpClientFactoryIsNull_ShouldThrowArgumentNullException(
+        public void Constructor_ConfigMonitorIsNull_ShouldThrowArgumentNullException(
             Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IOptions<Service>> configMock)
+            HttpClient httpClient)
         {
             // Act
-            Action act = () => new HttpComplianceSchemeFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
+            Action act = () => new HttpComplianceSchemeFeesService(httpClient, httpContextAccessorMock.Object, null!);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_ConfigUrlIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IHttpClientFactory> httpClientFactoryMock)
-        {
-            // Arrange
-            var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(c => c.Value).Returns(new Service { Url = null, EndPointName = "SomeEndPoint" });
-
-            // Act
-            Action act = () => new HttpComplianceSchemeFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.ComplianceSchemeServiceUrlMissing} (Parameter 'config')");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_ConfigEndPointNameIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IHttpClientFactory> httpClientFactoryMock)
-        {
-            // Arrange
-            var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(c => c.Value).Returns(new Service { Url = "https://api.example.com", EndPointName = null });
-
-            // Act
-            Action act = () => new HttpComplianceSchemeFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing} (Parameter 'config')");
+            act.Should().Throw<ArgumentNullException>().WithParameterName("configMonitor");
         }
 
         [TestMethod, AutoMoqData]
@@ -196,8 +148,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
-                       });
+                Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
+            });
 
             var httpClient = new HttpClient(handlerMock.Object);
             httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);

@@ -24,7 +24,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
     public class HttpProducerFeesServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
-        private Mock<IOptions<Service>> _configMock = null!;
+        private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private ProducerFeesRequestDto _producerFeesRequestDto = null!;
         private ProducerFeesResponseDto _producerFeesResponseDto = null!;
 
@@ -39,8 +39,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 HttpClientName = "HttpClientName"
             };
 
-            _configMock = new Mock<IOptions<Service>>();
-            _configMock.Setup(x => x.Value).Returns(config);
+            _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
+            _configMonitorMock.Setup(x => x.Get("ProducerFeesService")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             _producerFeesRequestDto = new ProducerFeesRequestDto
@@ -90,67 +90,35 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         private HttpProducerFeesService CreateHttpProducerFeesService(HttpClient httpClient)
         {
             return new HttpProducerFeesService(
+                httpClient,
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
+                _configMonitorMock!.Object);
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpClientFactory> httpClientFactoryMock,
-            Mock<IOptions<Service>> configMock)
+        public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException()
         {
             // Act
-            Action act = () => new HttpProducerFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
+            Action act = () => new HttpProducerFeesService(
+                new HttpClient(),
+                null!,
+                _configMonitorMock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_HttpClientFactoryIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IOptions<Service>> configMock)
+        public void Constructor_ConfigMonitorIsNull_ShouldThrowArgumentNullException()
         {
             // Act
-            Action act = () => new HttpProducerFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
+            Action act = () => new HttpProducerFeesService(
+                new HttpClient(),
+                _httpContextAccessorMock.Object,
+                null!);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_ConfigUrlIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IHttpClientFactory> httpClientFactoryMock)
-        {
-            // Arrange
-            var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(c => c.Value).Returns(new Service { Url = null, EndPointName = "SomeEndPoint" });
-
-            // Act
-            Action act = () => new HttpProducerFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.RegistrationFeesServiceBaseUrlMissing} (Parameter 'config')");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_ConfigEndPointNameIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            Mock<IHttpClientFactory> httpClientFactoryMock)
-        {
-            // Arrange
-            var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(c => c.Value).Returns(new Service { Url = "https://api.example.com", EndPointName = null });
-
-            // Act
-            Action act = () => new HttpProducerFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.RegistrationFeesServiceEndPointNameMissing} (Parameter 'config')");
+            act.Should().Throw<ArgumentNullException>().WithParameterName("configMonitor");
         }
 
         [TestMethod, AutoMoqData]

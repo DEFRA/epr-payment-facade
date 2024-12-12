@@ -25,6 +25,14 @@ namespace EPR.Payment.Facade.Helpers
             // Configure the services based on appsettings.json
             services.Configure<ServicesConfiguration>(configuration.GetSection(ServicesConfiguration.SectionName));
 
+            // Register individual service configurations
+            services.Configure<Service>("ProducerFeesService", configuration.GetSection("Services:ProducerFeesService"));
+            services.Configure<Service>("ComplianceSchemeFeesService", configuration.GetSection("Services:ComplianceSchemeFeesService"));
+            services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
+
+            // Register IHttpContextAccessor
+            services.AddHttpContextAccessor();
+
             // Register the authorization handler
             services.AddTransient<TokenAuthorizationHandler>(sp =>
             {
@@ -39,83 +47,77 @@ namespace EPR.Payment.Facade.Helpers
                 return new TokenAuthorizationHandler(Options.Create(serviceConfig));
             });
 
-            // Explicitly register each service with its configuration
+            // Register HttpClients with TokenAuthorizationHandler and pass configuration to constructors
 
-            services.AddTransient<IHttpPaymentServiceHealthCheckService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
-                ValidateServiceConfiguration(config, "PaymentService");
-                return new HttpOnlinePaymentServiceHealthCheckService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
+            services.AddHttpClient<IHttpProducerFeesService, HttpProducerFeesService>()
+                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                    .ConfigureHttpClient((sp, client) =>
+                    {
+                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesService;
+                        ValidateServiceConfiguration(config, "ProducerFeesService");
+                        client.BaseAddress = new Uri(config.Url);
+                    });
 
-            services.AddTransient<IHttpOnlinePaymentsService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
-                ValidateServiceConfiguration(config, "PaymentService");
-                return new HttpOnlinePaymentsService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
+            services.AddHttpClient<IHttpComplianceSchemeFeesService, HttpComplianceSchemeFeesService>()
+                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                    .ConfigureHttpClient((sp, client) =>
+                    {
+                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
+                        ValidateServiceConfiguration(config, "ComplianceSchemeFeesService");
+                        client.BaseAddress = new Uri(config.Url);
+                    });
 
-            services.AddTransient<IHttpOfflinePaymentsService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OfflinePaymentService;
-                ValidateServiceConfiguration(config, "OfflinePaymentService");
-                return new HttpOfflinePaymentsService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
+            services.AddHttpClient<IHttpProducerResubmissionFeesService, HttpProducerResubmissionFeesService>()
+                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                    .ConfigureHttpClient((sp, client) =>
+                    {
+                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesService;
+                        ValidateServiceConfiguration(config, "ProducerFeesService");
+                        client.BaseAddress = new Uri(config.Url);
+                    });
 
+            services.AddHttpClient<IHttpComplianceSchemeResubmissionFeesService, HttpComplianceSchemeResubmissionFeesService>()
+                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                    .ConfigureHttpClient((sp, client) =>
+                    {
+                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
+                        ValidateServiceConfiguration(config, "ComplianceSchemeFeesService");
+                        client.BaseAddress = new Uri(config.Url);
+                    });
+
+            services.AddHttpClient<IHttpPaymentServiceHealthCheckService, HttpOnlinePaymentServiceHealthCheckService>()
+                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                    .ConfigureHttpClient((sp, client) =>
+                    {
+                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
+                        ValidateServiceConfiguration(config, "PaymentService");
+                        client.BaseAddress = new Uri(config.Url);
+                    });
+
+            services.AddHttpClient<IHttpOnlinePaymentsService, HttpOnlinePaymentsService>()
+                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                    .ConfigureHttpClient((sp, client) =>
+                    {
+                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
+                        ValidateServiceConfiguration(config, "PaymentService");
+                        client.BaseAddress = new Uri(config.Url);
+                    });
+
+            services.AddHttpClient<IHttpOfflinePaymentsService, HttpOfflinePaymentsService>()
+                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                    .ConfigureHttpClient((sp, client) =>
+                    {
+                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OfflinePaymentService;
+                        ValidateServiceConfiguration(config, "OfflinePaymentService");
+                        client.BaseAddress = new Uri(config.Url);
+                    });
+
+            // Register additional services without TokenAuthorizationHandler
             services.AddTransient<IHttpGovPayService>(sp =>
             {
                 var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.GovPayService;
                 ValidateServiceConfiguration(config, "GovPayService");
                 return new HttpGovPayService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
-
-            services.AddTransient<IHttpProducerFeesService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesService;
-                ValidateServiceConfiguration(config, "ProducerFeesService");
-                return new HttpProducerFeesService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
-
-            services.AddTransient<IHttpComplianceSchemeFeesService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
-                ValidateServiceConfiguration(config, "ComplianceSchemeFeesService");
-                return new HttpComplianceSchemeFeesService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
-
-            services.AddTransient<IHttpProducerResubmissionFeesService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesService;
-                ValidateServiceConfiguration(config, "ProducerFeesService");
-                return new HttpProducerResubmissionFeesService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
-
-            services.AddTransient<IHttpComplianceSchemeResubmissionFeesService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
-                ValidateServiceConfiguration(config, "ComplianceSchemeFeesService");
-                return new HttpComplianceSchemeResubmissionFeesService(
                     sp.GetRequiredService<HttpClient>(),
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     Options.Create(config));
@@ -141,5 +143,7 @@ namespace EPR.Payment.Facade.Helpers
                 throw new InvalidOperationException($"{configName} EndPointName configuration is missing.");
             }
         }
+
+
     }
 }

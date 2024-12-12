@@ -16,18 +16,26 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceSche
         public HttpComplianceSchemeResubmissionFeesService(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IOptions<Service> config)
+            IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing))
+                   configMonitor.Get("ComplianceSchemeFeesService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing))
         {
+            var config = configMonitor.Get("ComplianceSchemeFeesService");
+            Console.WriteLine($"HttpComplianceSchemeResubmissionFeesService initialized with BaseUrl: {config.Url}");
         }
 
-        public async Task<ComplianceSchemeResubmissionFeeResponse> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ComplianceSchemeResubmissionFeeResponse> CalculateResubmissionFeeAsync(
+            ComplianceSchemeResubmissionFeeRequestDto request,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                return await Post<ComplianceSchemeResubmissionFeeResponse>(UrlConstants.GetComplianceSchemeResubmissionFee, request, cancellationToken);
+                return await Post<ComplianceSchemeResubmissionFeeResponse>(
+                    UrlConstants.GetComplianceSchemeResubmissionFee,
+                    request,
+                    cancellationToken);
             }
             catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
             {

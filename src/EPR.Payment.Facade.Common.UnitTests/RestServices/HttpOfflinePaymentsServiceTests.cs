@@ -55,9 +55,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         private HttpOfflinePaymentsService CreateHttpOfflinePaymentsService(HttpClient httpClient)
         {
             return new HttpOfflinePaymentsService(
-                _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
+                httpClient,
+                _httpContextAccessorMock.Object,
+                new Mock<IOptionsMonitor<Service>>().Object
+            );
         }
 
         [TestMethod, AutoMoqData]

@@ -1,11 +1,9 @@
 ﻿using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
@@ -25,7 +23,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
     public class HttpComplianceSchemeResubmissionFeesServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
-        private Mock<IOptions<Service>> _configMock = null!;
+        private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private ComplianceSchemeResubmissionFeeRequestDto _requestDto = null!;
         private ComplianceSchemeResubmissionFeeResponse _responseDto = null!;
 
@@ -40,8 +38,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 HttpClientName = "HttpClientName"
             };
 
-            _configMock = new Mock<IOptions<Service>>();
-            _configMock.Setup(x => x.Value).Returns(config);
+            _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
+            _configMonitorMock.Setup(x => x.Get("ComplianceSchemeResubmissionFeesService")).Returns(config);
+
+            _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             _requestDto = new ComplianceSchemeResubmissionFeeRequestDto
@@ -64,67 +64,21 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         private HttpComplianceSchemeResubmissionFeesService CreateHttpComplianceSchemeResubmissionFeesService(HttpClient httpClient)
         {
             return new HttpComplianceSchemeResubmissionFeesService(
+                httpClient,
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
+                _configMonitorMock!.Object);
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IHttpClientFactory> httpClientFactoryMock,
-            [Frozen] Mock<IOptions<Service>> configMock)
+        public void Constructor_ConfigMonitorIsNull_ShouldThrowArgumentNullException(
+            Mock<IHttpContextAccessor> httpContextAccessorMock,
+            HttpClient httpClient)
         {
             // Act
-            Action act = () => new HttpComplianceSchemeResubmissionFeesService(null!, httpClientFactoryMock.Object, configMock.Object);
+            Action act = () => new HttpComplianceSchemeResubmissionFeesService(httpClient, httpContextAccessorMock.Object, null!);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("httpContextAccessor");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_HttpClientFactoryIsNull_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
-            [Frozen] Mock<IOptions<Service>> configMock)
-        {
-            // Act
-            Action act = () => new HttpComplianceSchemeResubmissionFeesService(httpContextAccessorMock.Object, null!, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("httpClientFactory");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_ConfigUrlIsNull_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
-            [Frozen] Mock<IHttpClientFactory> httpClientFactoryMock)
-        {
-            // Arrange
-            var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(c => c.Value).Returns(new Service { Url = null, EndPointName = "SomeEndPoint" });
-
-            // Act
-            Action act = () => new HttpComplianceSchemeResubmissionFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.RegistrationFeesServiceBaseUrlMissing} (Parameter 'config')");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_ConfigEndPointNameIsNull_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
-            [Frozen] Mock<IHttpClientFactory> httpClientFactoryMock)
-        {
-            // Arrange
-            var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(c => c.Value).Returns(new Service { Url = "https://api.example.com", EndPointName = null });
-
-            // Act
-            Action act = () => new HttpComplianceSchemeResubmissionFeesService(httpContextAccessorMock.Object, httpClientFactoryMock.Object, configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.RegistrationFeesServiceEndPointNameMissing} (Parameter 'config')");
+            act.Should().Throw<ArgumentNullException>().WithParameterName("configMonitor");
         }
 
         [TestMethod, AutoMoqData]

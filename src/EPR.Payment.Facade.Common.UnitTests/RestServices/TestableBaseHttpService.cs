@@ -6,13 +6,14 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
     public class TestableBaseHttpService : BaseHttpService
     {
         public TestableBaseHttpService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
-            string baseUrl,
-            string endPointName)
-            : base(httpContextAccessor, httpClientFactory, baseUrl, endPointName)
+            string baseUrl)
+            : base(httpClient, httpContextAccessor, baseUrl)
         {
         }
+
+        // Expose the protected _baseUrl for testing purposes
         public string BaseUrl => _baseUrl;
 
         // Public wrappers for protected methods for testing purposes
@@ -27,7 +28,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             Post(url, payload, cancellationToken);
 
         public Task<T> PublicPut<T>(string url, object payload, CancellationToken cancellationToken) =>
-        Put<T>(url, payload, cancellationToken);
+            Put<T>(url, payload, cancellationToken);
 
         public Task PublicPut(string url, object payload, CancellationToken cancellationToken) =>
             Put(url, payload, cancellationToken);
@@ -40,7 +41,5 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
         public void PublicSetBearerToken(string token) =>
             SetBearerToken(token);
-
-
     }
 }

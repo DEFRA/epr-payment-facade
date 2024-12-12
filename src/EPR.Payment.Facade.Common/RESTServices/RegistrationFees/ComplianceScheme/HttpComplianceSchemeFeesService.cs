@@ -16,12 +16,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
         public HttpComplianceSchemeFeesService(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IOptions<Service> config)
+            IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.ComplianceSchemeServiceUrlMissing))
+                   configMonitor.Get("ComplianceSchemeFeesService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceUrlMissing))
         {
-            // Additional setup if required
+            var config = configMonitor.Get("ComplianceSchemeFeesService");
+            Console.WriteLine($"HttpComplianceSchemeFeesService initialized with BaseUrl: {config.Url}");
         }
 
         public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(
@@ -29,7 +31,10 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
         {
             try
             {
-                return await Post<ComplianceSchemeFeesResponseDto>(UrlConstants.CalculateComplianceSchemeFee, request, cancellationToken);
+                return await Post<ComplianceSchemeFeesResponseDto>(
+                    UrlConstants.CalculateComplianceSchemeFee,
+                    request,
+                    cancellationToken);
             }
             catch (HttpRequestException ex)
             {

@@ -22,7 +22,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
     public class HttpOnlinePaymentsServiceTests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
-        private Mock<IOptions<Service>> _configMock = null!;
+        private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private InsertOnlinePaymentRequestDto _insertOnlinePaymentRequestDto = null!;
         private UpdateOnlinePaymentRequestDto _updateOnlinePaymentRequestDto = null!;
         private Guid _paymentId;
@@ -38,8 +38,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 HttpClientName = "HttpClientName"
             };
 
-            _configMock = new Mock<IOptions<Service>>();
-            _configMock.Setup(x => x.Value).Returns(config);
+            _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
+            _configMonitorMock.Setup(x => x.Get("PaymentService")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             _insertOnlinePaymentRequestDto = new InsertOnlinePaymentRequestDto
@@ -67,9 +67,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         private HttpOnlinePaymentsService CreateHttpOnlinePaymentsService(HttpClient httpClient)
         {
             return new HttpOnlinePaymentsService(
+                httpClient,
                 _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
+                _configMonitorMock!.Object);
         }
 
         [TestMethod, AutoMoqData]
@@ -204,9 +204,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
         [TestMethod, AutoMoqData]
         public async Task GetOnlinePaymentDetailsAsync_Success_ReturnsPaymentDetailsDto(
-    [Frozen] Mock<HttpMessageHandler> handlerMock,
-    HttpOnlinePaymentsService httpOnlinePaymentsService,
-    CancellationToken cancellationToken)
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpOnlinePaymentsService httpOnlinePaymentsService,
+            CancellationToken cancellationToken)
         {
             // Arrange
             var externalPaymentId = Guid.NewGuid();

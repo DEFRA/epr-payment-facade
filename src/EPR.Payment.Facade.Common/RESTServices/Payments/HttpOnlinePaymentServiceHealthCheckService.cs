@@ -10,11 +10,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
         public HttpOnlinePaymentServiceHealthCheckService(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IOptions<Service> config)
+            IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), "PaymentServiceHealthCheck BaseUrl configuration is missing"))
+                   configMonitor.Get("PaymentServiceHealthCheck").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), "PaymentServiceHealthCheck BaseUrl configuration is missing"))
         {
+            var config = configMonitor.Get("PaymentServiceHealthCheck");
+            Console.WriteLine($"HttpOnlinePaymentServiceHealthCheckService initialized with BaseUrl: {config.Url}");
         }
 
         public async Task<HttpResponseMessage> GetHealthAsync(CancellationToken cancellationToken)

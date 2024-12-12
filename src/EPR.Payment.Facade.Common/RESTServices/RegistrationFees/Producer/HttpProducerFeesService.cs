@@ -16,12 +16,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
         public HttpProducerFeesService(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IOptions<Service> config)
+            IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing))
+                   configMonitor.Get("ProducerFeesService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing))
         {
-            // Additional setup if needed
+            var config = configMonitor.Get("ProducerFeesService");
+            Console.WriteLine($"HttpProducerFeesService initialized with BaseUrl: {config.Url}");
         }
 
         public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(
