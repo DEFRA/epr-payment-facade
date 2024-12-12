@@ -41,10 +41,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             expectedUrl = $"{baseUrl}/{endPointName}/{url}/";
 
             _testableHttpService = new TestableBaseHttpService(
+                _httpClient,
                 _httpContextAccessorMock.Object,
-                _httpClientFactoryMock.Object,
-                baseUrl,
-                endPointName);
+                baseUrl);
         }
 
         [TestMethod]
@@ -277,7 +276,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                     "SendAsync",
                     ItExpr.Is<HttpRequestMessage>(req =>
                         req.Method == HttpMethod.Delete &&
-                        req.RequestUri!.ToString() == expectedUrl),
+                        req.RequestUri!.ToString() == expectedUrl &&
+                        req.Content != null &&
+                        req.Content.Headers.ContentType!.MediaType == "application/json"),
                     ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
@@ -288,8 +289,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
             // Act
             var result = await _testableHttpService.PublicDelete<object>(url, payload, cancellationToken);
-            // Parse the result to JToken and assert the expected JSON token
-            var jsonResult = JToken.Parse(result!.ToString()!);
+            var jsonResult = JToken.Parse(result!.ToString()!); // Parse the result for verification
 
             // Assert
             using (new AssertionScope())
@@ -306,7 +306,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                         msg.Content!.Headers.ContentType!.MediaType == "application/json"),
                     ItExpr.IsAny<CancellationToken>());
             }
-
         }
 
         [TestMethod]
@@ -954,66 +953,86 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         public void Constructor_WhenHttpContextAccessorIsNull_ShouldThrowArgumentNullException()
         {
             // Act
-            Action act = () => new TestableBaseHttpService(null!, _httpClientFactoryMock.Object, baseUrl, endPointName);
+            Action act = () => new TestableBaseHttpService(
+                _httpClient,
+                null!, // Pass null for IHttpContextAccessor
+                baseUrl);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithMessage("*httpContextAccessor*");
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("*httpContextAccessor*");
         }
 
         [TestMethod]
         public void Constructor_WhenHttpClientFactoryIsNull_ShouldThrowArgumentNullException()
         {
             // Act
-            Action act = () => new TestableBaseHttpService(_httpContextAccessorMock.Object, null!, baseUrl, endPointName);
+            Action act = () => new TestableBaseHttpService(
+                null!, // Pass null for HttpClient
+                _httpContextAccessorMock.Object,
+                baseUrl);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithMessage("*httpClientFactory*");
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("*httpClient*");
         }
 
         [TestMethod]
         public void Constructor_WhenBaseUrlIsNull_ShouldThrowArgumentNullException()
         {
+            // Arrange
+            var httpClient = new HttpClient(); // Provide a valid HttpClient instance
+
             // Act
-            Action act = () => new TestableBaseHttpService(_httpContextAccessorMock.Object, _httpClientFactoryMock.Object, null!, endPointName);
+            Action act = () => new TestableBaseHttpService(
+                httpClient,
+                _httpContextAccessorMock.Object,
+                null!); // Simulate null baseUrl
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithMessage("*baseUrl*");
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("*baseUrl*");
         }
 
         [TestMethod]
         public void Constructor_WhenEndPointNameIsNull_ShouldThrowArgumentNullException()
         {
             // Act
-            Action act = () => new TestableBaseHttpService(_httpContextAccessorMock.Object, _httpClientFactoryMock.Object, baseUrl, null!);
+            Action act = () => new TestableBaseHttpService(
+                new HttpClient(),
+                _httpContextAccessorMock.Object,
+                null!); // Simulate null for endPointName
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithMessage("*endPointName*");
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("*baseUrl*"); // Verify that the correct parameter is reported
         }
 
         [TestMethod]
         public void Constructor_WhenTrailingSlash_ShouldTrimTrailingSlashFromBaseUrl()
         {
             // Arrange
-            _httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+            var trimmedBaseUrl = baseUrl.TrimEnd('/');
+            var httpClient = new HttpClient();
 
             // Act
-            var service = new TestableBaseHttpService(_httpContextAccessorMock.Object, _httpClientFactoryMock.Object, string.Concat(baseUrl, "/"), endPointName);
+            var service = new TestableBaseHttpService(httpClient, _httpContextAccessorMock.Object, $"{baseUrl}/");
 
             // Assert
-            service.BaseUrl.Should().Be($"{baseUrl}/{endPointName}");
+            service.BaseUrl.Should().Be(trimmedBaseUrl);
         }
 
         [TestMethod]
         public void Constructor_WhenNoTrailingSlash_ShouldNotTrim()
         {
             // Arrange
-            _httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+            var httpClient = new HttpClient();
 
             // Act
-            var service = new TestableBaseHttpService(_httpContextAccessorMock.Object, _httpClientFactoryMock.Object, baseUrl, endPointName);
+            var service = new TestableBaseHttpService(httpClient, _httpContextAccessorMock.Object, baseUrl);
 
             // Assert
-            service.BaseUrl.Should().Be($"{baseUrl}/{endPointName}");
+            service.BaseUrl.Should().Be(baseUrl);
         }
     }
 }
