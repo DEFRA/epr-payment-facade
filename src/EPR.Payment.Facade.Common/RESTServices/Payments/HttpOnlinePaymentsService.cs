@@ -11,6 +11,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
     public class HttpOnlinePaymentsService : BaseHttpService, IHttpOnlinePaymentsService
     {
+        string _clientId;
         public HttpOnlinePaymentsService(
             IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpClientFactory,
@@ -19,6 +20,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                 config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
                 config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
+            _clientId = config.Value.BearerToken;
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
@@ -27,6 +29,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             var url = UrlConstants.OnlinePaymentsInsert;
             try
             {
+                await SetManagedIdentityToken(_clientId, cancellationToken);
+
                 var response = await Post<Guid>(url, onlinePaymentStatusInsertRequest, cancellationToken);
                 return response;
             }

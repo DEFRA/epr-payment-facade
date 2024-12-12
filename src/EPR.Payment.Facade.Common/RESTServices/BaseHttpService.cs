@@ -1,9 +1,14 @@
 ﻿using EPR.Payment.Facade.Common.Exceptions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Threading;
+using Azure.Identity;
+using Azure.Core;
 
 namespace EPR.Payment.Facade.Common.RESTServices
 {
@@ -12,6 +17,9 @@ namespace EPR.Payment.Facade.Common.RESTServices
         protected readonly string _baseUrl;
         protected readonly HttpClient _httpClient;
         protected IHttpContextAccessor _httpContextAccessor;
+        private TokenRequestContext _tokenRequestContext;
+
+        private DefaultAzureCredential? _credentials;
 
         protected BaseHttpService(
             IHttpContextAccessor httpContextAccessor,
@@ -44,6 +52,16 @@ namespace EPR.Payment.Facade.Common.RESTServices
         protected void SetBearerToken(string token)
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        protected async Task SetManagedIdentityToken(string ClientId, CancellationToken cancellationToken)
+        {
+            _tokenRequestContext = new TokenRequestContext(new[] { ClientId });
+            _credentials = new DefaultAzureCredential();
+
+            var tokenResult = await _credentials.GetTokenAsync(_tokenRequestContext, cancellationToken);
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Token);
         }
 
         /// <summary>
