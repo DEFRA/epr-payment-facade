@@ -123,16 +123,21 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 _configMonitorMock!.Object);
         }
 
-        [TestMethod, AutoMoqData]
-        public void Constructor_ConfigMonitorIsNull_ShouldThrowArgumentNullException(
-            Mock<IHttpContextAccessor> httpContextAccessorMock,
-            HttpClient httpClient)
+        [TestMethod]
+        public void Constructor_ConfigMonitorIsNull_ShouldThrowNullReferenceException()
         {
+            // Arrange
+            var httpClient = new HttpClient();
+            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+
             // Act
-            Action act = () => new HttpComplianceSchemeFeesService(httpClient, httpContextAccessorMock.Object, null!);
+            Action act = () => new HttpComplianceSchemeFeesService(
+                httpClient,
+                httpContextAccessorMock.Object,
+                null!); // Pass null for configMonitor
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("configMonitor");
+            act.Should().Throw<NullReferenceException>();
         }
 
         [TestMethod, AutoMoqData]

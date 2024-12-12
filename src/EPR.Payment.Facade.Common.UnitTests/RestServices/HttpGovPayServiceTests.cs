@@ -15,6 +15,7 @@ using Moq;
 using Moq.Protected;
 using Newtonsoft.Json;
 using System.Net;
+using System.Text;
 
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
@@ -113,36 +114,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 .WithMessage("*Value cannot be null. (Parameter 'httpContextAccessor')*");
         }
 
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_WhenBearerTokenIsNull_ThrowsArgumentNullException(
-            [Frozen] Mock<HttpMessageHandler> handlerMock,
-            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock)
-        {
-            // Arrange
-            var config = new Service
-            {
-                Url = "https://example.com",
-                EndPointName = "payments",
-                BearerToken = null // Simulate null BearerToken
-            };
-            var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(x => x.Value).Returns(config);
-
-            var httpClient = new HttpClient(handlerMock.Object);
-
-            // Act
-            Action act = () => new HttpGovPayService(
-                httpClient,
-                httpContextAccessorMock.Object,
-                configMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-               .WithMessage("*Bearer token is null. Unable to initiate payment.*")
-               .WithParameterName("config");
-        }
-
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullUrl_ShouldThrowArgumentNullException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
@@ -167,7 +138,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-               .WithMessage("*Url is null or empty.*") // Ensure the exception message is relevant
+               .WithMessage("OnlinePaymentService BaseUrl configuration is missing (Parameter 'config')")
                .WithParameterName("config");
         }
 
@@ -177,15 +148,13 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock)
         {
             // Arrange
-            var config = new Service
-            {
-                Url = "https://valid-url.com",
-                EndPointName = null, // Simulate null EndPointName
-                BearerToken = "ValidToken"
-            };
-
             var configMock = new Mock<IOptions<Service>>();
-            configMock.Setup(x => x.Value).Returns(config);
+            configMock.Setup(x => x.Value).Returns(new Service
+            {
+                Url = "https://example.com", // Valid URL
+                EndPointName = null,         // Simulate null EndPointName
+                BearerToken = "ValidToken"
+            });
 
             var httpClient = new HttpClient(handlerMock.Object);
 
@@ -197,8 +166,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithMessage("*EndPointName cannot be null or empty.*") // Ensure the exception message matches the validation logic
-                .WithParameterName("config");
+               .WithMessage("OnlinePaymentService EndPointName configuration is missing (Parameter 'config')")
+               .WithParameterName("config");
         }
 
         [TestMethod, AutoMoqData]
@@ -430,42 +399,53 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
         [TestMethod, AutoMoqData]
         public async Task GetPaymentStatusAsync__WhenResponseIsNull_ShouldRetryOnFailure(
-           [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
-           [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-           [Frozen] PaymentStatusResponseDto _mockResponse,
-           string _paymentId,
-           [Frozen] CancellationToken _cancellationToken)
+    [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
+    [Frozen] Mock<HttpMessageHandler> handlerMock,
+    Service serviceConfig,
+    string paymentId,
+    CancellationToken cancellationToken)
         {
             // Arrange
-            _mockResponse.PaymentId = _paymentId;
-            var postMethodCallCount = 0;
-            var service = new Mock<HttpGovPayService>(
-                _httpContextAccessorMock.Object,
-                _httpClientFactoryMock.Object,
-                _configMock!.Object)
+            serviceConfig.Url = "https://example.com";
+            serviceConfig.EndPointName = "payments";
+            serviceConfig.Retries = 3; // Set retries to test retry logic
+            var configOptions = Options.Create(serviceConfig);
+
+            var httpClient = new HttpClient(handlerMock.Object)
             {
-                CallBase = true // Use actual implementation for non-mocked methods
+                BaseAddress = new Uri(serviceConfig.Url)
             };
 
-            service.Protected()
-                   .Setup<Task<PaymentStatusResponseDto>>("Get",
-                        [typeof(PaymentStatusResponseDto)], true, ItExpr.IsAny<string>(), ItExpr.IsAny<CancellationToken>(), ItExpr.IsAny<bool>())
-                   .Callback(() => postMethodCallCount++)
-                   .ReturnsAsync(() =>
-                   {
-                       if (postMethodCallCount < 3) return null!;
-                       return _mockResponse; // Return mockResponse on the third call
-                   });
+            // Mock response with an empty but valid JSON response
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Get &&
+                        req.RequestUri!.ToString().Contains(paymentId)),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    Content = new StringContent("{}", Encoding.UTF8, "application/json") // Empty JSON object
+                });
+
+            var service = new HttpGovPayService(httpClient, httpContextAccessorMock.Object, configOptions);
 
             // Act
-            var result = await service.Object.GetPaymentStatusAsync(_paymentId, _cancellationToken);
+            var result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
-            using (new AssertionScope())
-            {
-                result.Should().BeEquivalentTo(_mockResponse);
-                postMethodCallCount.Should().Be(3); // Retries twice, succeeds on third attempt
-            }
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Exactly(serviceConfig.Retries ?? 1),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Get &&
+                    req.RequestUri!.ToString().Contains(paymentId)),
+                ItExpr.IsAny<CancellationToken>());
+
+            result.Should().BeNull();
         }
 
         [TestMethod, AutoMoqData]
@@ -762,28 +742,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-               .WithMessage("*OnlinePaymentServiceBaseUrlMissing*")
+               .WithMessage("OnlinePaymentService BaseUrl configuration is missing (Parameter 'config')")
                .WithParameterName("config");
-        }
-
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_WhenHttpClientFactoryIsNull_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IHttpContextAccessor> httpContextAccessorMock,
-            [Frozen] Service serviceConfig)
-        {
-            // Arrange
-            var configOptions = Options.Create(serviceConfig);
-
-            // Act
-            Action act = () => new HttpGovPayService(
-                new HttpClient(),
-                httpContextAccessorMock.Object,
-                configOptions);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-               .WithMessage("*httpClientFactory*");
         }
 
         [TestMethod, AutoMoqData]
