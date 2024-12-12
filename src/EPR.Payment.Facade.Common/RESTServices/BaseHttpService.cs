@@ -13,7 +13,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
         protected readonly HttpClient _httpClient;
         protected IHttpContextAccessor _httpContextAccessor;
 
-        protected BaseHttpService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, string baseUrl)
+        protected BaseHttpService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, string baseUrl, string endPointName)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
@@ -23,7 +23,14 @@ namespace EPR.Payment.Facade.Common.RESTServices
                 throw new ArgumentNullException(nameof(baseUrl));
             }
 
+            if (string.IsNullOrWhiteSpace(endPointName))
+            {
+                throw new ArgumentNullException(nameof(endPointName));
+            }
+
             _baseUrl = baseUrl.EndsWith('/') ? baseUrl.TrimEnd('/') : baseUrl;
+
+            _baseUrl = $"{_baseUrl}/{endPointName}";
 
             // Add common headers
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
