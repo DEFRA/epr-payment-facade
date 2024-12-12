@@ -116,7 +116,6 @@ builder.Services.AddApiVersioning(options =>
 });
 
 builder.Services.AddFeatureManagement();
-builder.Services.AddLogging();
 
 // Conditional Authentication based on Feature Flag
 using var serviceProvider = builder.Services.BuildServiceProvider();
