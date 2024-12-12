@@ -1,4 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.HttpHandlers;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
@@ -24,10 +25,16 @@ namespace EPR.Payment.Facade.Helpers
             this IServiceCollection services,
             IConfiguration configuration)
         {
+            // Configure the services based on appsettings.json
             services.Configure<ServicesConfiguration>(configuration.GetSection(ServicesConfiguration.SectionName));
 
+            // Register the authorization handler
+            services.AddTransient<TokenAuthorizationHandler>();
+
+            // Register the scoped services
             services.AddScoped<IPaymentServiceHealthService, PaymentServiceHealthService>();
 
+            // Register HTTP services
             RegisterHttpService<IHttpPaymentServiceHealthCheckService, HttpOnlinePaymentServiceHealthCheckService>(
                 services, nameof(ServicesConfiguration.PaymentService), "health");
 
@@ -60,9 +67,21 @@ namespace EPR.Payment.Facade.Helpers
             where TInterface : class
             where TImplementation : class, TInterface
         {
-            // Perform validation before adding to the service collection
+            // Validate and create service options
             var serviceOptions = CreateServiceOptions(services, configName, endPointOverride);
 
+            // Configure HttpClient with the token authorization handler
+            services.AddHttpClient<TInterface, TImplementation>()
+                .ConfigureHttpClient(client =>
+                {
+                    if (!string.IsNullOrWhiteSpace(serviceOptions.Value.Url))
+                    {
+                        client.BaseAddress = new Uri(serviceOptions.Value.Url);
+                    }
+                })
+                .AddHttpMessageHandler<TokenAuthorizationHandler>();
+
+            // Add scoped instance for TInterface
             services.AddScoped<TInterface>(s =>
             {
                 Trace.TraceInformation($"Registering service {typeof(TImplementation).Name} for {configName}");
