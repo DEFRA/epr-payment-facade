@@ -6,10 +6,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
     public class TestableBaseHttpService : BaseHttpService
     {
         public TestableBaseHttpService(
-            HttpClient httpClient,
-            IHttpContextAccessor httpContextAccessor,
-            string baseUrl)
-            : base(httpClient, httpContextAccessor, baseUrl)
+        HttpClient httpClient,
+        IHttpContextAccessor httpContextAccessor,
+        string baseUrl,
+        string endPointName)
+        : base(httpClient, httpContextAccessor, baseUrl, endPointName)
         {
         }
 
