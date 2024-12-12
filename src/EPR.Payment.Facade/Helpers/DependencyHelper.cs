@@ -11,7 +11,6 @@ using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.I
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Helpers
@@ -27,103 +26,117 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<ServicesConfiguration>(configuration.GetSection(ServicesConfiguration.SectionName));
 
             // Register the authorization handler
-            services.AddTransient<TokenAuthorizationHandler>();
+            services.AddTransient<TokenAuthorizationHandler>(sp =>
+            {
+                var servicesConfig = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value;
+                var serviceConfig = servicesConfig.ProducerFeesService;
 
-            // Validate all configurations
-            var serviceProvider = services.BuildServiceProvider();
-            var servicesConfig = serviceProvider.GetRequiredService<IOptions<ServicesConfiguration>>().Value;
+                if (serviceConfig == null || string.IsNullOrEmpty(serviceConfig.ServiceClientId))
+                {
+                    throw new InvalidOperationException("ServiceClientId for ProducerFeesService is null or empty.");
+                }
 
-            //foreach (var property in typeof(ServicesConfiguration).GetProperties())
-            //{
-            //    var serviceConfig = property.GetValue(servicesConfig) as Service;
-            //    ValidateServiceConfiguration(serviceConfig, property.Name);
-            //}
+                return new TokenAuthorizationHandler(Options.Create(serviceConfig));
+            });
 
-            // Register HTTP services
-            RegisterHttpService<IHttpPaymentServiceHealthCheckService, HttpOnlinePaymentServiceHealthCheckService>(
-                services, nameof(ServicesConfiguration.PaymentService), "health");
+            // Explicitly register each service with its configuration
 
-            RegisterHttpService<IHttpOnlinePaymentsService, HttpOnlinePaymentsService>(
-                services, nameof(ServicesConfiguration.PaymentService));
+            services.AddTransient<IHttpPaymentServiceHealthCheckService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
+                ValidateServiceConfiguration(config, "PaymentService");
+                return new HttpOnlinePaymentServiceHealthCheckService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
 
-            RegisterHttpService<IHttpOfflinePaymentsService, HttpOfflinePaymentsService>(
-                services, nameof(ServicesConfiguration.OfflinePaymentService));
+            services.AddTransient<IHttpOnlinePaymentsService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
+                ValidateServiceConfiguration(config, "PaymentService");
+                return new HttpOnlinePaymentsService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
 
-            RegisterHttpService<IHttpGovPayService, HttpGovPayService>(
-                services, nameof(ServicesConfiguration.GovPayService));
+            services.AddTransient<IHttpOfflinePaymentsService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OfflinePaymentService;
+                ValidateServiceConfiguration(config, "OfflinePaymentService");
+                return new HttpOfflinePaymentsService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
 
-            RegisterHttpService<IHttpProducerFeesService, HttpProducerFeesService>(
-                services, nameof(ServicesConfiguration.ProducerFeesService));
+            services.AddTransient<IHttpGovPayService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.GovPayService;
+                ValidateServiceConfiguration(config, "GovPayService");
+                return new HttpGovPayService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
 
-            RegisterHttpService<IHttpComplianceSchemeFeesService, HttpComplianceSchemeFeesService>(
-                services, nameof(ServicesConfiguration.ComplianceSchemeFeesService));
+            services.AddTransient<IHttpProducerFeesService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesService;
+                ValidateServiceConfiguration(config, "ProducerFeesService");
+                return new HttpProducerFeesService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
 
-            RegisterHttpService<IHttpProducerResubmissionFeesService, HttpProducerResubmissionFeesService>(
-                services, nameof(ServicesConfiguration.ProducerFeesService));
+            services.AddTransient<IHttpComplianceSchemeFeesService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
+                ValidateServiceConfiguration(config, "ComplianceSchemeFeesService");
+                return new HttpComplianceSchemeFeesService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
 
-            RegisterHttpService<IHttpComplianceSchemeResubmissionFeesService, HttpComplianceSchemeResubmissionFeesService>(
-                services, nameof(ServicesConfiguration.ComplianceSchemeFeesService));
+            services.AddTransient<IHttpProducerResubmissionFeesService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesService;
+                ValidateServiceConfiguration(config, "ProducerFeesService");
+                return new HttpProducerResubmissionFeesService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
+
+            services.AddTransient<IHttpComplianceSchemeResubmissionFeesService>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
+                ValidateServiceConfiguration(config, "ComplianceSchemeFeesService");
+                return new HttpComplianceSchemeResubmissionFeesService(
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IHttpContextAccessor>(),
+                    Options.Create(config));
+            });
 
             return services;
         }
 
-        private static void RegisterHttpService<TInterface, TImplementation>(
-            IServiceCollection services, string configName, string? endPointOverride = null)
-            where TInterface : class
-            where TImplementation : class, TInterface
-        {
-            // Validate and create service options
-            var serviceOptions = CreateServiceOptions(services, configName, endPointOverride);
-
-            // Configure HttpClient with the token authorization handler
-            services.AddHttpClient<TInterface, TImplementation>(client =>
-            {
-                if (!string.IsNullOrWhiteSpace(serviceOptions.Value.Url))
-                {
-                    client.BaseAddress = new Uri(serviceOptions.Value.Url);
-                }
-            })
-            .AddHttpMessageHandler<TokenAuthorizationHandler>();
-        }
-
-        private static IOptions<Service> CreateServiceOptions(IServiceCollection services, string configName, string? endPointOverride)
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            var servicesConfig = serviceProvider.GetRequiredService<IOptions<ServicesConfiguration>>().Value;
-
-            var serviceConfig = (Service?)servicesConfig.GetType().GetProperty(configName)?.GetValue(servicesConfig);
-
-            if (serviceConfig == null)
-            {
-                throw new InvalidOperationException($"Service configuration for {configName} is null.");
-            }
-
-            ValidateServiceConfiguration(serviceConfig, configName);
-
-            var endPointName = endPointOverride ?? serviceConfig.EndPointName;
-
-            Console.WriteLine($"Creating service options for {configName}: {JsonConvert.SerializeObject(serviceConfig)}");
-
-            return Options.Create(new Service
-            {
-                Url = serviceConfig.Url ?? "https://default-url/", // Default value
-                EndPointName = endPointName ?? "default-endpoint",
-                BearerToken = serviceConfig.BearerToken,
-                HttpClientName = serviceConfig.HttpClientName,
-                Retries = serviceConfig.Retries ?? 3, // Default retries
-                ServiceClientId = serviceConfig.ServiceClientId
-            });
-        }
-
-
         private static void ValidateServiceConfiguration(Service? serviceConfig, string configName)
         {
-            if (string.IsNullOrWhiteSpace(serviceConfig?.Url))
+            if (serviceConfig == null)
+            {
+                throw new InvalidOperationException($"{configName} configuration is null.");
+            }
+
+            if (string.IsNullOrWhiteSpace(serviceConfig.Url))
             {
                 throw new InvalidOperationException($"{configName} Url configuration is missing.");
             }
 
-            if (string.IsNullOrWhiteSpace(serviceConfig?.EndPointName))
+            if (string.IsNullOrWhiteSpace(serviceConfig.EndPointName))
             {
                 throw new InvalidOperationException($"{configName} EndPointName configuration is missing.");
             }

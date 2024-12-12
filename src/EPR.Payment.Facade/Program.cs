@@ -84,6 +84,7 @@ builder.Services.AddHttpClient("HttpClient")
             SslProtocols = SslProtocols.Tls12
         };
     });
+
 builder.Services.AddFacadeDependencies(builder.Configuration);
 builder.Services.AddDependencies();
 
