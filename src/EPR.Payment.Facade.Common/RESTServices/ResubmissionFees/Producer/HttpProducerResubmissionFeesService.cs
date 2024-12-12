@@ -20,7 +20,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer
             : base(httpClient,
                    httpContextAccessor,
                    configMonitor.Get("ProducerResubmissionFeesService").Url
-                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing))
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
+                   configMonitor.Get("ProducerResubmissionFeesService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
             var config = configMonitor.Get("ProducerResubmissionFeesService");
             Console.WriteLine($"HttpProducerResubmissionFeesService initialized with BaseUrl: {config.Url}");

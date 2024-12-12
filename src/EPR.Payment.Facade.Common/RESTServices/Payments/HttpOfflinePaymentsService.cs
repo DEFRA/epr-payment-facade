@@ -17,7 +17,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             : base(httpClient,
                    httpContextAccessor,
                    configMonitor.Get("OfflinePaymentService").Url
-                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceBaseUrlMissing))
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceBaseUrlMissing),
+                   configMonitor.Get("OfflinePaymentService").EndPointName 
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceEndPointNameMissing))
         {
             var config = configMonitor.Get("OfflinePaymentService");
             Console.WriteLine($"HttpOfflinePaymentsService initialized with BaseUrl: {config.Url}");

@@ -20,7 +20,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
             : base(httpClient,
                    httpContextAccessor,
                    configMonitor.Get("ComplianceSchemeFeesService").Url
-                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceUrlMissing))
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceUrlMissing),
+                   configMonitor.Get("ComplianceSchemeFeesService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing))
         {
             var config = configMonitor.Get("ComplianceSchemeFeesService");
             Console.WriteLine($"HttpComplianceSchemeFeesService initialized with BaseUrl: {config.Url}");

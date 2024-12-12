@@ -20,7 +20,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
             : base(httpClient,
                    httpContextAccessor,
                    configMonitor.Get("ProducerFeesService").Url
-                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing))
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
+                   configMonitor.Get("ProducerFeesService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
             var config = configMonitor.Get("ProducerFeesService");
             Console.WriteLine($"HttpProducerFeesService initialized with BaseUrl: {config.Url}");
