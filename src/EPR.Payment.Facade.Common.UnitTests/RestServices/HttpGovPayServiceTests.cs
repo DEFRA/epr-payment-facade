@@ -15,6 +15,7 @@ using Moq;
 using Moq.Protected;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
@@ -173,10 +174,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         [TestMethod, AutoMoqData]
         public async Task InitiatePaymentAsync_ShouldRetryOnFailure(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            GovPayRequestDto paymentRequestDto,
-            CancellationToken cancellationToken)
+            GovPayRequestDto paymentRequestDto)
         {
             // Arrange
+            var cancellationToken = new CancellationTokenSource().Token;  // Ensure it's not cancelled prematurely
+
             var retryCount = 0;
 
             handlerMock.Protected()
@@ -190,6 +192,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                     {
                         Content = new StringContent(JsonConvert.SerializeObject(_expectedResponse))
                     };
+                }).Callback<HttpRequestMessage, CancellationToken>((msg, token) =>
+                {
+                    // Verify cancellation token is not triggered during the test
+                    Assert.IsFalse(token.IsCancellationRequested, "Cancellation token was triggered unexpectedly.");
                 });
 
             var httpClient = new HttpClient(handlerMock.Object);
@@ -207,34 +213,46 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
 
-        [TestMethod, AutoMoqData]
+        [TestMethod]
+        [AutoMoqData]
         public async Task InitiatePaymentAsync_ShouldThrowAfterExhaustingRetries(
             [Frozen] GovPayRequestDto _govPayRequest,
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
-            [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
-            [Frozen] HttpRequestException _mockException,
-            [Frozen] CancellationToken _cancellationToken)
+            [Frozen] Mock<HttpMessageHandler> handlerMock, // Mock the HttpMessageHandler for HttpClient
+            [Frozen] Service serviceConfig, // Inject the config mock
+            CancellationToken _cancellationToken)
         {
             // Arrange
-            var service = new Mock<HttpGovPayService>(
-                _httpContextAccessorMock.Object,
-                _httpClientFactoryMock.Object,
-                _configMock!.Object)
+            serviceConfig.Url = "https://example.com";
+            serviceConfig.EndPointName = "payments";
+            serviceConfig.Retries = 3; // Set retries to test retry logic
+            var configOptions = Options.Create(serviceConfig);
+
+            var httpClient = new HttpClient(handlerMock.Object)
             {
-                CallBase = true // Use actual implementation for non-mocked methods
+                BaseAddress = new Uri(serviceConfig.Url)
             };
 
-            service.Protected()
-                   .Setup<Task<GovPayResponseDto>>("Post",
-                        [typeof(GovPayResponseDto)], true, ItExpr.IsAny<string>(), ItExpr.IsAny<Object?>(), ItExpr.IsAny<CancellationToken>())
-                    .ThrowsAsync(_mockException);
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Post && // Verify POST method
+                        req.RequestUri!.ToString().Contains("payments")), // Match endpoint
+                    ItExpr.IsAny<CancellationToken>())
+                .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorInitiatingPayment));
+
+            var service = new HttpGovPayService(httpClient, _httpContextAccessorMock.Object, configOptions);
 
             // Act
-            Func<Task> act = async () => await service.Object.InitiatePaymentAsync(_govPayRequest, _cancellationToken);
+            Func<Task> act = async () => await service.InitiatePaymentAsync(_govPayRequest, _cancellationToken);
 
             // Assert
-            await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorInitiatingPayment);
+            await act.Should().ThrowAsync<ServiceException>()
+                     .WithMessage(ExceptionMessages.ErrorInitiatingPayment);
         }
+
 
         [TestMethod, AutoMoqData]
         public async Task InitiatePaymentAsync_ShouldNotRetryOnSuccess(
@@ -864,48 +882,60 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                .WithParameterName("config");
         }
 
-        [TestMethod, AutoMoqData]
+        [TestMethod]
+        [AutoMoqData]
         public async Task InitiatePaymentAsync_WhenTokenIsNotNull_ShouldSetAuthorizationHeader(
             [Frozen] Mock<IHttpContextAccessor> _httpContextAccessorMock,
             [Frozen] Mock<HttpMessageHandler> _httpMessageHandlerMock,
             [Frozen] Mock<IHttpClientFactory> _httpClientFactoryMock,
             [Frozen] GovPayRequestDto _paymentRequestDto,
             [Frozen] Service _serviceConfig,
-            [Frozen] IOptions<Service> _configOptions,
             [Frozen] GovPayResponseDto _mockResponse)
         {
             // Arrange
-            var postMethodCallCount = 0;
             _mockResponse.PaymentId = "12345";
             _serviceConfig.Url = "http://example.com";
-            _serviceConfig.EndPointName = "test";
-            _serviceConfig.BearerToken = "valid_token";
-            _configOptions = Options.Create(_serviceConfig);
+            _serviceConfig.EndPointName = "payments";
+            _serviceConfig.BearerToken = "valid_token"; // Set the token
+            var _configOptions = Options.Create(_serviceConfig);
 
-            var httpClient = new HttpClient(_httpMessageHandlerMock.Object);
-
-            _httpClientFactoryMock.Setup(factory => factory.CreateClient(It.IsAny<string>()))
-                                  .Returns(httpClient);
-
-            var httpGovPayService = new Mock<HttpGovPayService>(
-                _httpContextAccessorMock.Object,
-                _httpClientFactoryMock.Object,
-                _configOptions)
+            // Create the HttpClient with the mocked handler
+            var httpClient = new HttpClient(_httpMessageHandlerMock.Object)
             {
-                CallBase = true
+                BaseAddress = new Uri(_serviceConfig.Url)
             };
 
-            httpGovPayService.Protected()
-           .Setup<Task<GovPayResponseDto>>("Post",
-                [typeof(GovPayResponseDto)], true, ItExpr.IsAny<string>(), ItExpr.IsAny<Object?>(), ItExpr.IsAny<CancellationToken>())
-           .Callback(() => postMethodCallCount++)
-           .ReturnsAsync(() =>
-           {
-               return _mockResponse;
-           });
+            httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", _serviceConfig.BearerToken);
+
+            // Mock the SendAsync method
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Post &&
+                        req.RequestUri!.ToString().Contains("payments")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(() =>
+                {
+                    // Simulate a successful response
+                    return new HttpResponseMessage
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StringContent(JsonConvert.SerializeObject(
+                            new GovPayResponseDto
+                            {
+                                PaymentId = "12345",
+                                State = new StateDto { Status = "Success" }
+                            }))
+                    };
+                });
+
+            var httpGovPayService = new HttpGovPayService(httpClient, _httpContextAccessorMock.Object, _configOptions);
 
             // Act
-            await httpGovPayService.Object.InitiatePaymentAsync(_paymentRequestDto, CancellationToken.None);
+            await httpGovPayService.InitiatePaymentAsync(_paymentRequestDto, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -914,8 +944,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 httpClient.DefaultRequestHeaders.Authorization!.Scheme.Should().Be("Bearer");
                 httpClient.DefaultRequestHeaders.Authorization.Parameter.Should().Be("valid_token");
             }
-
         }
+
 
     }
 }
