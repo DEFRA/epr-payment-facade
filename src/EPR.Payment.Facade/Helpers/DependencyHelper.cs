@@ -29,6 +29,9 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("ProducerFeesService", configuration.GetSection("Services:ProducerFeesService"));
             services.Configure<Service>("ComplianceSchemeFeesService", configuration.GetSection("Services:ComplianceSchemeFeesService"));
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
+            services.Configure<Service>("PaymentService", configuration.GetSection("Services:PaymentService"));
+            services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
+            services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
 
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
@@ -86,13 +89,13 @@ namespace EPR.Payment.Facade.Helpers
                     });
 
             services.AddHttpClient<IHttpPaymentServiceHealthCheckService, HttpOnlinePaymentServiceHealthCheckService>()
-                    .AddHttpMessageHandler<TokenAuthorizationHandler>()
-                    .ConfigureHttpClient((sp, client) =>
-                    {
-                        var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
-                        ValidateServiceConfiguration(config, "PaymentService");
-                        client.BaseAddress = new Uri(config.Url);
-                    });
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentService;
+                    ValidateServiceConfiguration(config, "PaymentService");
+                    client.BaseAddress = new Uri(config.Url);
+                });
 
             services.AddHttpClient<IHttpOnlinePaymentsService, HttpOnlinePaymentsService>()
                     .AddHttpMessageHandler<TokenAuthorizationHandler>()

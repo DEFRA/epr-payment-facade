@@ -6,13 +6,12 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Helpers;
-using EPR.Payment.Facade.Services.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 
 namespace EPR.Payment.Facade.UnitTests.Helpers
@@ -63,24 +62,45 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             };
 
             var configurationBuilder = new ConfigurationBuilder()
-                .AddInMemoryCollection(configurationData!)
+                .AddInMemoryCollection(configurationData)
                 .Build();
 
-            // Act
             _services?.AddFacadeDependencies(configurationBuilder);
             var serviceProvider = _services?.BuildServiceProvider();
 
-            // Assert
             using (new AssertionScope())
             {
-                var paymentHealthService = serviceProvider?.GetService<IPaymentServiceHealthService>();
-                paymentHealthService.Should().NotBeNull();
-                paymentHealthService.Should().BeOfType<PaymentServiceHealthService>();
+                // Verify configuration
+                var optionsMonitor = serviceProvider?.GetService<IOptionsMonitor<Service>>();
+                optionsMonitor.Should().NotBeNull();
 
-                var httpPaymentServiceHealthCheck = serviceProvider?.GetService<IHttpPaymentServiceHealthCheckService>();
-                httpPaymentServiceHealthCheck.Should().NotBeNull();
-                httpPaymentServiceHealthCheck.Should().BeOfType<HttpOnlinePaymentServiceHealthCheckService>();
+                var paymentServiceConfig = optionsMonitor!.Get("PaymentService");
+                paymentServiceConfig.Should().NotBeNull();
+                paymentServiceConfig.Url.Should().Be("https://payment.service");
+                paymentServiceConfig.EndPointName.Should().Be("payment");
 
+                var offlinePaymentServiceConfig = optionsMonitor.Get("OfflinePaymentService");
+                offlinePaymentServiceConfig.Should().NotBeNull();
+                offlinePaymentServiceConfig.Url.Should().Be("https://offline-payment.service");
+                offlinePaymentServiceConfig.EndPointName.Should().Be("offline-payment");
+
+                var govPayServiceConfig = optionsMonitor.Get("GovPayService");
+                govPayServiceConfig.Should().NotBeNull();
+                govPayServiceConfig.Url.Should().Be("https://govpay.service");
+                govPayServiceConfig.EndPointName.Should().Be("govpay");
+
+                var producerFeesServiceConfig = optionsMonitor.Get("ProducerFeesService");
+                producerFeesServiceConfig.Should().NotBeNull();
+                producerFeesServiceConfig.Url.Should().Be("https://producer.fees.service");
+                producerFeesServiceConfig.EndPointName.Should().Be("fees");
+                producerFeesServiceConfig.ServiceClientId.Should().Be("ServiceClientId");
+
+                var complianceSchemeFeesServiceConfig = optionsMonitor.Get("ComplianceSchemeFeesService");
+                complianceSchemeFeesServiceConfig.Should().NotBeNull();
+                complianceSchemeFeesServiceConfig.Url.Should().Be("https://compliancescheme.fees.service");
+                complianceSchemeFeesServiceConfig.EndPointName.Should().Be("fees");
+
+                // Act and Assert services
                 var httpPaymentsService = serviceProvider?.GetService<IHttpOnlinePaymentsService>();
                 httpPaymentsService.Should().NotBeNull();
                 httpPaymentsService.Should().BeOfType<HttpOnlinePaymentsService>();
@@ -102,6 +122,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 httpComplianceSchemeFeesService.Should().BeOfType<HttpComplianceSchemeFeesService>();
             }
         }
+
 
         [TestMethod]
         public void AddFacadeDependencies_WithMissingUrlConfiguration_ThrowsInvalidOperationException()
@@ -195,7 +216,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>(); 
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>();
 
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage("OfflinePaymentService EndPointName configuration is missing.");
