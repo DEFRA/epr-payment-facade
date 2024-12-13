@@ -12,6 +12,7 @@ using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
 
 namespace EPR.Payment.Facade.Helpers
 {
@@ -116,15 +117,23 @@ namespace EPR.Payment.Facade.Helpers
                     });
 
             // Register additional services without TokenAuthorizationHandler
-            services.AddTransient<IHttpGovPayService>(sp =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.GovPayService;
-                ValidateServiceConfiguration(config, "GovPayService");
-                return new HttpGovPayService(
-                    sp.GetRequiredService<HttpClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    Options.Create(config));
-            });
+            services.AddHttpClient<IHttpGovPayService, HttpGovPayService>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.GovPayService;
+                    ValidateServiceConfiguration(config, "GovPayService");
+                    client.BaseAddress = new Uri(config.Url);
+
+                    // Set the BearerToken in the Authorization header
+                    if (!string.IsNullOrEmpty(config.BearerToken))
+                    {
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", config.BearerToken);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("BearerToken for GovPayService is missing.");
+                    }
+                });
 
             return services;
         }

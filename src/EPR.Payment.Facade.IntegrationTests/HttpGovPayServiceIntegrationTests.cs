@@ -237,14 +237,8 @@ namespace EPR.Payment.Facade.IntegrationTests
             {
                 if (!string.IsNullOrEmpty(bearerToken))
                 {
-                    // Use reflection to set the private _bearerToken field to the provided value
-                    var field = typeof(HttpGovPayService)
-                        .GetField("_bearerToken", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (field == null)
-                    {
-                        throw new InvalidOperationException("The '_bearerToken' field could not be found in HttpGovPayService.");
-                    }
-                    field.SetValue(this, bearerToken);
+                    // Set the Authorization header directly on the HttpClient
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
                 }
             }
 
@@ -266,5 +260,6 @@ namespace EPR.Payment.Facade.IntegrationTests
                 field.SetValue(this, baseUrl);
             }
         }
+
     }
 }
