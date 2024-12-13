@@ -25,7 +25,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
             var config = configMonitor.Get("ProducerResubmissionFeesService");
-            Console.WriteLine($"HttpProducerResubmissionFeesService initialized with BaseUrl: {config.Url}");
         }
 
         public async Task<ProducerResubmissionFeeResponseDto> GetResubmissionFeeAsync(

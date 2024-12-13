@@ -37,7 +37,7 @@ namespace EPR.Payment.Facade.Helpers
             services.AddHttpContextAccessor();
 
             // Register the authorization handler
-            services.AddTransient<TokenAuthorizationHandler>(sp =>
+            services.AddTransient(sp =>
             {
                 var servicesConfig = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value;
                 var serviceConfig = servicesConfig.ProducerFeesService;
@@ -47,8 +47,10 @@ namespace EPR.Payment.Facade.Helpers
                     throw new InvalidOperationException("ServiceClientId for ProducerFeesService is null or empty.");
                 }
 
-                return new TokenAuthorizationHandler(Options.Create(serviceConfig));
+                var logger = sp.GetRequiredService<ILogger<TokenAuthorizationHandler>>(); // Get logger instance
+                return new TokenAuthorizationHandler(Options.Create(serviceConfig), logger);
             });
+
 
             // Register HttpClients with TokenAuthorizationHandler and pass configuration to constructors
 
