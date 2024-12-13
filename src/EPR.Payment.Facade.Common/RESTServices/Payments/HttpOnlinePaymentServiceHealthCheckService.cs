@@ -1,5 +1,4 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
-using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -13,15 +12,23 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             IHttpContextAccessor httpContextAccessor,
             IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
-                   httpContextAccessor,
-                   configMonitor.Get("PaymentServiceHealthCheck").Url
-                       ?? throw new ArgumentNullException(nameof(configMonitor), "PaymentServiceHealthCheck BaseUrl configuration is missing"),
-                   configMonitor.Get("PaymentServiceHealthCheck").EndPointName
-                       ?? throw new ArgumentNullException(nameof(configMonitor), "PaymentServiceHealthCheck EndPointName configuration is missing"))
+                    httpContextAccessor,
+                    configMonitor?.Get("PaymentServiceHealthCheck")?.Url
+                        ?? throw new ArgumentNullException("PaymentServiceHealthCheck BaseUrl configuration is missing"),
+                    configMonitor?.Get("PaymentServiceHealthCheck")?.EndPointName
+               ?? throw new ArgumentNullException("PaymentServiceHealthCheck EndPointName configuration is missing"))
         {
-            var config = configMonitor.Get("PaymentServiceHealthCheck");
-            Console.WriteLine($"HttpOnlinePaymentServiceHealthCheckService initialized with BaseUrl: {config.Url}");
+            if (httpContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextAccessor), "Value cannot be null. (Parameter 'httpContextAccessor')");
+            }
+
+            if (configMonitor == null)
+            {
+                throw new ArgumentNullException(nameof(configMonitor), "Value cannot be null. (Parameter 'configMonitor')");
+            }
         }
+
 
         public async Task<HttpResponseMessage> GetHealthAsync(CancellationToken cancellationToken)
         {

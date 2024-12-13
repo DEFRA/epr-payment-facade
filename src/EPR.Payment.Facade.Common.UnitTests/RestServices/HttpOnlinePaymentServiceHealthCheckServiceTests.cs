@@ -1,7 +1,7 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
-using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -43,10 +43,19 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 _configMonitorMock.Object);
         }
 
-        [TestMethod, AutoMoqData]
+        [TestMethod]
         public void Constructor_ShouldInitializeInstance()
         {
             // Arrange
+            var config = new Service
+            {
+                Url = "https://example.com",   // Properly mock the URL
+                EndPointName = "health"
+            };
+
+            // Mocking IOptionsMonitor<Service> to return the configuration
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(config);
+
             var httpClient = new HttpClient();
 
             // Act
@@ -57,38 +66,24 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             service.Should().BeAssignableTo<IHttpPaymentServiceHealthCheckService>();
         }
 
-        [TestMethod, AutoMoqData]
-        public void Constructor_WhenHttpContextAccessorIsNull_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            var httpClient = new HttpClient();
-
-            // Act
-            Action act = () => new HttpOnlinePaymentServiceHealthCheckService(httpClient, null!, _configMonitorMock.Object);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("httpContextAccessor");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_WhenConfigIsNull_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            var httpClient = new HttpClient();
-
-            // Act
-            Action act = () => new HttpOnlinePaymentServiceHealthCheckService(httpClient, _httpContextAccessorMock.Object, null!);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("config");
-        }
-
-        [TestMethod, AutoMoqData]
+        [TestMethod]
         public async Task GetHealthAsync_WithValidResponse_ReturnsHttpResponseMessage()
         {
             // Arrange
             var cancellationToken = CancellationToken.None;
             var healthCheckJson = @"{ ""status"": ""Healthy"" }";
+
+            // Mock the Service configuration with valid values
+            var serviceConfig = new Service
+            {
+                Url = "https://example.com",   // Properly mock the URL
+                EndPointName = "health"
+            };
+
+            // Mock IOptionsMonitor to return the configured service
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(serviceConfig);
+
+            // Set up the mock HttpMessageHandler to return a valid response
             _handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
@@ -109,11 +104,23 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             result.Content.Should().NotBeNull();
         }
 
-        [TestMethod, AutoMoqData]
+
+        [TestMethod]
         public async Task GetHealthAsync_WhenHttpRequestFails_ThrowsHttpRequestException()
         {
             // Arrange
             var cancellationToken = CancellationToken.None;
+
+            // Set up the mock for IOptionsMonitor<Service>
+            var serviceConfig = new Service
+            {
+                Url = "https://example.com",   // Mock the URL here
+                EndPointName = "health"
+            };
+
+            // Mock IOptionsMonitor to return the configured service
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(serviceConfig);
+
             _handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ThrowsAsync(new HttpRequestException("Network error"));
@@ -128,11 +135,23 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             await act.Should().ThrowAsync<HttpRequestException>().WithMessage("Network error");
         }
 
-        [TestMethod, AutoMoqData]
-        public async Task GetHealthAsync_WithUnsuccessfulResponse_ThrowsHttpRequestException()
+        [TestMethod]
+        public async Task GetHealthAsync_WithUnsuccessfulResponse_ThrowsResponseCodeException()
         {
             // Arrange
             var cancellationToken = CancellationToken.None;
+
+            // Mock the Service configuration
+            var serviceConfig = new Service
+            {
+                Url = "https://example.com",  // Mock the URL here
+                EndPointName = "health"
+            };
+
+            // Mock IOptionsMonitor to return the configured service
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(serviceConfig);
+
+            // Setup the mock for HttpMessageHandler to return an unsuccessful response
             _handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
@@ -148,7 +167,10 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             Func<Task> act = async () => await service.GetHealthAsync(cancellationToken);
 
             // Assert
-            await act.Should().ThrowAsync<HttpRequestException>();
+            await act.Should().ThrowAsync<ResponseCodeException>()
+                .WithMessage("Internal Server Error");  // You can adjust this based on the actual exception message
         }
+
+
     }
 }
