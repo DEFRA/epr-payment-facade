@@ -40,26 +40,26 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
         {
             // Arrange
             var configurationData = new Dictionary<string, string>
-            {
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.Url)}", "https://offline-payment.service" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.EndPointName)}", "offline-payment" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "offline-paymentHttpClient" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Url)}", "https://govpay.service" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.EndPointName)}", "govpay" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.BearerToken)}", "BearerTokenValue" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Retries)}", "3" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.Url)}", "https://producer.fees.service" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.EndPointName)}", "fees" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.HttpClientName)}", "ProducerFeesClient" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.Url)}", "https://compliancescheme.fees.service" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.EndPointName)}", "fees" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.HttpClientName)}", "ComplianceFeesClient" }
-            };
+    {
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.Url)}", "https://offline-payment.service" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.EndPointName)}", "offline-payment" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "offline-paymentHttpClient" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Url)}", "https://govpay.service" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.EndPointName)}", "govpay" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.BearerToken)}", "BearerTokenValue" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Retries)}", "3" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.Url)}", "https://producer.fees.service" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.EndPointName)}", "fees" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.HttpClientName)}", "ProducerFeesClient" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.Url)}", "https://compliancescheme.fees.service" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.EndPointName)}", "fees" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ComplianceSchemeFeesService)}:{nameof(Service.HttpClientName)}", "ComplianceFeesClient" }
+    };
 
             var configurationBuilder = new ConfigurationBuilder()
                 .AddInMemoryCollection(configurationData)
@@ -122,6 +122,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 httpComplianceSchemeFeesService.Should().BeOfType<HttpComplianceSchemeFeesService>();
             }
         }
+
 
 
         [TestMethod]
