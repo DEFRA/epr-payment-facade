@@ -42,6 +42,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             // Arrange
             var configurationData = new Dictionary<string, string>
             {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
@@ -108,6 +109,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             // Arrange
             var configurationData = new Dictionary<string, string>
             {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", null! },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
@@ -118,7 +120,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOnlinePaymentsService>();
 
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService Url configuration is missing.");
@@ -130,6 +132,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             // Arrange
             var configurationData = new Dictionary<string, string>
             {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", null! },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
@@ -140,7 +143,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOnlinePaymentsService>();
 
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService EndPointName configuration is missing.");
@@ -152,6 +155,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             // Arrange
             var configurationData = new Dictionary<string, string>
             {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
@@ -165,7 +169,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>();
 
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage("OfflinePaymentService Url configuration is missing.");
@@ -177,6 +181,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             // Arrange
             var configurationData = new Dictionary<string, string>
             {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
@@ -190,7 +195,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 .Build();
 
             // Act
-            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider();
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>(); 
 
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage("OfflinePaymentService EndPointName configuration is missing.");
