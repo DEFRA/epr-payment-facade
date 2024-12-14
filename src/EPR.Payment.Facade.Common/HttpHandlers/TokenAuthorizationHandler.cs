@@ -3,10 +3,12 @@ using Azure.Identity;
 using EPR.Payment.Facade.Common.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 
 namespace EPR.Payment.Facade.Common.HttpHandlers
 {
+    [ExcludeFromCodeCoverage]
     public class TokenAuthorizationHandler : DelegatingHandler
     {
         private readonly TokenRequestContext _tokenRequestContext;
