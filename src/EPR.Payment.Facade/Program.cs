@@ -118,6 +118,8 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddFeatureManagement();
 
+builder.Services.AddApplicationInsightsTelemetry(options => { options.EnableAdaptiveSampling = false; });
+
 builder.Services.AddLogging();
 
 // Conditional Authentication based on Feature Flag
