@@ -23,7 +23,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
             var config = configMonitor.Get("PaymentService");
-            Console.WriteLine($"HttpOnlinePaymentsService initialized with BaseUrl: {config.Url}");
         }
 
         public async Task<Guid> InsertOnlinePaymentAsync(InsertOnlinePaymentRequestDto onlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)

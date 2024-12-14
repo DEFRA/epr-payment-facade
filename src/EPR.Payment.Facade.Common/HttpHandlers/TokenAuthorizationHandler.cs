@@ -37,15 +37,9 @@ namespace EPR.Payment.Facade.Common.HttpHandlers
             {
                 try
                 {
-                    _logger.LogInformation("Attempting to retrieve token for {Scopes}.", _tokenRequestContext.Scopes);
-
                     var tokenResult = await _credentials.GetTokenAsync(_tokenRequestContext, cancellationToken);
 
-                    _logger.LogInformation("Token retrieved successfully for {Scopes}.", _tokenRequestContext.Scopes);
-
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Token);
-
-                    _logger.LogInformation("Authorization header added to the request.");
                 }
                 catch (Exception ex)
                 {

@@ -122,8 +122,20 @@ namespace EPR.Payment.Facade.Helpers
             {
                 var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.GovPayService;
                 ValidateServiceConfiguration(config, "GovPayService");
+
+                var httpClient = sp.GetRequiredService<HttpClient>();
+
+                if (!string.IsNullOrWhiteSpace(config.BearerToken))
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.BearerToken);
+                }
+                else
+                {
+                    throw new InvalidOperationException("BearerToken is missing in GovPayService configuration.");
+                }
+
                 return new HttpGovPayService(
-                    sp.GetRequiredService<HttpClient>(),
+                    httpClient,
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     Options.Create(config));
             });
@@ -148,7 +160,5 @@ namespace EPR.Payment.Facade.Helpers
                 throw new InvalidOperationException($"{configName} EndPointName configuration is missing.");
             }
         }
-
-
     }
 }
