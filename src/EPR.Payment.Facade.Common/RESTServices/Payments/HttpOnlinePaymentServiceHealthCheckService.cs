@@ -11,12 +11,13 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
             IOptionsMonitor<Service> configMonitor)
-            : base(httpClient,
-                    httpContextAccessor,
-                    configMonitor?.Get("PaymentServiceHealthCheck")?.Url
-                        ?? throw new ArgumentNullException("PaymentServiceHealthCheck BaseUrl configuration is missing"),
-                    configMonitor?.Get("PaymentServiceHealthCheck")?.EndPointName
-                        ?? throw new ArgumentNullException("PaymentServiceHealthCheck EndPointName configuration is missing"))
+            : base(
+                httpClient,
+                httpContextAccessor,
+                configMonitor?.Get("ProducerFeesService")?.Url
+                    ?? throw new ArgumentNullException(nameof(configMonitor), "ProducerFeesService BaseUrl configuration is missing"),
+                configMonitor?.Get("ProducerFeesService")?.EndPointName
+                    ?? throw new ArgumentNullException(nameof(configMonitor), "ProducerFeesService EndPointName configuration is missing"))
         {
             if (httpContextAccessor == null)
             {

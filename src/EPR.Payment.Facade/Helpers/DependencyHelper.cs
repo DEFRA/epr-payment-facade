@@ -10,6 +10,8 @@ using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
+using EPR.Payment.Facade.Services.Payments;
+using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 
@@ -35,6 +37,8 @@ namespace EPR.Payment.Facade.Helpers
 
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
+
+            services.AddScoped<IPaymentServiceHealthService, PaymentServiceHealthService>();
 
             // Register the authorization handler
             services.AddTransient(sp =>
