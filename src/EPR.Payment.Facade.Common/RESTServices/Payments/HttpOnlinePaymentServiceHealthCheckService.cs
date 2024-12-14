@@ -24,7 +24,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                 throw new ArgumentNullException(nameof(httpContextAccessor), "Value cannot be null. (Parameter 'httpContextAccessor')");
             }
 
-            if (configMonitor == null || configMonitor.Get("PaymentServiceHealthCheck") == null)
+            if (configMonitor == null || configMonitor.Get("ProducerFeesService") == null)
             {
                 throw new ArgumentNullException(nameof(configMonitor), "Value cannot be null or missing required configuration. (Parameter 'configMonitor')");
             }
