@@ -16,16 +16,16 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                     configMonitor?.Get("PaymentServiceHealthCheck")?.Url
                         ?? throw new ArgumentNullException("PaymentServiceHealthCheck BaseUrl configuration is missing"),
                     configMonitor?.Get("PaymentServiceHealthCheck")?.EndPointName
-               ?? throw new ArgumentNullException("PaymentServiceHealthCheck EndPointName configuration is missing"))
+                        ?? throw new ArgumentNullException("PaymentServiceHealthCheck EndPointName configuration is missing"))
         {
             if (httpContextAccessor == null)
             {
                 throw new ArgumentNullException(nameof(httpContextAccessor), "Value cannot be null. (Parameter 'httpContextAccessor')");
             }
 
-            if (configMonitor == null)
+            if (configMonitor == null || configMonitor.Get("PaymentServiceHealthCheck") == null)
             {
-                throw new ArgumentNullException(nameof(configMonitor), "Value cannot be null. (Parameter 'configMonitor')");
+                throw new ArgumentNullException(nameof(configMonitor), "Value cannot be null or missing required configuration. (Parameter 'configMonitor')");
             }
         }
 
