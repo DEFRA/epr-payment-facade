@@ -54,7 +54,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             };
 
             // Mocking IOptionsMonitor<Service> to return the configuration
-            _configMonitorMock.Setup(x => x.Get("ProducerFeesService")).Returns(config);
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(config);
 
             var httpClient = new HttpClient();
 
@@ -81,7 +81,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             };
 
             // Mock IOptionsMonitor to return the configured service
-            _configMonitorMock.Setup(x => x.Get("ProducerFeesService")).Returns(serviceConfig);
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(serviceConfig);
 
             // Set up the mock HttpMessageHandler to return a valid response
             _handlerMock.Protected()
@@ -119,7 +119,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             };
 
             // Mock IOptionsMonitor to return the configured service
-            _configMonitorMock.Setup(x => x.Get("ProducerFeesService")).Returns(serviceConfig);
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(serviceConfig);
 
             _handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -149,7 +149,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
             };
 
             // Mock IOptionsMonitor to return the configured service
-            _configMonitorMock.Setup(x => x.Get("ProducerFeesService")).Returns(serviceConfig);
+            _configMonitorMock.Setup(x => x.Get("PaymentServiceHealthCheck")).Returns(serviceConfig);
 
             // Setup the mock for HttpMessageHandler to return an unsuccessful response
             _handlerMock.Protected()

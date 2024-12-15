@@ -1,4 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -14,19 +15,19 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             : base(
                 httpClient,
                 httpContextAccessor,
-                configMonitor?.Get("ProducerFeesService")?.Url
-                    ?? throw new ArgumentNullException(nameof(configMonitor), "ProducerFeesService BaseUrl configuration is missing"),
-                configMonitor?.Get("ProducerFeesService")?.EndPointName
-                    ?? throw new ArgumentNullException(nameof(configMonitor), "ProducerFeesService EndPointName configuration is missing"))
+                configMonitor.Get("PaymentServiceHealthCheck")?.Url
+                    ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
+                configMonitor.Get("PaymentServiceHealthCheck")?.EndPointName
+                    ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
             if (httpContextAccessor == null)
             {
-                throw new ArgumentNullException(nameof(httpContextAccessor), "Value cannot be null. (Parameter 'httpContextAccessor')");
+                throw new ArgumentNullException(nameof(httpContextAccessor), ExceptionMessages.BearerTokenNull);
             }
 
-            if (configMonitor == null || configMonitor.Get("ProducerFeesService") == null)
+            if (configMonitor.Get("PaymentServiceHealthCheck") == null)
             {
-                throw new ArgumentNullException(nameof(configMonitor), "Value cannot be null or missing required configuration. (Parameter 'configMonitor')");
+                throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
             }
         }
 

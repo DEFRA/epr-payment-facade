@@ -123,8 +123,6 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             }
         }
 
-
-
         [TestMethod]
         public void AddFacadeDependencies_WithMissingUrlConfiguration_ThrowsInvalidOperationException()
         {
@@ -145,7 +143,8 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOnlinePaymentsService>();
 
             // Assert
-            act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService Url configuration is missing.");
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("OnlinePaymentService BaseUrl configuration is missing Url configuration is missing.");
         }
 
         [TestMethod]
@@ -168,7 +167,8 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOnlinePaymentsService>();
 
             // Assert
-            act.Should().Throw<InvalidOperationException>().WithMessage("PaymentService EndPointName configuration is missing.");
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("OnlinePaymentService BaseUrl configuration is missing EndPointName configuration is missing.");
         }
 
         [TestMethod]
@@ -194,7 +194,8 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>();
 
             // Assert
-            act.Should().Throw<InvalidOperationException>().WithMessage("OfflinePaymentService Url configuration is missing.");
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("OfflinePaymentService BaseUrl configuration is missing Url configuration is missing.");
         }
 
         [TestMethod]
@@ -220,7 +221,8 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
             Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>();
 
             // Assert
-            act.Should().Throw<InvalidOperationException>().WithMessage("OfflinePaymentService EndPointName configuration is missing.");
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("OfflinePaymentService BaseUrl configuration is missing EndPointName configuration is missing.");
         }
     }
 }
