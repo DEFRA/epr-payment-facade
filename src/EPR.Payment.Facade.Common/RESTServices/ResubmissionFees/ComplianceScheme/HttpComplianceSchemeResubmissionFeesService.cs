@@ -14,21 +14,29 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceSche
     public class HttpComplianceSchemeResubmissionFeesService : BaseHttpService, IHttpComplianceSchemeResubmissionFeesService
     {
         public HttpComplianceSchemeResubmissionFeesService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
-            IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
+            IOptionsMonitor<Service> configMonitor)
+            : base(httpClient,
+                   httpContextAccessor,
+                   configMonitor.Get("ComplianceSchemeFeesService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
+                   configMonitor.Get("ComplianceSchemeFeesService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            var config = configMonitor.Get("ComplianceSchemeFeesService");
         }
 
-        public async Task<ComplianceSchemeResubmissionFeeResponse> CalculateResubmissionFeeAsync(ComplianceSchemeResubmissionFeeRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ComplianceSchemeResubmissionFeeResponse> CalculateResubmissionFeeAsync(
+            ComplianceSchemeResubmissionFeeRequestDto request,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                return await Post<ComplianceSchemeResubmissionFeeResponse>(UrlConstants.GetComplianceSchemeResubmissionFee, request, cancellationToken);
+                return await Post<ComplianceSchemeResubmissionFeeResponse>(
+                    UrlConstants.GetComplianceSchemeResubmissionFee,
+                    request,
+                    cancellationToken);
             }
             catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
             {

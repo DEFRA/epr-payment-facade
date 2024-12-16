@@ -54,58 +54,76 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
         private HttpOfflinePaymentsService CreateHttpOfflinePaymentsService(HttpClient httpClient)
         {
+            // Mock IOptionsMonitor<Service>
+            var optionsMonitorMock = new Mock<IOptionsMonitor<Service>>();
+
+            // Mock the Get method to return the expected service configuration
+            optionsMonitorMock.Setup(x => x.CurrentValue).Returns(_configMock.Object.Value);
+            optionsMonitorMock.Setup(x => x.Get(It.IsAny<string>())).Returns(_configMock.Object.Value);
+
             return new HttpOfflinePaymentsService(
-                _httpContextAccessorMock!.Object,
-                new HttpClientFactoryMock(httpClient),
-                _configMock!.Object);
+                httpClient,
+                _httpContextAccessorMock.Object,
+                optionsMonitorMock.Object
+            );
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InsertOfflinePaymentAsync_Success_ReturnsGuid(
-            [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpOfflinePaymentsService httpOfflinePaymentsService,
-            CancellationToken cancellationToken)
+        public async Task InsertOfflinePaymentAsync_Success_ExecutesSuccessfully(
+    [Frozen] Mock<HttpMessageHandler> handlerMock)
         {
             // Arrange
+            var cancellationTokenSource = new CancellationTokenSource();  // Use a fresh cancellation token
+            var cancellationToken = cancellationTokenSource.Token;  // Ensure it's not cancelled prematurely
+
             handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Setup<Task<HttpResponseMessage>>(
+                           "SendAsync",
+                           ItExpr.IsAny<HttpRequestMessage>(),
+                           ItExpr.IsAny<CancellationToken>())
                        .ReturnsAsync(new HttpResponseMessage
                        {
                            StatusCode = HttpStatusCode.OK,
                            Content = new StringContent(JsonConvert.SerializeObject(_paymentId), Encoding.UTF8, "application/json")
+                       })
+                       .Callback<HttpRequestMessage, CancellationToken>((msg, token) =>
+                       {
+                           // Verify cancellation token is not triggered during the test
+                           Assert.IsFalse(token.IsCancellationRequested, "Cancellation token was triggered unexpectedly.");
                        });
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpOfflinePaymentsService = CreateHttpOfflinePaymentsService(httpClient);
+            var httpOfflinePaymentsService = CreateHttpOfflinePaymentsService(httpClient);
 
             // Act
             await httpOfflinePaymentsService.InsertOfflinePaymentAsync(_offlinePaymentRequestDto, cancellationToken);
 
             // Assert
-            using (new AssertionScope())
-            {
-                handlerMock.Protected().Verify(
-                    "SendAsync",
-                    Times.Once(),
-                    ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Post),
-                    ItExpr.IsAny<CancellationToken>());
-            }
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post &&
+                    msg.RequestUri!.ToString() == "https://example.com/offlinepayments/offline-payments/"), // Update this to the correct full URL
+                ItExpr.IsAny<CancellationToken>());
         }
 
+
         [TestMethod, AutoMoqData]
-        public async Task InsertOnlinePaymentAsync_Failure_ThrowsException(
+        public async Task InsertOfflinePaymentAsync_Failure_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            HttpOfflinePaymentsService httpOfflinePaymentsService,
             CancellationToken cancellationToken)
         {
             // Arrange
             handlerMock.Protected()
-                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Setup<Task<HttpResponseMessage>>(
+                           "SendAsync",
+                           ItExpr.IsAny<HttpRequestMessage>(),
+                           ItExpr.IsAny<CancellationToken>())
                        .ThrowsAsync(new HttpRequestException(ExceptionMessages.ErrorInsertingOfflinePayment));
 
             var httpClient = new HttpClient(handlerMock.Object);
-            httpOfflinePaymentsService = CreateHttpOfflinePaymentsService(httpClient);
+            var httpOfflinePaymentsService = CreateHttpOfflinePaymentsService(httpClient);
 
             // Act
             Func<Task> act = async () => await httpOfflinePaymentsService.InsertOfflinePaymentAsync(_offlinePaymentRequestDto, cancellationToken);
@@ -113,12 +131,15 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Assert
             using (new AssertionScope())
             {
+                // Verify that the request was sent and that it is using the correct URL
                 await act.Should().ThrowAsync<ServiceException>().WithMessage(ExceptionMessages.ErrorInsertingOfflinePayment);
+
                 handlerMock.Protected().Verify(
                     "SendAsync",
                     Times.Once(),
                     ItExpr.Is<HttpRequestMessage>(msg =>
-                        msg.Method == HttpMethod.Post),
+                        msg.Method == HttpMethod.Post &&
+                        msg.RequestUri!.ToString() == "https://example.com/offlinepayments/offline-payments/"), // Update this to the correct full URL
                     ItExpr.IsAny<CancellationToken>());
             }
         }

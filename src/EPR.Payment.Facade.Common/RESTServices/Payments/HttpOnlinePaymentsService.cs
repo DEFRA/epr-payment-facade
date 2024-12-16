@@ -12,14 +12,17 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
     public class HttpOnlinePaymentsService : BaseHttpService, IHttpOnlinePaymentsService
     {
         public HttpOnlinePaymentsService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
-            IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
+            IOptionsMonitor<Service> configMonitor)
+            : base(httpClient,
+                   httpContextAccessor,
+                   configMonitor.Get("PaymentService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
+                   configMonitor.Get("PaymentService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            var config = configMonitor.Get("PaymentService");
         }
 
         public async Task<Guid> InsertOnlinePaymentAsync(InsertOnlinePaymentRequestDto onlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)

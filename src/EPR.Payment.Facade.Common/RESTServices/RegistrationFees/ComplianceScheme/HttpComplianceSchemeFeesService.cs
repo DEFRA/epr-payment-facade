@@ -4,9 +4,9 @@ using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using FluentValidation;
 using System.Net;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme
@@ -14,20 +14,28 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
     public class HttpComplianceSchemeFeesService : BaseHttpService, IHttpComplianceSchemeFeesService
     {
         public HttpComplianceSchemeFeesService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
-            IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.ComplianceSchemeServiceUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing))
+            IOptionsMonitor<Service> configMonitor)
+            : base(httpClient,
+                   httpContextAccessor,
+                   configMonitor.Get("ComplianceSchemeFeesService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceUrlMissing),
+                   configMonitor.Get("ComplianceSchemeFeesService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing))
         {
+            var config = configMonitor.Get("ComplianceSchemeFeesService");
         }
 
-        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(
+            ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             try
             {
-                return await Post<ComplianceSchemeFeesResponseDto>(UrlConstants.CalculateComplianceSchemeFee, request, cancellationToken);
+                return await Post<ComplianceSchemeFeesResponseDto>(
+                    UrlConstants.CalculateComplianceSchemeFee,
+                    request,
+                    cancellationToken);
             }
             catch (HttpRequestException ex)
             {

@@ -13,21 +13,18 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
     public class HttpGovPayService : BaseHttpService, IHttpGovPayService
     {
-        private readonly string? _bearerToken;
         private readonly AsyncRetryPolicy<GovPayResponseDto> _paymentRetryPolicy;
         private readonly AsyncRetryPolicy<PaymentStatusResponseDto> _statusRetryPolicy;
 
         public HttpGovPayService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
             IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
+            : base(httpClient,
+                   httpContextAccessor,
+                   config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceBaseUrlMissing),
+                   config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _bearerToken = config.Value.BearerToken ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.BearerTokenNull);
-
             // Define the retry policy for InitiatePaymentAsync
             int retries = config.Value.Retries ?? 1;
             _paymentRetryPolicy = Policy<GovPayResponseDto>
@@ -37,7 +34,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                     (result, timeSpan, retryCount, context) =>
                     {
                         // Log or handle the retry attempt here
-                        // Use _logger if available
                     });
 
             // Define the retry policy for GetPaymentStatusAsync
@@ -48,7 +44,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                     (result, timeSpan, retryCount, context) =>
                     {
                         // Log or handle the retry attempt here
-                        // Use _logger if available
                     });
         }
 
@@ -56,11 +51,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
         {
             try
             {
-                if (_bearerToken != null)
-                {
-                    SetBearerToken(_bearerToken); // Set the bearer token
-                }
-
                 var url = UrlConstants.GovPayInitiatePayment;
 
                 // Use the retry policy when calling the Post method
@@ -79,11 +69,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
         {
             try
             {
-                if (_bearerToken != null)
-                {
-                    SetBearerToken(_bearerToken); // Set the bearer token
-                }
-
                 var url = UrlConstants.GovPayGetPaymentStatus.Replace("{paymentId}", paymentId);
 
                 // Use the retry policy when calling the Get method

@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace EPR.Payment.Facade.Common.Constants
+﻿namespace EPR.Payment.Facade.Common.Constants
 {
     public static class ExceptionMessages
     {
@@ -63,6 +61,19 @@ namespace EPR.Payment.Facade.Common.Constants
         public const string ComplianceSchemeServiceHttpClientNameMissing = "ComplianceSchemeService HttpClientName configuration is missing.";
         public const string ErrorCalculatingComplianceSchemeFees = "Error occurred while calculating Compliance fees.";
         public const string UnexpectedErrorCalculatingComplianceSchemeFees = "An unexpected error occurred while calculating Compliance Scheme fees.";
+
+        // ProducerFeesService exceptions
+        public const string ProducerFeesServiceBaseUrlMissing = "ProducerFeesService BaseUrl configuration is missing. Please ensure the ProducerFeesService URL is configured properly.";
+
+        // ProducerResubmissionFeesService exceptions
+        public const string ProducerResubmissionFeesServiceBaseUrlMissing = "ProducerResubmissionFeesService BaseUrl configuration is missing. Please ensure the ProducerResubmissionFeesService URL is configured properly.";
+
+        // PaymentServiceHealthCheck exceptions
+        public const string PaymentServiceHealthCheckBaseUrlMissing = "PaymentServiceHealthCheck BaseUrl configuration is missing. Please ensure the PaymentServiceHealthCheck URL is configured properly.";
+
+        // GovPayService exceptions
+        public const string GovPayServiceBaseUrlMissing = "GovPayService BaseUrl configuration is missing. Please ensure the GovPayService URL is configured properly.";
+        public const string GovPayServiceBearerTokenMissing = "GovPayService BearerToken configuration is missing. Please ensure the BearerToken is provided for authentication.";
 
     }
 }

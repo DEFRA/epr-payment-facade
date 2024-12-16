@@ -14,14 +14,17 @@ namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer
     public class HttpProducerResubmissionFeesService : BaseHttpService, IHttpProducerResubmissionFeesService
     {
         public HttpProducerResubmissionFeesService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
-            IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
+            IOptionsMonitor<Service> configMonitor)
+            : base(httpClient,
+                   httpContextAccessor,
+                   configMonitor.Get("ProducerResubmissionFeesService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
+                   configMonitor.Get("ProducerResubmissionFeesService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            var config = configMonitor.Get("ProducerResubmissionFeesService");
         }
 
         public async Task<ProducerResubmissionFeeResponseDto> GetResubmissionFeeAsync(

@@ -84,6 +84,7 @@ builder.Services.AddHttpClient("HttpClient")
             SslProtocols = SslProtocols.Tls12
         };
     });
+
 builder.Services.AddFacadeDependencies(builder.Configuration);
 builder.Services.AddDependencies();
 
@@ -116,6 +117,10 @@ builder.Services.AddApiVersioning(options =>
 });
 
 builder.Services.AddFeatureManagement();
+
+builder.Services.AddApplicationInsightsTelemetry(options => { options.EnableAdaptiveSampling = false; });
+
+builder.Services.AddLogging();
 
 // Conditional Authentication based on Feature Flag
 using var serviceProvider = builder.Services.BuildServiceProvider();

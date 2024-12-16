@@ -13,32 +13,27 @@ namespace EPR.Payment.Facade.Common.RESTServices
         protected readonly HttpClient _httpClient;
         protected IHttpContextAccessor _httpContextAccessor;
 
-        protected BaseHttpService(
-            IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
-            string baseUrl,
-            string endPointName)
+        protected BaseHttpService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, string baseUrl, string endPointName)
         {
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
 
-            // Initialize _baseUrl in the constructor
-            _baseUrl = string.IsNullOrWhiteSpace(baseUrl) ? throw new ArgumentNullException(nameof(baseUrl)) : baseUrl;
-
-            ArgumentNullException.ThrowIfNull(httpClientFactory);
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                throw new ArgumentNullException(nameof(baseUrl));
+            }
 
             if (string.IsNullOrWhiteSpace(endPointName))
             {
                 throw new ArgumentNullException(nameof(endPointName));
             }
-                
 
-            _httpClient = httpClientFactory.CreateClient();
-            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-
-            if (_baseUrl.EndsWith('/'))
-                _baseUrl = _baseUrl.TrimEnd('/');
+            _baseUrl = baseUrl.EndsWith('/') ? baseUrl.TrimEnd('/') : baseUrl;
 
             _baseUrl = $"{_baseUrl}/{endPointName}";
+
+            // Add common headers
+            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         }
 
         protected void SetBearerToken(string token)

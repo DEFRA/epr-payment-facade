@@ -14,19 +14,24 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
     public class HttpProducerFeesService : BaseHttpService, IHttpProducerFeesService
     {
         public HttpProducerFeesService(
+            HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory,
-            IOptions<Service> config)
-            : base(httpContextAccessor, httpClientFactory,
-                config.Value.Url ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
-                config.Value.EndPointName ?? throw new ArgumentNullException(nameof(config), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
+            IOptionsMonitor<Service> configMonitor)
+            : base(httpClient,
+                   httpContextAccessor,
+                   configMonitor.Get("ProducerFeesService").Url
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
+                   configMonitor.Get("ProducerFeesService").EndPointName
+                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            var config = configMonitor.Get("ProducerFeesService");
         }
 
-        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(
+            ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.CalculateProducerRegistrationFees;
+
             try
             {
                 var response = await Post<ProducerFeesResponseDto>(url, request, cancellationToken);
