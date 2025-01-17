@@ -47,6 +47,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         [FeatureGate("EnableProducersFeesCalculation")]
         public async Task<IActionResult> CalculateFeesAsync([FromBody] ProducerFeesRequestDto producerRegistrationFeesRequestDto, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("PETE WAS HERE");
             ValidationResult validationResult = _registrationValidator.Validate(producerRegistrationFeesRequestDto);
             if (!validationResult.IsValid)
             {
