@@ -38,14 +38,5 @@ namespace EPR.Payment.Facade.Extension
 
             return services;
         }
-
-        public static IServiceCollection AddServiceHealthChecks(this IServiceCollection services)
-        {
-            services.AddHealthChecks()
-                .AddCheck<PaymentsFacadeHealthCheck>(PaymentsFacadeHealthCheck.HealthCheckResultDescription,
-                    failureStatus: HealthStatus.Unhealthy,
-                    tags: new[] { Ready });
-            return services;
-        }
     }
 }
