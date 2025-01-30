@@ -73,9 +73,8 @@ builder.Services.AddSwaggerGen(setupAction =>
     });
 });
 
-builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.AddApplicationInsightsTelemetry().AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddServiceHealthChecks();
 builder.Services.AddHttpClient("HttpClient")
     .ConfigurePrimaryHttpMessageHandler(() =>
     {

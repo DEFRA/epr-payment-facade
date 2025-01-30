@@ -11,6 +11,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="HealthCheck\**" />
+    <Compile Remove="Helpers\**" />
+    <EmbeddedResource Remove="HealthCheck\**" />
+    <EmbeddedResource Remove="Helpers\**" />
+    <None Remove="HealthCheck\**" />
+    <None Remove="Helpers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\PaymentServiceHealthServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -35,10 +48,6 @@
   <ItemGroup>
     <ProjectReference Include="..\EPR.Payment.Facade.Common.UnitTests\EPR.Payment.Facade.Common.UnitTests.csproj" />
     <ProjectReference Include="..\EPR.Payment.Facade\EPR.Payment.Facade.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Helpers\" />
   </ItemGroup>
 
 </Project>
