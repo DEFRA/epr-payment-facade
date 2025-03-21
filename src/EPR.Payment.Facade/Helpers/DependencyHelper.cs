@@ -40,8 +40,6 @@ namespace EPR.Payment.Facade.Helpers
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
 
-            services.AddScoped<IPaymentServiceHealthService, PaymentServiceHealthService>();
-
             // Register the authorization handler
             services.AddTransient(sp =>
             {
@@ -93,15 +91,6 @@ namespace EPR.Payment.Facade.Helpers
                 {
                     var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
                     ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
-                    client.BaseAddress = new Uri(config.Url!);
-                });
-
-            services.AddHttpClient<IHttpPaymentServiceHealthCheckService, HttpOnlinePaymentServiceHealthCheckService>()
-                .AddHttpMessageHandler<TokenAuthorizationHandler>()
-                .ConfigureHttpClient((sp, client) =>
-                {
-                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.PaymentServiceHealthCheck;
-                    ValidateServiceConfiguration(config, ExceptionMessages.PaymentServiceHealthCheckBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
 
