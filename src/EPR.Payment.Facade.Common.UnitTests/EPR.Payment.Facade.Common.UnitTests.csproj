@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="RestServices\HttpOnlinePaymentServiceHealthCheckServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="C:\Users\a898127\.nuget\packages\autоfiхture.mstеst\1.0.0\contentFiles\any\netcoreapp2.2\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll" />
     <Content Remove="C:\Users\a898127\.nuget\packages\autоfiхture.mstеst\1.0.0\contentFiles\any\netcoreapp2.2\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll" />
     <Content Remove="C:\Users\a898127\.nuget\packages\autоfiхture.mstеst\1.0.0\contentFiles\any\netcoreapp2.2\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll" />
