@@ -16,6 +16,12 @@ using System.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add User Secrets in Development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 // Add Azure AD B2C configuration
 var azureAdB2CConfig = builder.Configuration.GetSection("AzureAdB2C");
 
@@ -139,7 +145,7 @@ if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
                 builder.Configuration.Bind(Constants.AzureAdB2C, options);
             });
 
-
+    
     builder.Services.AddAuthorizationBuilder().AddFallbackPolicy("EprPaymentFallBackPolicy", new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build());
