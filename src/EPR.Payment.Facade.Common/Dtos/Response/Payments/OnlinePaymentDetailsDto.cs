@@ -13,5 +13,7 @@
         public decimal Amount { get; set; }
         public string? Regulator { get; set; }
         public string? Description { get; set; }
+
+        public string? RequestorType { get; set; }
     }
 }

@@ -12,9 +12,8 @@ using FluentValidation;
 
 namespace EPR.Payment.Facade.Controllers.Payments
 {
-    [ApiVersion(1)]
+    
     [ApiController]
-    [Route("api/v{version:apiVersion}/online-payments")]
     [FeatureGate("EnableOnlinePaymentsFeature")]
     public class OnlinePaymentsController : ControllerBase
     {
@@ -30,6 +29,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
         }
 
         [HttpPost]
+        [Route("api/v1/online-payments")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ContentResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
@@ -41,7 +41,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, returns an HTML content result with a redirect script to the error URL.", typeof(ContentResult))]
         [FeatureGate("EnablePaymentInitiation")]
-        public async Task<IActionResult> InitiateOnlinePayment([FromBody] OnlinePaymentRequestDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> InitiateOnlinePaymentV1([FromBody] OnlinePaymentRequestDto request, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
@@ -84,7 +84,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
             catch (ValidationException ex)
             {
-                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiateOnlinePayment));
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiateOnlinePaymentV1));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",
@@ -94,7 +94,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiateOnlinePayment));
+                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiateOnlinePaymentV1));
                 return new ContentResult
                 {
                     Content = CreateHtmlContent(_errorUrl),
@@ -104,7 +104,84 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
         }
 
-        [HttpPost("{externalPaymentId}/complete")]
+        [HttpPost]
+        [Route("api/v2/online-payments")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ContentResult))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
+        [SwaggerOperation(
+            Summary = "Initiates a new payment",
+            Description = "Initiates a new payment with mandatory payment request data. Amount must be greater than 0. In case of an error, redirects to the error URL."
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returns an HTML content result with a redirect script.", typeof(ContentResult))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, returns an HTML content result with a redirect script to the error URL.", typeof(ContentResult))]
+        [FeatureGate("EnablePaymentInitiation")]
+        public async Task<IActionResult> InitiateOnlinePaymentV2([FromBody] OnlinePaymentV2RequestDto request, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (request.Amount <= 0)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Validation Error",
+                    Detail = ExceptionMessages.AmountMustBeGreaterThanZero,
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            try
+            {
+                var result = await _onlinePaymentsService.InitiateOnlinePaymentAsync(request, cancellationToken);
+
+                if (result.NextUrl == null)
+                {
+                    _logger.LogError(LogMessages.NextUrlNull);
+                    return new ContentResult
+                    {
+                        Content = CreateHtmlContent(_errorUrl),
+                        ContentType = "text/html",
+                        StatusCode = StatusCodes.Status200OK
+                    };
+                }
+
+                var htmlContent = CreateHtmlContent(result.NextUrl);
+
+                return new ContentResult
+                {
+                    Content = htmlContent,
+                    ContentType = "text/html",
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiateOnlinePaymentV1));
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Validation Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiateOnlinePaymentV1));
+                return new ContentResult
+                {
+                    Content = CreateHtmlContent(_errorUrl),
+                    ContentType = "text/html",
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+        }
+
+
+        [HttpPost("api/v1/online-payments/{externalPaymentId}/complete")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompleteOnlinePaymentResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
@@ -152,6 +229,25 @@ namespace EPR.Payment.Facade.Controllers.Payments
                     StatusCode = StatusCodes.Status200OK
                 };
             }
+        }
+
+        [MapToApiVersion(1)]
+        [HttpGet("api/v1/online-payments/{externalPaymentId}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OnlinePaymentDetailsDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
+        [SwaggerOperation(
+            Summary = "Get the online payment details by externalPaymentId",
+            Description = "Get the online payment details by externalPaymentId. In case of an error, return error response.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.", typeof(OnlinePaymentDetailsDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "If the requested payment details is not found.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
+        [FeatureGate("EnableGetOnlinePaymentByExternalPaymentId")]
+        public async Task<IActionResult> GetOnlinePaymentByExternalPaymentId(Guid externalPaymentId, CancellationToken cancellationToken)
+        {
+            return await Task.FromResult(Ok(new OnlinePaymentDetailsDto()));
         }
 
         private static string CreateHtmlContent(string nextUrl)
