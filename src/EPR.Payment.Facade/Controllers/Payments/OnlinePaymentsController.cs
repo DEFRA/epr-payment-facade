@@ -231,25 +231,6 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
         }
 
-        [MapToApiVersion(1)]
-        [HttpGet("api/v1/online-payments/{externalPaymentId}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OnlinePaymentDetailsDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
-        [SwaggerOperation(
-            Summary = "Get the online payment details by externalPaymentId",
-            Description = "Get the online payment details by externalPaymentId. In case of an error, return error response.")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Payment completion process succeeded.", typeof(OnlinePaymentDetailsDto))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "If the requested payment details is not found.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
-        [FeatureGate("EnableGetOnlinePaymentByExternalPaymentId")]
-        public async Task<IActionResult> GetOnlinePaymentByExternalPaymentId(Guid externalPaymentId, CancellationToken cancellationToken)
-        {
-            return await Task.FromResult(Ok(new OnlinePaymentDetailsDto()));
-        }
-
         private static string CreateHtmlContent(string nextUrl)
         {
             return $@"
