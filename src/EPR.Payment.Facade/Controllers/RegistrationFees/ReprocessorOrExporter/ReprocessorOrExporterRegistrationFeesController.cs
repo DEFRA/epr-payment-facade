@@ -67,8 +67,6 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter
                 });
             }
 
-            try
-            {
                 PreviousPaymentDetailResponseDto? previousPaymentDetail = null;
 
                 var reProcessorOrExporterFResponse = new ReprocessorOrExporterRegistrationFeesResponseDto
@@ -79,37 +77,6 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter
                 };
 
                 return Ok(reProcessorOrExporterFResponse);
-            }
-            catch (ValidationException ex)
-            {
-                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Validation Error",
-                    Detail = ex.Message,
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-            catch (ServiceException ex)
-            {
-                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(CalculateFeesAsync));
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Title = "Service Error",
-                    Detail = ex.Message,
-                    Status = StatusCodes.Status500InternalServerError
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(CalculateFeesAsync));
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Title = "Unexpected Error",
-                    Detail = ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees,
-                    Status = StatusCodes.Status500InternalServerError
-                });
-            }
         }
     }
 }
