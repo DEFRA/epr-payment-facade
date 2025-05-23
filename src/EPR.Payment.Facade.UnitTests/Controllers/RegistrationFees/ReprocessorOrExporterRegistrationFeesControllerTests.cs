@@ -73,7 +73,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
         {
             // Arrange
             _mockValidator.Setup(v => v.Validate(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>()))
- .Returns(new ValidationResult());
+                .Returns(new ValidationResult());
 
             var request = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
@@ -93,5 +93,45 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             Assert.AreEqual(100.0m, response.RegistrationFee);
             Assert.IsNull(response.PreviousPaymentDetail);
         }
+
+
+        [TestMethod]
+        public void Should_Set_And_Get_ApplicationReferenceNumber_When_NotNull()
+        {
+            // Arrange
+            var expectedReference = "APP-123456";
+
+            // Act
+            var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
+            {
+                RequestorType = "Exporter",
+                Regulator = "GB-ENG",
+                SubmissionDate = DateTime.UtcNow,
+                MaterialType = "Plastic",
+                ApplicationReferenceNumber = expectedReference
+            };
+
+            // Assert
+            Assert.AreEqual(expectedReference, dto.ApplicationReferenceNumber);
+        }
+
+
+        [TestMethod]
+        public void Should_Handle_Null_ApplicationReferenceNumber()
+        {
+            // Act
+            var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
+            {
+                RequestorType = "Reprocessor",
+                Regulator = "GB-SCT",
+                SubmissionDate = DateTime.UtcNow,
+                MaterialType = "Metal",
+                ApplicationReferenceNumber = null
+            };
+
+            // Assert
+            Assert.IsNull(dto.ApplicationReferenceNumber);
+        }
+
     }
 }
