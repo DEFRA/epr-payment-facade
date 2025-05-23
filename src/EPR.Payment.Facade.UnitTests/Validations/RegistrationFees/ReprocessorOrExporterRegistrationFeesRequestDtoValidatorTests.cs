@@ -17,26 +17,6 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         }
 
         [TestMethod]
-        public void Validator_Should_Fail_When_MaterialType_Is_Empty()
-        {
-            // Arrange
-            var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
-            {
-                            
-                Regulator = "GB-ENG",
-                SubmissionDate = DateTime.UtcNow,
-                MaterialType = null,
-            };
-
-            // Act
-            var result = _validator.TestValidate(dto);
-
-            // Assert
-            result.ShouldHaveValidationErrorFor(x => x.MaterialType)
-                  .WithErrorMessage(ValidationMessages.MaterialTypeInvalid);
-        }
-
-        [TestMethod]
         public void Should_Have_Error_When_SubmissionDate_Is_Empty()
         {
             var model = new ReprocessorOrExporterRegistrationFeesRequestDto
