@@ -2,7 +2,7 @@
 {
     public class PreviousPaymentDetailResponseDto
     {
-        public required string? PaymentMode { get; set; } // Online or Offline
+        public required string PaymentMode { get; set; } // Online or Offline
 
         public required string? PaymentMethod { get; set; }
 

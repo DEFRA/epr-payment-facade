@@ -8,7 +8,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrE
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public RequestorTypes? RequestorType { get; set; } // "exporter" or "reprocessor", case insensitive, cannot be an empty string        
 
-        public string? Regulator { get; set; }
+        public required string Regulator { get; set; }
 
         public required DateTime SubmissionDate { get; set; } // Date of submission.
 
