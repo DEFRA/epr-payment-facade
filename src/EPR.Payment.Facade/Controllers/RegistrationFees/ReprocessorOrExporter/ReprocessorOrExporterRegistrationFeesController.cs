@@ -71,12 +71,12 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter
             {
                 PreviousPaymentDetailResponseDto? previousPaymentDetail = null;
 
-                var reProcessorOrExporterFResponse = await Task.FromResult(Ok(new ReprocessorOrExporterRegistrationFeesResponseDto
+                var reProcessorOrExporterFResponse = new ReprocessorOrExporterRegistrationFeesResponseDto
                 {
                     MaterialType = reProcessorOrExporterFeesRequestDto.MaterialType,
                     RegistrationFee = 100.0m,
                     PreviousPaymentDetail = previousPaymentDetail,
-                }));
+                };
 
                 return Ok(reProcessorOrExporterFResponse);
             }
