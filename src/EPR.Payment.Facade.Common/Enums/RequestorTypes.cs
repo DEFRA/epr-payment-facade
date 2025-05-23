@@ -2,7 +2,7 @@
 {
     public enum RequestorTypes
     {
-        Reprocessor,
-        Exporter,
+        Reprocessors,
+        Exporters,
     }
 }

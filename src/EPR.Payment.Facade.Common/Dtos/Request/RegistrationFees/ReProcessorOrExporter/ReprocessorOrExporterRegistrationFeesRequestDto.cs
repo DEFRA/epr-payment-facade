@@ -1,14 +1,19 @@
-﻿namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter
+﻿using EPR.Payment.Facade.Common.Enums;
+using System.Text.Json.Serialization;
+
+namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter
 {
     public class ReprocessorOrExporterRegistrationFeesRequestDto
     {
-        public required string RequestorType { get; set; } // "Reprocessor" or "Exporter".
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public RequestorTypes? RequestorType { get; set; } // "exporter" or "reprocessor", case insensitive, cannot be an empty string        
 
-        public required string Regulator { get; set; } // "GB-ENG", "GB-SCT", etc.
+        public string? Regulator { get; set; }
 
         public required DateTime SubmissionDate { get; set; } // Date of submission.
 
-        public required string MaterialType { get; set; } // "Plastic", "Paper", "Metal", etc.
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public MaterialTypes? MaterialType { get; set; } // "Plastic", "Paper", "Metal", etc.
 
         public string? ApplicationReferenceNumber { get; set; } // Reference number for the application.
     }

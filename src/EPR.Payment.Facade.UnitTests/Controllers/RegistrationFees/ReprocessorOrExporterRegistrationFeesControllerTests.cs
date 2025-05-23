@@ -1,5 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ReProcessorOrExporter;
+using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter;
 using FluentValidation;
 using FluentValidation.Results;
@@ -53,10 +54,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
 
             var request = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Reprocessor",
+                RequestorType = RequestorTypes.Reprocessors,
                 Regulator = "GB-ENG",
                 SubmissionDate = DateTime.UtcNow,
-                MaterialType = ""
+                MaterialType = null,
             };
 
             // Act
@@ -77,10 +78,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
 
             var request = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Reprocessor",
+                RequestorType = RequestorTypes.Reprocessors,
                 Regulator = "GB-ENG",
                 SubmissionDate = DateTime.UtcNow,
-                MaterialType = "Plastic"
+                MaterialType = MaterialTypes.Plastic
             };
 
             // Act
@@ -104,10 +105,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             // Act
             var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Exporter",
+                RequestorType = RequestorTypes.Exporters,
                 Regulator = "GB-ENG",
                 SubmissionDate = DateTime.UtcNow,
-                MaterialType = "Plastic",
+                MaterialType = MaterialTypes.Plastic,
                 ApplicationReferenceNumber = expectedReference
             };
 
@@ -122,10 +123,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             // Act
             var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Reprocessor",
+                RequestorType = RequestorTypes.Reprocessors,
                 Regulator = "GB-SCT",
                 SubmissionDate = DateTime.UtcNow,
-                MaterialType = "Metal",
+                MaterialType = MaterialTypes.Plastic,
                 ApplicationReferenceNumber = null
             };
 

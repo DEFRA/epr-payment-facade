@@ -1,16 +1,8 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Enums;
-using EPR.Payment.Facade.Validations.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Validations.RegistrationFees.ReprocessorOrExporter;
 using FluentValidation.TestHelper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
 {
@@ -30,10 +22,10 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
             // Arrange
             var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Reprocessor",
+                            
                 Regulator = "GB-ENG",
                 SubmissionDate = DateTime.UtcNow,
-                MaterialType = string.Empty,
+                MaterialType = null,
             };
 
             // Act
@@ -49,9 +41,9 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         {
             var model = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Reprocessor",
+                RequestorType = RequestorTypes.Reprocessors,
                 Regulator = "GB-ENG",
-                MaterialType = "Paper",
+                MaterialType = MaterialTypes.Plastic,
                 SubmissionDate = default
             };
 
@@ -65,9 +57,9 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         {
             var model = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Reprocessor",
+                RequestorType = RequestorTypes.Reprocessors,
                 Regulator = "GB-ENG",
-                MaterialType = "Paper",
+                MaterialType = MaterialTypes.Plastic,
                 SubmissionDate = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Local)
             };
 
@@ -81,9 +73,9 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         {
             var model = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
-                RequestorType = "Reprocessor",
+                RequestorType = RequestorTypes.Reprocessors,
                 Regulator = "GB-ENG",
-                MaterialType = "Paper",
+                MaterialType = MaterialTypes.Plastic,
                 SubmissionDate = DateTime.UtcNow.AddMinutes(5)
             };
 

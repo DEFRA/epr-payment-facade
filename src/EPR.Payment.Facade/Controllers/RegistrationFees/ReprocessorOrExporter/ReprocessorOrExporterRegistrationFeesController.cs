@@ -1,21 +1,13 @@
 ﻿using Asp.Versioning;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ReProcessorOrExporter;
-using EPR.Payment.Facade.Common.Exceptions;
-using Microsoft.AspNetCore.Authorization;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Controllers.RegistrationFees.Producer;
-using EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using System.Threading;
 
 namespace EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter
 {
@@ -50,7 +42,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "If the request is valid but relevant resource data not found.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
-        [FeatureGate("EnableReprocessorOrExporterRegistrationFeesFeature")]
+        [FeatureGate("EnableReprocessorOrExporterRegistrationFeesCalculation")]
         public async Task<IActionResult> CalculateFeesAsync([FromBody] ReprocessorOrExporterRegistrationFeesRequestDto reProcessorOrExporterFeesRequestDto, CancellationToken cancellationToken)
         {
             
@@ -71,7 +63,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter
 
                 var reProcessorOrExporterFResponse = new ReprocessorOrExporterRegistrationFeesResponseDto
                 {
-                    MaterialType = reProcessorOrExporterFeesRequestDto.MaterialType,
+                    MaterialType = reProcessorOrExporterFeesRequestDto.MaterialType.ToString(),
                     RegistrationFee = 100.0m,
                     PreviousPaymentDetail = previousPaymentDetail,
                 };
