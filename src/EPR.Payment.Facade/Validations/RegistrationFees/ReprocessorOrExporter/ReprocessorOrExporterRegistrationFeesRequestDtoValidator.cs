@@ -22,21 +22,13 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees.ReprocessorOrExporter
 
             RuleFor(x => x.SubmissionDate)
             .NotEmpty().WithMessage(ValidationMessages.ReprocessorExporterDateRequired)
-                .Must(BeInUtc).WithMessage(ValidationMessages.ResubmissionDateMustBeUtc)
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage(ValidationMessages.RexExFutureResubmissionDate);
+                .LessThan(DateTime.UtcNow).WithMessage(ValidationMessages.RexExFutureResubmissionDate);
 
             RuleFor(x => x.MaterialType)
-                .NotEmpty().WithMessage(ValidationMessages.MaterialTypeInvalid)
-                .Must(value => Enum.IsDefined(typeof(MaterialTypes), value));
+                .NotEmpty().WithMessage(ValidationMessages.MaterialTypeInvalid);
 
             RuleFor(x => x.RequestorType)
-                .NotEmpty().WithMessage(ValidationMessages.RequestorTypeInvalid)
-                .Must(value => Enum.IsDefined(typeof(RequestorTypes), value));
-        }
-
-        private static bool BeInUtc(DateTime dateTime)
-        {
-            return dateTime.Kind == DateTimeKind.Utc;
+                .NotEmpty().WithMessage(ValidationMessages.RequestorTypeInvalid);
         }
     }
 }

@@ -46,5 +46,6 @@
         public const string RexExsubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string MaterialTypeInvalid = "Invalid MaterialType.";
         public const string RequestorTypeInvalid = "Invalid RequestorType.";
+        public const string RegulatorTypeInvalid = "Invalid Regulator.";
     }
 }
