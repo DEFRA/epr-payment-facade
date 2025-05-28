@@ -200,5 +200,70 @@ namespace EPR.Payment.Facade.UnitTests.Validations.AccreditationFees
             var result = _validator.Validate(dto);
             Assert.IsFalse(result.Errors.Any(e => e.PropertyName == nameof(dto.NumberOfOverseasSites)));
         }
+
+        [TestMethod]
+        public void Validate_RegulatorNull_ShouldHaveRequiredError()
+        {
+            var dto = CreateValidDto();
+            dto.Regulator = null;
+
+            var result = _validator.Validate(dto);
+            Assert.IsFalse(result.IsValid);
+            Assert.IsTrue(result.Errors.Any(e =>
+                e.PropertyName == nameof(dto.Regulator) &&
+                e.ErrorMessage == ValidationMessages.ReferenceRequired));
+        }
+
+        [TestMethod]
+        public void Validate_SubmissionDateDefault_ShouldHaveError()
+        {
+            var dto = CreateValidDto();
+            dto.SubmissionDate = default;  // DateTime.MinValue
+
+            var result = _validator.Validate(dto);
+            Assert.IsFalse(result.IsValid, "Expected an error when SubmissionDate is default(DateTime)");
+            Assert.IsTrue(result.Errors.Any(e => e.PropertyName == nameof(dto.SubmissionDate)));
+        }
+
+        [TestMethod]
+        public void Validate_SubmissionDateJustBeforeNow_ShouldBeValid()
+        {
+            var dto = CreateValidDto();
+            dto.SubmissionDate = DateTime.UtcNow.AddMilliseconds(-1);
+
+            var result = _validator.Validate(dto);
+            Assert.IsTrue(result.IsValid, "SubmissionDate just before now should be allowed");
+        }
+
+
+        [TestMethod]
+        public void Validate_Exporter_NegativeSites_ShouldHaveGreaterThanZeroError()
+        {
+            var dto = CreateValidDto();
+            dto.RequestorType = RequestorTypes.Exporters;
+            dto.NumberOfOverseasSites = -3;
+
+            var result = _validator.Validate(dto);
+            Assert.IsFalse(result.IsValid);
+            var error = result.Errors.Single(e => e.PropertyName == nameof(dto.NumberOfOverseasSites));
+            StringAssert.Contains(error.ErrorMessage, "must be greater than '0'");
+        }
+
+        [TestMethod]
+        public void Validate_InvalidRequestorType_NoSiteValidationErrors()
+        {
+            var dto = CreateValidDto();
+            dto.RequestorType = (RequestorTypes)999;
+            dto.NumberOfOverseasSites = ReprocessorExporterConstants.MaxNumberOfOverseasSitesAllowed + 5;
+
+            var result = _validator.Validate(dto);
+
+            Assert.IsTrue(result.Errors.Any(e => e.PropertyName == nameof(dto.RequestorType)),
+                "Expected an error for invalid RequestorType");
+
+            Assert.IsFalse(result.Errors.Any(e => e.PropertyName == nameof(dto.NumberOfOverseasSites)),
+                "Did not expect any NumberOfOverseasSites errors for invalid RequestorType");
+        }
+
     }
 }
