@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees
 {
-    public class AccreditationFeesPreviousPayment
+    public class AccreditationFeesPreviousPaymentDto
     {
         public string? PaymentMode { get; set; } // "offline" or "online"
 

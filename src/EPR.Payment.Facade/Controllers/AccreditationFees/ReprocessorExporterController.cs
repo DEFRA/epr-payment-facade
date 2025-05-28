@@ -29,7 +29,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
         }
 
         [HttpPost("accreditation-fee")]
-        [ProducesResponseType(typeof(ProducerResubmissionFeeResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AccreditationFeesResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(
@@ -57,8 +57,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
                 OverseasSiteChargePerSite = 75.00m,
                 TotalOverseasSitesCharges = 225.00m,
                 TonnageBandCharge = 310.00m,
-                // TotalAccreditationFees is computed automatically
-                PreviousPaymentDetail = new AccreditationFeesPreviousPayment
+                PreviousPaymentDetail = new AccreditationFeesPreviousPaymentDto
                 {
                     PaymentMode   = "offline",
                     PaymentMethod = "bank transfer",

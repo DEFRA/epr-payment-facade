@@ -18,10 +18,6 @@ namespace EPR.Payment.Facade.Validations.AccreditationFees
                 .Cascade(CascadeMode.Stop)
                 .MustBeValidSubmissionDate();
 
-            RuleFor(x => x.ApplicationReferenceNumber)
-                .NotNull()
-                .NotEmpty().WithMessage(ValidationMessages.ApplicationReferenceNumberRequired);
-
             RuleFor(x => x.TonnageBand)
                 .NotNull().WithMessage(ValidationMessages.EmptyTonnageBand)
                 .IsInEnum()

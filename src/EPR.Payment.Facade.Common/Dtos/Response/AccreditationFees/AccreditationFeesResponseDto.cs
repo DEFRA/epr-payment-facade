@@ -14,8 +14,8 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees
 
         public decimal? TonnageBandCharge { get; set; }
 
-        public decimal? TotalAccreditationFees { get => TonnageBandCharge + TotalOverseasSitesCharges; }
+        public decimal? TotalAccreditationFees { get; set; }
 
-        public AccreditationFeesPreviousPayment? PreviousPaymentDetail { get; set; }
+        public AccreditationFeesPreviousPaymentDto? PreviousPaymentDetail { get; set; }
     }
 }
