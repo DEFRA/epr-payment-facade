@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using EPR.Payment.Facade.Common.Dtos.Request.AccreditationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees;
-using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -57,7 +57,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
                 OverseasSiteChargePerSite = 75.00m,
                 TotalOverseasSitesCharges = 225.00m,
                 TonnageBandCharge = 310.00m,
-                PreviousPaymentDetail = new AccreditationFeesPreviousPaymentDto
+                PreviousPaymentDetail = new PreviousPaymentDetailResponseDto
                 {
                     PaymentMode   = "offline",
                     PaymentMethod = "bank transfer",

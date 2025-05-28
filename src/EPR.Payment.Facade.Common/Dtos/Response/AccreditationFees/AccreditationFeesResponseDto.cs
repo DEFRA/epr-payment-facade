@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EPR.Payment.Facade.Common.Dtos.Response.Payments;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees
 
         public decimal? TotalAccreditationFees { get; set; }
 
-        public AccreditationFeesPreviousPaymentDto? PreviousPaymentDetail { get; set; }
+        public PreviousPaymentDetailResponseDto? PreviousPaymentDetail { get; set; }
     }
 }
