@@ -1,5 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.AccreditationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees;
+using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Controllers.AccreditationFees;
 using FluentValidation;
 using FluentValidation.Results;
@@ -40,7 +41,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             // Arrange
             var failures = new List<ValidationFailure>
             {
-                new ValidationFailure("SubmissionDate", "SubmissionDate is required")
+                new ValidationFailure("RequestorType", "RequestorType is required")
             };
             _mockValidator
                 .Setup(v => v.Validate(It.IsAny<AccreditationFeesRequestDto>()))
@@ -48,6 +49,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
 
             var request = new AccreditationFeesRequestDto
             {
+                Regulator = "GN-ENG",
+                TonnageBand = TonnageBands.Upto500,
+                NumberOfOverseasSites = 10,
+                MaterialType = MaterialTypes.Plastic,
                 SubmissionDate = DateTime.UtcNow
             };
 
@@ -60,7 +65,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             Assert.IsNotNull(badRequest);
             var problems = badRequest.Value as ProblemDetails;
             Assert.IsNotNull(problems);
-            Assert.IsTrue(problems.Detail.Contains("SubmissionDate is required"));
+            Assert.IsTrue(problems.Detail.Contains("RequestorType is required"));
             Assert.AreEqual(StatusCodes.Status400BadRequest, problems.Status);
         }
 
@@ -74,6 +79,11 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
 
             var request = new AccreditationFeesRequestDto
             {
+                RequestorType = RequestorTypes.Exporters,
+                Regulator = "GN-ENG",
+                TonnageBand = TonnageBands.Upto500,
+                NumberOfOverseasSites = 10,
+                MaterialType = MaterialTypes.Plastic,
                 SubmissionDate = DateTime.UtcNow
             };
 
