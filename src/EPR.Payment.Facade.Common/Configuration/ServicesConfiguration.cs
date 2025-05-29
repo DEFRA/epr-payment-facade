@@ -14,6 +14,7 @@ namespace EPR.Payment.Facade.Common.Configuration
         public Service ComplianceSchemeFeesService { get; set; } = new Service();
         public Service PaymentServiceHealthCheck { get; set; } = new Service();
         public Service ProducerResubmissionFeesService { get; set; } = new Service();
+        public Service ReprocessorExporterRegistrationFeesService { get; set; } = new Service();
     }
 
     public class Service
