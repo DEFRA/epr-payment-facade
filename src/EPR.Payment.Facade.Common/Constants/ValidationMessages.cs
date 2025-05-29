@@ -39,5 +39,13 @@
         public const string ResubmissionDateMustBeUtc = "Resubmission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string ReferenceNumberRequired = "Reference Number is required.";
         public const string MemberCountGreaterThanZero = "Member Count must be greater than zero.";
+
+        // Reprocessor-Exporter Registration Fees Validation Messages
+        public const string ReprocessorExporterDateRequired = "Submission date is mandatory and must be a valid date.";
+        public const string RexExFutureResubmissionDate = "Submission date cannot be a date in the future.";
+        public const string RexExsubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
+        public const string MaterialTypeInvalid = "Invalid MaterialType.";
+        public const string RequestorTypeInvalid = "Invalid RequestorType.";
+        public const string RegulatorTypeInvalid = "Invalid Regulator.";
     }
 }
