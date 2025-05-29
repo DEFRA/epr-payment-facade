@@ -13,14 +13,14 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
     [ApiVersion(1)]
     [ApiController]
     [Route("api/v{version:apiVersion}/reprocessorexporter")]
-    [FeatureGate("EnableReprocessorExporterAccreditationFeesFeature")]
-    public class ReprocessorExporterController: ControllerBase
+    [FeatureGate("EnableReprocessorOrExporterAccreditationFeesFeature")]
+    public class ReprocessorOrExporterAccreditationFeesController: ControllerBase
     {
-        private readonly ILogger<ReprocessorExporterController> _logger;
+        private readonly ILogger<ReprocessorOrExporterAccreditationFeesController> _logger;
         private readonly IValidator<AccreditationFeesRequestDto> _accreditationFeesRequestvalidator;
 
-        public ReprocessorExporterController(
-           ILogger<ReprocessorExporterController> logger,
+        public ReprocessorOrExporterAccreditationFeesController(
+           ILogger<ReprocessorOrExporterAccreditationFeesController> logger,
            IValidator<AccreditationFeesRequestDto> accreditationFeesRequestvalidator
            )
         {
@@ -36,7 +36,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
             Summary = "Calculates the accreditation fee for a exporter or reprocessor",
             Description = "Calculates the accreditation fee for a exporter or reprocessor based on provided request details."
         )]
-        [FeatureGate("EnableReprocessorExporterAccreditationFeesCalculation")]
+        [FeatureGate("EnableReprocessorOrExporterAccreditationFeesCalculation")]
         public async Task<IActionResult> GetAccreditationFee([FromBody] AccreditationFeesRequestDto request,
             CancellationToken cancellationToken)
         {

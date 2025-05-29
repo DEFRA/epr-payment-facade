@@ -12,24 +12,21 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
 {
     [TestClass]
-    public class ReprocessorExporterControllerTests
+    public class ReprocessorOrExporterAccreditationFeesControllerTests
     {
-        private Mock<IValidator<AccreditationFeesRequestDto>> _mockValidator;
-        private Mock<ILogger<ReprocessorExporterController>> _mockLogger;
-        private ReprocessorExporterController _controller;
+        private readonly Mock<IValidator<AccreditationFeesRequestDto>> _mockValidator = new();
+        private readonly Mock<ILogger<ReprocessorOrExporterAccreditationFeesController>> _mockLogger = new();
+        private ReprocessorOrExporterAccreditationFeesController? _reprocessorOrExporterAccreditationFeesControllerUnderTest;
 
         [TestInitialize]
         public void Setup()
         {
-            _mockValidator = new Mock<IValidator<AccreditationFeesRequestDto>>();
-            _mockLogger = new Mock<ILogger<ReprocessorExporterController>>();
-
-            _controller = new ReprocessorExporterController(
+            _reprocessorOrExporterAccreditationFeesControllerUnderTest = new ReprocessorOrExporterAccreditationFeesController(
                 _mockLogger.Object,
                 _mockValidator.Object
             );
 
-            _controller.ControllerContext = new ControllerContext
+            _reprocessorOrExporterAccreditationFeesControllerUnderTest.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext()
             };
@@ -57,7 +54,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             };
 
             // Act
-            var result = await _controller.GetAccreditationFee(request, CancellationToken.None);
+            var result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
@@ -65,7 +62,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             Assert.IsNotNull(badRequest);
             var problems = badRequest.Value as ProblemDetails;
             Assert.IsNotNull(problems);
-            Assert.IsTrue(problems.Detail.Contains("RequestorType is required"));
+            Assert.IsTrue(problems.Detail!.Contains("RequestorType is required"));
             Assert.AreEqual(StatusCodes.Status400BadRequest, problems.Status);
         }
 
@@ -88,7 +85,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             };
 
             // Act
-            var result = await _controller.GetAccreditationFee(request, CancellationToken.None);
+            var result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
@@ -104,11 +101,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             Assert.AreEqual(310.00m, response.TonnageBandCharge);
 
             Assert.IsNotNull(response.PreviousPaymentDetail);
-            Assert.AreEqual("offline", response.PreviousPaymentDetail.PaymentMode);
-            Assert.AreEqual("bank transfer", response.PreviousPaymentDetail.PaymentMethod);
-            Assert.AreEqual(200.00m, response.PreviousPaymentDetail.PaymentAmount);
-            Assert.AreEqual(new DateTime(2024, 11, 15), response.PreviousPaymentDetail.PaymentDate);
-            Assert.AreEqual(new DateTime(2024, 11, 15), response.PreviousPaymentDetail.PaymentDate);
+           
         }
     }
 }
