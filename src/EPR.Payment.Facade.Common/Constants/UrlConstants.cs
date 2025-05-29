@@ -23,5 +23,11 @@
 
         // Compliance scheme resubmission fee endpoints
         public const string GetComplianceSchemeResubmissionFee = "compliance-scheme/resubmission-fee";
+
+        // Reprocessor , Exporter Registration fees service endpoints
+        public const string CalculateRexExpoRegistrationFee = "reprocessor-exporter/registration-fee";
+
+        // Reprocessor , Exporter Registration fees service endpoints
+        public const string GetCalculateRexExpoRegistrationFee = "reprocessor-exporter/registration-fee";
     }
 }
