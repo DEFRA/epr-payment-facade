@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Controllers.AccreditationFees;
+using EPR.Payment.Facade.Services.AccreditationFees.Interfaces;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
     {
         private readonly Mock<IValidator<AccreditationFeesRequestDto>> _mockValidator = new();
         private readonly Mock<ILogger<ReprocessorOrExporterAccreditationFeesController>> _mockLogger = new();
+        private readonly Mock<IAccreditationFeesCalculatorService> _mockAccreditationFeesCalculatorService = new();
+
         private ReprocessorOrExporterAccreditationFeesController? _reprocessorOrExporterAccreditationFeesControllerUnderTest;
 
         [TestInitialize]
@@ -23,7 +26,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
         {
             _reprocessorOrExporterAccreditationFeesControllerUnderTest = new ReprocessorOrExporterAccreditationFeesController(
                 _mockLogger.Object,
-                _mockValidator.Object
+                _mockValidator.Object,
+                _mockAccreditationFeesCalculatorService.Object
             );
 
             _reprocessorOrExporterAccreditationFeesControllerUnderTest.ControllerContext = new ControllerContext
