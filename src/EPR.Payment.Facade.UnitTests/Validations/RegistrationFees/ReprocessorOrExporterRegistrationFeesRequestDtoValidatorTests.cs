@@ -1,5 +1,4 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Validations.RegistrationFees.ReprocessorOrExporter;
@@ -107,7 +106,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.RequestorType)
-                  .WithErrorMessage(ValidationMessages.RequestorTypeInvalid);
+                  .WithErrorMessage(ValidationMessages.EmptyRequestorType);
         }
 
         [TestMethod]
@@ -127,7 +126,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.MaterialType)
-                  .WithErrorMessage(ValidationMessages.MaterialTypeInvalid);
+                  .WithErrorMessage(ValidationMessages.EmptyMaterialType);
         }
     }
 }
