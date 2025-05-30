@@ -21,7 +21,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
         private readonly Mock<IValidator<ReprocessorOrExporterAccreditationFeesRequestDto>> _mockValidator = new();
         private readonly Mock<IAccreditationFeesCalculatorService> _mockService= new();
         private readonly Mock<ILogger<ReprocessorOrExporterAccreditationFeesController>> _mockLogger= new();
-        private ReprocessorOrExporterAccreditationFeesController _reprocessorOrExporterAccreditationFeesControllerUnderTest = null!;
+        private ReprocessorOrExporterAccreditationFeesController? _reprocessorOrExporterAccreditationFeesControllerUnderTest;
         private CancellationToken _cancellationToken;
 
         private static ReprocessorOrExporterAccreditationFeesRequestDto AccreditationFeesRequestDto() =>
@@ -70,7 +70,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 .Returns(new ValidationResult(failures));
 
             // Act
-            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest.GetAccreditationFee(request, _cancellationToken);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
@@ -80,8 +80,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             StringAssert.Contains(pd.Detail!, "RequestorType is required");
 
             // Verify
-            _mockValidator.Verify(v => v.Validate(request), Times.Once);
-            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Never);
+            _mockValidator.Verify(v => v.Validate(request), Times.Once());
+            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Never());
         }
 
         [TestMethod]
@@ -99,7 +99,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 .ReturnsAsync((ReprocessorOrExporterAccreditationFeesResponseDto?)null);
 
             // Act
-            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest.GetAccreditationFee(request, _cancellationToken);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
@@ -109,8 +109,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             StringAssert.Contains(pd.Detail!, "Accreditation fees data not found.");
 
             // Verify
-            _mockValidator.Verify(v => v.Validate(request), Times.Once);
-            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once);
+            _mockValidator.Verify(v => v.Validate(request), Times.Once());
+            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
 
         [TestMethod]
@@ -142,7 +142,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 .ReturnsAsync(expected);
 
             // Act
-            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest.GetAccreditationFee(request, _cancellationToken);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
@@ -152,8 +152,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             Assert.AreSame(expected, actual);
 
             // Verify
-            _mockValidator.Verify(v => v.Validate(request), Times.Once);
-            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once);
+            _mockValidator.Verify(v => v.Validate(request), Times.Once());
+            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
 
         [TestMethod]
@@ -171,7 +171,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 .ThrowsAsync(new FluentValidation.ValidationException("Bad payload"));
 
             // Act
-            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest.GetAccreditationFee(request, _cancellationToken);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
@@ -181,8 +181,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             StringAssert.Contains(pd.Detail!, "Bad payload");
 
             // Verify
-            _mockValidator.Verify(v => v.Validate(request), Times.Once);
-            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once);
+            _mockValidator.Verify(v => v.Validate(request), Times.Once());
+            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
 
         [TestMethod]
@@ -200,7 +200,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 .ThrowsAsync(new ServiceException("Downstream error"));
 
             // Act
-            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest.GetAccreditationFee(request, _cancellationToken);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(ObjectResult));
@@ -210,8 +210,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             Assert.AreEqual("Downstream error", pd.Detail);
 
             // Verify
-            _mockValidator.Verify(v => v.Validate(request), Times.Once);
-            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once);
+            _mockValidator.Verify(v => v.Validate(request), Times.Once());
+            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
 
         [TestMethod]
@@ -229,7 +229,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 .ThrowsAsync(new Exception("Boom"));
 
             // Act
-            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest.GetAccreditationFee(request, _cancellationToken);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(ObjectResult));
@@ -239,8 +239,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             Assert.AreEqual(ExceptionMessages.UnexpectedErrorCalculatingFees, pd.Detail);
 
             // Verify
-            _mockValidator.Verify(v => v.Validate(request), Times.Once);
-            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once);
+            _mockValidator.Verify(v => v.Validate(request), Times.Once());
+            _mockService.Verify(s => s.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
     }
 }

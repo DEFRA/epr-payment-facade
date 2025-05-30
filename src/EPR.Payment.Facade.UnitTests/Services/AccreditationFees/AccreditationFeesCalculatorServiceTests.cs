@@ -15,11 +15,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.AccreditationFees
     [TestClass]
     public class AccreditationFeesCalculatorServiceTests
     {
-        private Mock<IHttpAccreditationFeesCalculatorService> _httpMock = null!;
-        private Mock<ILogger<AccreditationFeesCalculatorService>> _loggerMock = null!;
-        private AccreditationFeesCalculatorService _service = null!;
+        private Mock<IHttpAccreditationFeesCalculatorService> _httpMock = new();
+        private Mock<ILogger<AccreditationFeesCalculatorService>> _loggerMock = new();
+        private AccreditationFeesCalculatorService? _accreditationFeesCalculatorServiceUnderTest;
+        private CancellationToken _cancellationToken;
 
-        static ReprocessorOrExporterAccreditationFeesRequestDto SampleRequest() => new()
+        private static ReprocessorOrExporterAccreditationFeesRequestDto AccreditationFeesRequestDto() => new()
         {
             RequestorType              = RequestorTypes.Exporters,
             Regulator                  = "RG-TST",
@@ -33,16 +34,18 @@ namespace EPR.Payment.Facade.UnitTests.Services.AccreditationFees
         [TestInitialize]
         public void Init()
         {
-            _httpMock   = new Mock<IHttpAccreditationFeesCalculatorService>();
-            _loggerMock = new Mock<ILogger<AccreditationFeesCalculatorService>>();
-            _service    = new AccreditationFeesCalculatorService(_httpMock.Object, _loggerMock.Object);
+            _accreditationFeesCalculatorServiceUnderTest    = new AccreditationFeesCalculatorService(
+                _httpMock.Object,
+                _loggerMock.Object);
+
+            _cancellationToken = new CancellationToken();
         }
 
         [TestMethod]
         public async Task CalculateAccreditationFeesAsync_ShouldReturnDto_WhenHttpServiceSucceeds()
         {
             // Arrange
-            var request = SampleRequest();
+            var request = AccreditationFeesRequestDto();
             var expected = new ReprocessorOrExporterAccreditationFeesResponseDto
             {
                 OverseasSiteChargePerSite = 5m,
@@ -50,77 +53,85 @@ namespace EPR.Payment.Facade.UnitTests.Services.AccreditationFees
                 TonnageBandCharge         = 50m,
                 TotalAccreditationFees    = 65m
             };
+
+            // Setup
             _httpMock
-                .Setup(x => x.CalculateAccreditationFeesAsync(request, It.IsAny<CancellationToken>()))
+                .Setup(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken))
                 .ReturnsAsync(expected);
 
             // Act
             ReprocessorOrExporterAccreditationFeesResponseDto? actual
-                = await _service.CalculateAccreditationFeesAsync(request, CancellationToken.None);
+                = await _accreditationFeesCalculatorServiceUnderTest!.CalculateAccreditationFeesAsync(request, _cancellationToken);
 
             // Assert
             Assert.AreSame(expected, actual);
 
             // Verify
-            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, CancellationToken.None), Times.Once);
+            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
 
         [TestMethod]
         public async Task CalculateAccreditationFeesAsync_ShouldReturnNull_WhenHttpServiceReturnsNull()
         {
             // Arrange
-            var request = SampleRequest();
+            var request = AccreditationFeesRequestDto();
+            
+            // Setup
             _httpMock
-                .Setup(x => x.CalculateAccreditationFeesAsync(request, It.IsAny<CancellationToken>()))
+                .Setup(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken))
                 .ReturnsAsync((ReprocessorOrExporterAccreditationFeesResponseDto?)null);
 
             // Act
             ReprocessorOrExporterAccreditationFeesResponseDto? actual
-                = await _service.CalculateAccreditationFeesAsync(request, CancellationToken.None);
+                = await _accreditationFeesCalculatorServiceUnderTest!.CalculateAccreditationFeesAsync(request, _cancellationToken);
 
             // Assert
             Assert.IsNull(actual);
 
             // Verify
-            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, CancellationToken.None), Times.Once);
+            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
 
         [TestMethod]
         public async Task CalculateAccreditationFeesAsync_ShouldThrowValidationException_OnHttpValidationException()
         {
             // Arrange
-            var request = SampleRequest();
+            var request = AccreditationFeesRequestDto();
             var message = "Invalid payload";
+            
+            // Setup
             _httpMock
-                .Setup(x => x.CalculateAccreditationFeesAsync(request, It.IsAny<CancellationToken>()))
+                .Setup(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken))
                 .ThrowsAsync(new ValidationException(message));
 
             // Act & Assert
             await Assert.ThrowsExceptionAsync<ValidationException>(
-                () => _service.CalculateAccreditationFeesAsync(request, CancellationToken.None));
+                () => _accreditationFeesCalculatorServiceUnderTest!.CalculateAccreditationFeesAsync(request, _cancellationToken));
 
             // Verify
-            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, CancellationToken.None), Times.Once);
+            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
 
         [TestMethod]
         public async Task CalculateAccreditationFeesAsync_ShouldThrowServiceException_OnGenericException()
         {
             // Arrange
-            var request = SampleRequest();
+            var request = AccreditationFeesRequestDto();
             var inner = new InvalidOperationException("HTTP failure");
+            
+            // Setup
             _httpMock
-                .Setup(x => x.CalculateAccreditationFeesAsync(request, It.IsAny<CancellationToken>()))
+                .Setup(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken))
                 .ThrowsAsync(inner);
 
             // Act & Assert
             ServiceException ex = await Assert.ThrowsExceptionAsync<ServiceException>(
-                () => _service.CalculateAccreditationFeesAsync(request, CancellationToken.None));
+                () => _accreditationFeesCalculatorServiceUnderTest!.CalculateAccreditationFeesAsync(request, _cancellationToken));
             Assert.AreEqual(ExceptionMessages.ErrorCalculatingAccreditationFees, ex.Message);
             Assert.AreSame(inner, ex.InnerException);
 
             // Verify
-            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, CancellationToken.None), Times.Once);
+            _httpMock.Verify(x => x.CalculateAccreditationFeesAsync(request, _cancellationToken), Times.Once());
         }
     }
 }
