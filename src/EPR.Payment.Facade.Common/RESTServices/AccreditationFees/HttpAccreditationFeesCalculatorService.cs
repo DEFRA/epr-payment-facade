@@ -19,9 +19,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.AccreditationFees
             IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   configMonitor.Get("ReprocessorOrExporterAccreditationFeesService").Url
+                   configMonitor.Get("RexExpoAccreditationFeesService").Url
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
-                   configMonitor.Get("ReprocessorOrExporterAccreditationFeesService").EndPointName
+                   configMonitor.Get("RexExpoAccreditationFeesService").EndPointName
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
         }

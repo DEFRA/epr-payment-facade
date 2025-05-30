@@ -40,7 +40,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
 
             _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
-            _configMonitorMock.Setup(x => x.Get("ReprocessorOrExporterAccreditationFeesService")).Returns(config);
+            _configMonitorMock.Setup(x => x.Get("RexExpoAccreditationFeesService")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             _accreditationFeesRequestDto = new()
