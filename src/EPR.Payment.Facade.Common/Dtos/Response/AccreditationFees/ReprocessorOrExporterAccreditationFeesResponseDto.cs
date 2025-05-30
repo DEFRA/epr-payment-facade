@@ -1,13 +1,8 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees
 {
-    public class AccreditationFeesResponseDto
+    public class ReprocessorOrExporterAccreditationFeesResponseDto
     {
         public decimal? OverseasSiteChargePerSite { get; set; }
 

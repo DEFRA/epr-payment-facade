@@ -18,11 +18,11 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
     [FeatureGate("EnableReprocessorOrExporterAccreditationFeesFeature")]
     public class ReprocessorOrExporterAccreditationFeesController(
        ILogger<ReprocessorOrExporterAccreditationFeesController> logger,
-       IValidator<AccreditationFeesRequestDto> accreditationFeesRequestvalidator,
+       IValidator<ReprocessorOrExporterAccreditationFeesRequestDto> accreditationFeesRequestvalidator,
        IAccreditationFeesCalculatorService accreditationFeesCalculatorService) : ControllerBase
     {
         [HttpPost("accreditation-fee")]
-        [ProducesResponseType(typeof(AccreditationFeesResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ReprocessorOrExporterAccreditationFeesResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(
@@ -30,7 +30,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
             Description = "Calculates the accreditation fee for a exporter or reprocessor based on provided request details."
         )]
         [FeatureGate("EnableReprocessorOrExporterAccreditationFeesCalculation")]
-        public async Task<IActionResult> GetAccreditationFee([FromBody] AccreditationFeesRequestDto request,
+        public async Task<IActionResult> GetAccreditationFee([FromBody] ReprocessorOrExporterAccreditationFeesRequestDto request,
             CancellationToken cancellationToken)
         {
             var validationResult = accreditationFeesRequestvalidator.Validate(request);
@@ -47,8 +47,18 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
 
             try
             {
-                AccreditationFeesResponseDto accreditationFeesResponseDto = await accreditationFeesCalculatorService.CalculateAccreditationFeesAsync(request, cancellationToken);
+                ReprocessorOrExporterAccreditationFeesResponseDto? accreditationFeesResponseDto = await accreditationFeesCalculatorService.CalculateAccreditationFeesAsync(request, cancellationToken);
            
+                if (accreditationFeesResponseDto is null)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Title = "Not Found Error",
+                        Detail = "Accreditation fees data not found.",
+                        Status = StatusCodes.Status404NotFound
+                    });
+                }
+
                 return Ok(accreditationFeesResponseDto);
             }
             catch (ValidationException ex)
@@ -62,9 +72,20 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
                     Status = StatusCodes.Status400BadRequest
                 });
             }
+            catch (ServiceException ex)
+            {
+                logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingReprocessorOrExporterAccreditationFees, nameof(GetAccreditationFee));
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Service Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
             catch (Exception ex)
             {
-                logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(GetAccreditationFee));
+                logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingReprocessorOrExporterAccreditationFees, nameof(GetAccreditationFee));
                 
                 return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
                 {

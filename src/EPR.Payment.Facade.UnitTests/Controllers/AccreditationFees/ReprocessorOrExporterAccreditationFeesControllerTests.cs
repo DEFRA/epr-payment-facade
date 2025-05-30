@@ -33,6 +33,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             SubmissionDate = DateTime.UtcNow
         };
 
+        private CancellationToken _cancellationToken;
+
         [TestInitialize]
         public void Setup()
         {
@@ -51,13 +53,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                     HttpContext = new DefaultHttpContext()
                 }
             };
+
+            _cancellationToken = new CancellationToken();
         }
 
         [TestMethod]
         public async Task GetAccreditationFee_ReturnsBadRequest_WhenValidatorReturnsErrors()
         {
             // Arrange
-            var failures = new List<ValidationFailure>
+            var request = new ReprocessorOrExporterAccreditationFeesRequestDto
             {
                 new ValidationFailure("Foo", "Foo is required"),
                 new ValidationFailure("Bar", "Bar must be > 0")
@@ -122,6 +126,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 .ThrowsAsync(new Exception("Boom!"));
 
             var request = CreateValidRequest();
+
+            // Setup
+            _mockValidator
+                .Setup(v => v.Validate(It.IsAny<ReprocessorOrExporterAccreditationFeesRequestDto>()))
+                .Returns(new ValidationResult());
+            _mockAccreditationFeesCalculatorService.Setup(x => x.CalculateAccreditationFeesAsync(
+                request,
+                _cancellationToken))
+                .ReturnsAsync(response);
 
             // Act
             var result = await _controller.GetAccreditationFee(request, CancellationToken.None);
