@@ -1,4 +1,6 @@
 ﻿using EPR.Payment.Facade.HealthCheck;
+using EPR.Payment.Facade.Services.AccreditationFees;
+using EPR.Payment.Facade.Services.AccreditationFees.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme;
@@ -35,6 +37,7 @@ namespace EPR.Payment.Facade.Extension
             services.AddScoped<IProducerResubmissionFeesService, ProducerResubmissionFeesService>();
             services.AddScoped<IComplianceSchemeCalculatorService, ComplianceSchemeCalculatorService>();
             services.AddScoped<IComplianceSchemeResubmissionFeesService, ComplianceSchemeResubmissionFeesService>();
+            services.AddScoped<IAccreditationFeesCalculatorService, AccreditationFeesCalculatorService>();
 
             return services;
         }

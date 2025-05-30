@@ -48,6 +48,8 @@
         public const string ErrorCalculatingProducerFees = "Error occurred while calculating producer registration fees.";
         public const string UnexpectedErrorCalculatingProducerFees = "An unexpected error occurred while calculating producer registration fees.";
         public const string ErrorResubmissionFees = "Error occurred while getting resubmission fee.";
+        public const string ErrorCalculatingAccreditationFees = "Error occurred while calculating accreditation fees.";
+        public const string UnexpectedErrorCalculatingAccreditationFees = "An unexpected error occurred while calculating accreditation fees.";
 
         // ProducerFeesService exceptions
         public const string RegulatorCanNotBeNullOrEmpty = "regulator cannot be null or empty";
@@ -70,6 +72,9 @@
 
         // PaymentServiceHealthCheck exceptions
         public const string PaymentServiceHealthCheckBaseUrlMissing = "PaymentServiceHealthCheck BaseUrl configuration is missing. Please ensure the PaymentServiceHealthCheck URL is configured properly.";
+
+        // ReprocessorOrExporterAccreditationFeesService exceptions
+        public const string ReprocessorOrExporterAccreditationFeesServiceBaseUrlMissing = "ReprocessorOrExporterAccreditationFeesService BaseUrl configuration is missing. Please ensure the ReprocessorOrExporterAccreditationFeesService URL is configured properly.";
 
         // GovPayService exceptions
         public const string GovPayServiceBaseUrlMissing = "GovPayService BaseUrl configuration is missing. Please ensure the GovPayService URL is configured properly.";
