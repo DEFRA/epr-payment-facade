@@ -18,11 +18,11 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
     [FeatureGate("EnableReprocessorOrExporterAccreditationFeesFeature")]
     public class ReprocessorOrExporterAccreditationFeesController(
        ILogger<ReprocessorOrExporterAccreditationFeesController> logger,
-       IValidator<AccreditationFeesRequestDto> accreditationFeesRequestvalidator,
+       IValidator<ReprocessorOrExporterAccreditationFeesRequestDto> accreditationFeesRequestvalidator,
        IAccreditationFeesCalculatorService accreditationFeesCalculatorService) : ControllerBase
     {
         [HttpPost("accreditation-fee")]
-        [ProducesResponseType(typeof(AccreditationFeesResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ReprocessorOrExporterAccreditationFeesResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(
@@ -30,7 +30,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
             Description = "Calculates the accreditation fee for a exporter or reprocessor based on provided request details."
         )]
         [FeatureGate("EnableReprocessorOrExporterAccreditationFeesCalculation")]
-        public async Task<IActionResult> GetAccreditationFee([FromBody] AccreditationFeesRequestDto request,
+        public async Task<IActionResult> GetAccreditationFee([FromBody] ReprocessorOrExporterAccreditationFeesRequestDto request,
             CancellationToken cancellationToken)
         {
             var validationResult = accreditationFeesRequestvalidator.Validate(request);
@@ -47,7 +47,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
 
             try
             {
-                AccreditationFeesResponseDto? accreditationFeesResponseDto = await accreditationFeesCalculatorService.CalculateAccreditationFeesAsync(request, cancellationToken);
+                ReprocessorOrExporterAccreditationFeesResponseDto? accreditationFeesResponseDto = await accreditationFeesCalculatorService.CalculateAccreditationFeesAsync(request, cancellationToken);
            
                 if (accreditationFeesResponseDto is null)
                 {

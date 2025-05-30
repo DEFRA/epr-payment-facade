@@ -6,7 +6,7 @@ using FluentValidation;
 
 namespace EPR.Payment.Facade.Validations.AccreditationFees
 {
-    public class AccreditationFeesRequestDtoValidator : AbstractValidator<AccreditationFeesRequestDto>
+    public class AccreditationFeesRequestDtoValidator : AbstractValidator<ReprocessorOrExporterAccreditationFeesRequestDto>
     {
         public AccreditationFeesRequestDtoValidator()
         {

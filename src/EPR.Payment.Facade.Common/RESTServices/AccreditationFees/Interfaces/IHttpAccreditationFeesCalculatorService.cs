@@ -5,8 +5,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.AccreditationFees.Interfaces
 {
     public interface IHttpAccreditationFeesCalculatorService
     {
-        Task<AccreditationFeesResponseDto?> CalculateAccreditationFeesAsync(
-                 AccreditationFeesRequestDto accreditationFeesRequestDto,
+        Task<ReprocessorOrExporterAccreditationFeesResponseDto?> CalculateAccreditationFeesAsync(
+                 ReprocessorOrExporterAccreditationFeesRequestDto accreditationFeesRequestDto,
                  CancellationToken cancellationToken);
     }
 }

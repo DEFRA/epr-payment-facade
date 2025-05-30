@@ -15,11 +15,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
     [TestClass]
     public class ReprocessorOrExporterAccreditationFeesControllerTests
     {
-        private readonly Mock<IValidator<AccreditationFeesRequestDto>> _mockValidator = new();
+        private readonly Mock<IValidator<ReprocessorOrExporterAccreditationFeesRequestDto>> _mockValidator = new();
         private readonly Mock<ILogger<ReprocessorOrExporterAccreditationFeesController>> _mockLogger = new();
         private readonly Mock<IAccreditationFeesCalculatorService> _mockAccreditationFeesCalculatorService = new();
 
         private ReprocessorOrExporterAccreditationFeesController? _reprocessorOrExporterAccreditationFeesControllerUnderTest;
+
+        private CancellationToken _cancellationToken;
 
         [TestInitialize]
         public void Setup()
@@ -34,21 +36,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             {
                 HttpContext = new DefaultHttpContext()
             };
+
+            _cancellationToken = new CancellationToken();
         }
 
         [TestMethod]
-        public async Task GetAccreditationFee_ReturnsBadRequest_WhenValidationFails()
+        public async Task GetAccreditationFee_ShouldReturnsBadRequest_WhenValidationFails()
         {
             // Arrange
-            var failures = new List<ValidationFailure>
-            {
-                new ValidationFailure("RequestorType", "RequestorType is required")
-            };
-            _mockValidator
-                .Setup(v => v.Validate(It.IsAny<AccreditationFeesRequestDto>()))
-                .Returns(new ValidationResult(failures));
-
-            var request = new AccreditationFeesRequestDto
+            var request = new ReprocessorOrExporterAccreditationFeesRequestDto
             {
                 Regulator = "GN-ENG",
                 TonnageBand = TonnageBands.Upto500,
@@ -57,8 +53,18 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 SubmissionDate = DateTime.UtcNow
             };
 
+            var failures = new List<ValidationFailure>
+            {
+                new ("RequestorType", "RequestorType is required")
+            };
+
+            // Setup
+            _mockValidator
+                .Setup(v => v.Validate(request))
+                .Returns(new ValidationResult(failures));
+
             // Act
-            var result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, CancellationToken.None);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
@@ -68,17 +74,20 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
             Assert.IsNotNull(problems);
             Assert.IsTrue(problems.Detail!.Contains("RequestorType is required"));
             Assert.AreEqual(StatusCodes.Status400BadRequest, problems.Status);
+
+            // Verify
+            _mockValidator
+               .Verify(v => v.Validate(request), Times.Once());
+            _mockAccreditationFeesCalculatorService.Verify(x => x.CalculateAccreditationFeesAsync(
+                request,
+                _cancellationToken), Times.Never());
         }
 
         [TestMethod]
-        public async Task GetAccreditationFee_ReturnsOk_WhenRequestIsValid()
+        public async Task GetAccreditationFee_ShouldReturnsOk_WhenRequestIsValid_AndServiceCallReturnResponse()
         {
             // Arrange
-            _mockValidator
-                .Setup(v => v.Validate(It.IsAny<AccreditationFeesRequestDto>()))
-                .Returns(new ValidationResult());
-
-            var request = new AccreditationFeesRequestDto
+            var request = new ReprocessorOrExporterAccreditationFeesRequestDto
             {
                 RequestorType = RequestorTypes.Exporters,
                 Regulator = "GN-ENG",
@@ -88,24 +97,41 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
                 SubmissionDate = DateTime.UtcNow
             };
 
+            var response = new ReprocessorOrExporterAccreditationFeesResponseDto()
+            {
+                OverseasSiteChargePerSite = 10,
+                TonnageBandCharge = 100,
+                TotalOverseasSitesCharges = 100,
+                TotalAccreditationFees = 200,
+            };
+
+            // Setup
+            _mockValidator
+                .Setup(v => v.Validate(It.IsAny<ReprocessorOrExporterAccreditationFeesRequestDto>()))
+                .Returns(new ValidationResult());
+            _mockAccreditationFeesCalculatorService.Setup(x => x.CalculateAccreditationFeesAsync(
+                request,
+                _cancellationToken))
+                .ReturnsAsync(response);
+
             // Act
-            var result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, CancellationToken.None);
+            IActionResult result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, _cancellationToken);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
             var okResult = result as OkObjectResult;
             Assert.IsNotNull(okResult);
 
-            var response = okResult.Value as AccreditationFeesResponseDto;
-            Assert.IsNotNull(response);
+            var accreditationFeesResponseDto = okResult.Value as ReprocessorOrExporterAccreditationFeesResponseDto;
+            Assert.IsNotNull(accreditationFeesResponseDto);
+            Assert.AreSame(accreditationFeesResponseDto, response);
 
-            // Validate the dummy values from controller
-            Assert.AreEqual(75.00m, response.OverseasSiteChargePerSite);
-            Assert.AreEqual(225.00m, response.TotalOverseasSitesCharges);
-            Assert.AreEqual(310.00m, response.TonnageBandCharge);
-
-            Assert.IsNotNull(response.PreviousPaymentDetail);
-           
+            // Verify
+            _mockValidator
+               .Verify(v => v.Validate(request), Times.Once());
+            _mockAccreditationFeesCalculatorService.Verify(x => x.CalculateAccreditationFeesAsync(
+                request,
+                _cancellationToken), Times.Once());
         }
     }
 }

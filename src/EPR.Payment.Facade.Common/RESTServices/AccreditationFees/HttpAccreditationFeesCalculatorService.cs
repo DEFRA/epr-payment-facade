@@ -26,15 +26,15 @@ namespace EPR.Payment.Facade.Common.RESTServices.AccreditationFees
         {
         }
 
-        public async Task<AccreditationFeesResponseDto?> CalculateAccreditationFeesAsync(
-            AccreditationFeesRequestDto accreditationFeesRequestDto,
+        public async Task<ReprocessorOrExporterAccreditationFeesResponseDto?> CalculateAccreditationFeesAsync(
+            ReprocessorOrExporterAccreditationFeesRequestDto accreditationFeesRequestDto,
             CancellationToken cancellationToken)
         {
             var url = UrlConstants.CalculateReprocessorOrExporterAccreditationFees;
 
             try
             {
-                AccreditationFeesResponseDto accreditationFeesResponseDto = await Post<AccreditationFeesResponseDto>(url, accreditationFeesRequestDto, cancellationToken);
+                ReprocessorOrExporterAccreditationFeesResponseDto accreditationFeesResponseDto = await Post<ReprocessorOrExporterAccreditationFeesResponseDto>(url, accreditationFeesRequestDto, cancellationToken);
                 
                 return accreditationFeesResponseDto;
             }

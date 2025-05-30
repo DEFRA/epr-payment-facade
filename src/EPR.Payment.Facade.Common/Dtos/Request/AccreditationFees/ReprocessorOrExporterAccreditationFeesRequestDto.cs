@@ -3,7 +3,7 @@ using EPR.Payment.Facade.Common.Enums;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.AccreditationFees
 {
-    public class AccreditationFeesRequestDto
+    public class ReprocessorOrExporterAccreditationFeesRequestDto
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public RequestorTypes? RequestorType { get; set; }

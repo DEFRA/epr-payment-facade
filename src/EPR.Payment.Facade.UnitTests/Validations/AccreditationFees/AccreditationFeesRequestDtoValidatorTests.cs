@@ -13,9 +13,9 @@ namespace EPR.Payment.Facade.UnitTests.Validations.AccreditationFees
         [TestInitialize]
         public void Setup() => _validator = new AccreditationFeesRequestDtoValidator();
 
-        private AccreditationFeesRequestDto CreateValidDto()
+        private ReprocessorOrExporterAccreditationFeesRequestDto CreateValidDto()
         {
-            return new AccreditationFeesRequestDto
+            return new ReprocessorOrExporterAccreditationFeesRequestDto
             {
                 Regulator = "GB-ENG",
                 SubmissionDate = DateTime.UtcNow.AddSeconds(-1),
