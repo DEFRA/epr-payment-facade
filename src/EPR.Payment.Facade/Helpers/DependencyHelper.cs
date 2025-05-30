@@ -118,7 +118,7 @@ namespace EPR.Payment.Facade.Helpers
                .AddHttpMessageHandler<TokenAuthorizationHandler>()
                .ConfigureHttpClient((sp, client) =>
                {
-                   var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ReprocessorOrExporterAccreditationFeesService;
+                   var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.RexExpoAccreditationFeesService;
                    ValidateServiceConfiguration(config, ExceptionMessages.ReprocessorOrExporterAccreditationFeesServiceBaseUrlMissing);
                    client.BaseAddress = new Uri(config.Url!);
                });
