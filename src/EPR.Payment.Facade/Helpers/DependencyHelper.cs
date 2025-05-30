@@ -36,7 +36,7 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
-            services.Configure<Service>("ReprocessorOrExporterAccreditationFeesService", configuration.GetSection("Services:RexExpoAccreditationFeesService"));
+            services.Configure<Service>("RexExpoAccreditationFeesService", configuration.GetSection("Services:RexExpoAccreditationFeesService"));
 
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
