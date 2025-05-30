@@ -47,8 +47,18 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
 
             try
             {
-                AccreditationFeesResponseDto accreditationFeesResponseDto = await accreditationFeesCalculatorService.CalculateAccreditationFeesAsync(request, cancellationToken);
+                AccreditationFeesResponseDto? accreditationFeesResponseDto = await accreditationFeesCalculatorService.CalculateAccreditationFeesAsync(request, cancellationToken);
            
+                if (accreditationFeesResponseDto is null)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Title = "Not Found Error",
+                        Detail = "Accreditation fees data not found.",
+                        Status = StatusCodes.Status404NotFound
+                    });
+                }
+
                 return Ok(accreditationFeesResponseDto);
             }
             catch (ValidationException ex)
@@ -62,9 +72,20 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
                     Status = StatusCodes.Status400BadRequest
                 });
             }
+            catch (ServiceException ex)
+            {
+                logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingReprocessorOrExporterAccreditationFees, nameof(GetAccreditationFee));
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Service Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
             catch (Exception ex)
             {
-                logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(GetAccreditationFee));
+                logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingReprocessorOrExporterAccreditationFees, nameof(GetAccreditationFee));
                 
                 return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
                 {

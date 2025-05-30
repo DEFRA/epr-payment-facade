@@ -12,13 +12,13 @@ namespace EPR.Payment.Facade.Services.AccreditationFees
         IHttpAccreditationFeesCalculatorService httpAccreditationFeesCalculatorService,
         ILogger<AccreditationFeesCalculatorService> logger) : IAccreditationFeesCalculatorService
     {
-        public async Task<AccreditationFeesResponseDto> CalculateAccreditationFeesAsync(
+        public async Task<AccreditationFeesResponseDto?> CalculateAccreditationFeesAsync(
             AccreditationFeesRequestDto accreditationFeesRequestDto,
             CancellationToken cancellationToken)
         {
             try
             {
-                AccreditationFeesResponseDto accreditationFeesResponseDto = await httpAccreditationFeesCalculatorService.CalculateAccreditationFeesAsync(
+                AccreditationFeesResponseDto? accreditationFeesResponseDto = await httpAccreditationFeesCalculatorService.CalculateAccreditationFeesAsync(
                     accreditationFeesRequestDto,
                     cancellationToken);
                 

@@ -26,7 +26,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.AccreditationFees
         {
         }
 
-        public async Task<AccreditationFeesResponseDto> CalculateAccreditationFeesAsync(
+        public async Task<AccreditationFeesResponseDto?> CalculateAccreditationFeesAsync(
             AccreditationFeesRequestDto accreditationFeesRequestDto,
             CancellationToken cancellationToken)
         {
@@ -37,6 +37,10 @@ namespace EPR.Payment.Facade.Common.RESTServices.AccreditationFees
                 AccreditationFeesResponseDto accreditationFeesResponseDto = await Post<AccreditationFeesResponseDto>(url, accreditationFeesRequestDto, cancellationToken);
                 
                 return accreditationFeesResponseDto;
+            }
+            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return default;
             }
             catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
             {
