@@ -62,17 +62,6 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
                     Status = StatusCodes.Status400BadRequest
                 });
             }
-            catch (ServiceException ex)
-            {
-                logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(GetAccreditationFee));
-                
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Title = "Service Error",
-                    Detail = ex.Message,
-                    Status = StatusCodes.Status500InternalServerError
-                });
-            }
             catch (Exception ex)
             {
                 logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(GetAccreditationFee));

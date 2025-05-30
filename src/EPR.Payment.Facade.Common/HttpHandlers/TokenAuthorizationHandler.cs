@@ -33,6 +33,7 @@ namespace EPR.Payment.Facade.Common.HttpHandlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+#if !DEBUG
             if (_credentials != null)
             {
                 try
@@ -51,6 +52,7 @@ namespace EPR.Payment.Facade.Common.HttpHandlers
             {
                 _logger.LogWarning("DefaultAzureCredential is not initialized.");
             }
+#endif
 
             // Log details about the outgoing request
             _logger.LogInformation("Sending HTTP request to {RequestUri} with method {HttpMethod}.", request.RequestUri, request.Method);
