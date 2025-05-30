@@ -1,24 +1,17 @@
 ﻿using AutoFixture.AutoMoq;
 using AutoFixture;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
-using EPR.Payment.Facade.Services.RegistrationFees.Producer;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
-using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter;
-using Microsoft.Extensions.Logging;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Exceptions;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
-using FluentAssertions.Execution;
+using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter;
 using FluentAssertions;
+using FluentAssertions.Execution;
+using Microsoft.Extensions.Logging;
+using Moq;
+using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrExporter
 {
@@ -35,7 +28,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
         {
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
-            _httpRRepoExpoRegistrationFeesService = _fixture.Freeze<Mock<IHttpReprocessorExporterRegistrationFeesService>>();
+            _httpRepoExpoRegistrationFeesService = _fixture.Freeze<Mock<IHttpReprocessorExporterRegistrationFeesService>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<ReprocessorExporterRegistrationFeesService>>>();
 
             _service = new ReprocessorExporterRegistrationFeesService(
@@ -65,50 +58,50 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_RequestIsNull_ShouldThrowArgumentNullException(
-            ProducerFeesService service)
+        public async Task CalculateFeesAsync_RequestIsNull_ShouldThrowArgumentNullException(
+            ReprocessorExporterRegistrationFeesService service)
         {
             // Act
-            Func<Task> act = () => service.CalculateProducerFeesAsync(null!);
+            Func<Task> act = () => service.CalculateFeesAsync(null!);
 
             // Assert
             await act.Should().ThrowAsync<ArgumentNullException>()
-                .WithMessage($"{ExceptionMessages.ErrorCalculatingProducerFees} (Parameter 'request')");
+                .WithMessage($"{ExceptionMessages.ErroreproExpoRegServiceFee} (Parameter 'request')");
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_RequestIsValid_ShouldReturnResponse(
-            ProducerFeesResponseDto expectedResponse,
-            ProducerFeesRequestDto request)
+        public async Task CalculateFeesAsync_RequestIsValid_ShouldReturnResponse(
+            ReprocessorOrExporterRegistrationFeesResponseDto expectedResponse,
+            ReprocessorOrExporterRegistrationFeesRequestDto request)
         {
             // Arrange
-            _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await _service.CalculateProducerFeesAsync(request);
+            ReprocessorOrExporterRegistrationFeesResponseDto result = await _service.CalculateFeesAsync(request);
 
             // Assert
             result.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
-            ProducerFeesRequestDto request)
+        public async Task CalculateFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
+            ReprocessorOrExporterRegistrationFeesRequestDto request)
         {
             // Arrange
-            var exceptionMessage = "Unexpected error occurred";
-            var exception = new Exception(exceptionMessage);
+            string exceptionMessage = "Unexpected error occurred";
+            Exception exception = new Exception(exceptionMessage);
 
-            _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
             // Act
-            Func<Task> act = async () => await _service.CalculateProducerFeesAsync(request);
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
 
             // Assert
-            var thrownException = await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+            FluentAssertions.Specialized.ExceptionAssertions<ServiceException> thrownException = await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErroreproExpoRegServiceFee);
 
             thrownException.Which.InnerException.Should().BeOfType<Exception>()
                 .Which.Message.Should().Be(exceptionMessage);
@@ -117,30 +110,30 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingProducerFees)),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErroreproExpoRegServiceFees)),
                     exception,
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
-            ProducerFeesRequestDto request)
+        public async Task CalculateFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
+            ReprocessorOrExporterRegistrationFeesRequestDto request)
         {
             // Arrange
-            var exceptionMessage = "Validation error";
-            var validationException = new ValidationException(exceptionMessage);
+            string exceptionMessage = "Validation error";
+            ValidationException validationException = new ValidationException(exceptionMessage);
 
-            _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(validationException);
 
             // Act
-            Func<Task> act = async () => await _service.CalculateProducerFeesAsync(request);
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
 
             // Assert
             using (new AssertionScope())
             {
-                var thrownException = await act.Should().ThrowAsync<ValidationException>();
+                FluentAssertions.Specialized.ExceptionAssertions<ValidationException> thrownException = await act.Should().ThrowAsync<ValidationException>();
 
                 thrownException.Which.Message.Should().Be(exceptionMessage);
             }
