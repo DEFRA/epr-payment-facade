@@ -1,5 +1,7 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request.AccreditationFees;
+﻿using EPR.Payment.Facade.Common.Constants;
+using EPR.Payment.Facade.Common.Dtos.Request.AccreditationFees;
 using EPR.Payment.Facade.Common.Dtos.Response.AccreditationFees;
+using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Controllers.AccreditationFees;
 using EPR.Payment.Facade.Services.AccreditationFees.Interfaces;
@@ -15,97 +17,171 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.AccreditationFees
     [TestClass]
     public class ReprocessorOrExporterAccreditationFeesControllerTests
     {
-        private readonly Mock<IValidator<AccreditationFeesRequestDto>> _mockValidator = new();
-        private readonly Mock<ILogger<ReprocessorOrExporterAccreditationFeesController>> _mockLogger = new();
-        private readonly Mock<IAccreditationFeesCalculatorService> _mockAccreditationFeesCalculatorService = new();
+        private Mock<IValidator<AccreditationFeesRequestDto>> _validatorMock;
+        private Mock<IAccreditationFeesCalculatorService> _serviceMock;
+        private Mock<ILogger<ReprocessorOrExporterAccreditationFeesController>> _loggerMock;
+        private ReprocessorOrExporterAccreditationFeesController _controller;
 
-        private ReprocessorOrExporterAccreditationFeesController? _reprocessorOrExporterAccreditationFeesControllerUnderTest;
+        private static AccreditationFeesRequestDto CreateValidRequest() => new AccreditationFeesRequestDto
+        {
+            RequestorType = RequestorTypes.Exporters,
+            Regulator = "TEST-REG",
+            TonnageBand = TonnageBands.Upto500,
+            NumberOfOverseasSites = 1,
+            MaterialType = MaterialTypes.Plastic,
+            ApplicationReferenceNumber = "REF123",
+            SubmissionDate = DateTime.UtcNow
+        };
 
         [TestInitialize]
         public void Setup()
         {
-            _reprocessorOrExporterAccreditationFeesControllerUnderTest = new ReprocessorOrExporterAccreditationFeesController(
-                _mockLogger.Object,
-                _mockValidator.Object,
-                _mockAccreditationFeesCalculatorService.Object
-            );
+            _validatorMock = new Mock<IValidator<AccreditationFeesRequestDto>>();
+            _serviceMock   = new Mock<IAccreditationFeesCalculatorService>();
+            _loggerMock    = new Mock<ILogger<ReprocessorOrExporterAccreditationFeesController>>();
 
-            _reprocessorOrExporterAccreditationFeesControllerUnderTest.ControllerContext = new ControllerContext
+            _controller = new ReprocessorOrExporterAccreditationFeesController(
+                _loggerMock.Object,
+                _validatorMock.Object,
+                _serviceMock.Object
+            )
             {
-                HttpContext = new DefaultHttpContext()
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext()
+                }
             };
         }
 
         [TestMethod]
-        public async Task GetAccreditationFee_ReturnsBadRequest_WhenValidationFails()
+        public async Task GetAccreditationFee_ReturnsBadRequest_WhenValidatorReturnsErrors()
         {
             // Arrange
             var failures = new List<ValidationFailure>
             {
-                new ValidationFailure("RequestorType", "RequestorType is required")
+                new ValidationFailure("Foo", "Foo is required"),
+                new ValidationFailure("Bar", "Bar must be > 0")
             };
-            _mockValidator
+            _validatorMock
                 .Setup(v => v.Validate(It.IsAny<AccreditationFeesRequestDto>()))
                 .Returns(new ValidationResult(failures));
 
-            var request = new AccreditationFeesRequestDto
-            {
-                Regulator = "GN-ENG",
-                TonnageBand = TonnageBands.Upto500,
-                NumberOfOverseasSites = 10,
-                MaterialType = MaterialTypes.Plastic,
-                SubmissionDate = DateTime.UtcNow
-            };
+            var request = CreateValidRequest();
 
             // Act
-            var result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, CancellationToken.None);
+            var result = await _controller.GetAccreditationFee(request, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            var badRequest = result as BadRequestObjectResult;
-            Assert.IsNotNull(badRequest);
-            var problems = badRequest.Value as ProblemDetails;
-            Assert.IsNotNull(problems);
-            Assert.IsTrue(problems.Detail!.Contains("RequestorType is required"));
-            Assert.AreEqual(StatusCodes.Status400BadRequest, problems.Status);
+            var badRequest = (BadRequestObjectResult)result;
+            var details = (ProblemDetails)badRequest.Value!;
+            Assert.AreEqual(StatusCodes.Status400BadRequest, details.Status);
+            StringAssert.Contains(details.Detail!, "Foo is required");
+            StringAssert.Contains(details.Detail!, "Bar must be > 0");
         }
 
         [TestMethod]
-        public async Task GetAccreditationFee_ReturnsOk_WhenRequestIsValid()
+        public async Task GetAccreditationFee_ReturnsBadRequest_WhenServiceThrowsValidationException()
         {
             // Arrange
-            _mockValidator
+            _validatorMock
                 .Setup(v => v.Validate(It.IsAny<AccreditationFeesRequestDto>()))
-                .Returns(new ValidationResult());
+                .Returns(new ValidationResult()); // valid
 
-            var request = new AccreditationFeesRequestDto
-            {
-                RequestorType = RequestorTypes.Exporters,
-                Regulator = "GN-ENG",
-                TonnageBand = TonnageBands.Upto500,
-                NumberOfOverseasSites = 10,
-                MaterialType = MaterialTypes.Plastic,
-                SubmissionDate = DateTime.UtcNow
-            };
+            _serviceMock
+                .Setup(s => s.CalculateAccreditationFeesAsync(
+                    It.IsAny<AccreditationFeesRequestDto>(),
+                    It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new ValidationException("Service-level validation failed"));
+
+            var request = CreateValidRequest();
 
             // Act
-            var result = await _reprocessorOrExporterAccreditationFeesControllerUnderTest!.GetAccreditationFee(request, CancellationToken.None);
+            var result = await _controller.GetAccreditationFee(request, CancellationToken.None);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            var badRequest = (BadRequestObjectResult)result;
+            var details = (ProblemDetails)badRequest.Value!;
+            Assert.AreEqual(StatusCodes.Status400BadRequest, details.Status);
+            StringAssert.Contains(details.Detail!, "Service-level validation failed");
+        }
+
+        [TestMethod]
+        public async Task GetAccreditationFee_ReturnsServerError_WhenServiceThrowsUnexpectedException()
+        {
+            // Arrange
+            _validatorMock
+                .Setup(v => v.Validate(It.IsAny<AccreditationFeesRequestDto>()))
+                .Returns(new ValidationResult()); // valid
+
+            _serviceMock
+                .Setup(s => s.CalculateAccreditationFeesAsync(
+                    It.IsAny<AccreditationFeesRequestDto>(),
+                    It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Boom!"));
+
+            var request = CreateValidRequest();
+
+            // Act
+            var result = await _controller.GetAccreditationFee(request, CancellationToken.None);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(ObjectResult));
+            var objectResult = (ObjectResult)result;
+            Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+            var details = (ProblemDetails)objectResult.Value!;
+            Assert.AreEqual(StatusCodes.Status500InternalServerError, details.Status);
+            Assert.AreEqual(ExceptionMessages.UnexpectedErrorCalculatingFees, details.Detail);
+        }
+
+        [TestMethod]
+        public async Task GetAccreditationFee_ReturnsOk_WhenServiceReturnsResponse()
+        {
+            // Arrange
+            _validatorMock
+                .Setup(v => v.Validate(It.IsAny<AccreditationFeesRequestDto>()))
+                .Returns(new ValidationResult()); // valid
+
+            var expectedDto = new AccreditationFeesResponseDto
+            {
+                OverseasSiteChargePerSite   = 10m,
+                TotalOverseasSitesCharges   = 30m,
+                TonnageBandCharge           = 100m,
+                TotalAccreditationFees      = 140m,
+                PreviousPaymentDetail       = new PreviousPaymentDetailResponseDto
+                {
+                    PaymentMode   = "Online",
+                    PaymentMethod = "Credit Card",
+                    PaymentDate   = DateTime.UtcNow.AddDays(-7),
+                    PaymentAmount = 25m
+                }
+            };
+
+            _serviceMock
+                .Setup(s => s.CalculateAccreditationFeesAsync(
+                    It.IsAny<AccreditationFeesRequestDto>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedDto);
+
+            var request = CreateValidRequest();
+
+            // Act
+            var result = await _controller.GetAccreditationFee(request, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            var okResult = result as OkObjectResult;
-            Assert.IsNotNull(okResult);
-
-            var response = okResult.Value as AccreditationFeesResponseDto;
-            Assert.IsNotNull(response);
-
-            // Validate the dummy values from controller
-            Assert.AreEqual(75.00m, response.OverseasSiteChargePerSite);
-            Assert.AreEqual(225.00m, response.TotalOverseasSitesCharges);
-            Assert.AreEqual(310.00m, response.TonnageBandCharge);
-
-            Assert.IsNotNull(response.PreviousPaymentDetail);
-           
+            var ok = (OkObjectResult)result;
+            var actual = (AccreditationFeesResponseDto)ok.Value!;
+            Assert.AreEqual(expectedDto.OverseasSiteChargePerSite, actual.OverseasSiteChargePerSite);
+            Assert.AreEqual(expectedDto.TotalOverseasSitesCharges, actual.TotalOverseasSitesCharges);
+            Assert.AreEqual(expectedDto.TonnageBandCharge, actual.TonnageBandCharge);
+            Assert.AreEqual(expectedDto.TotalAccreditationFees, actual.TotalAccreditationFees);
+            Assert.IsNotNull(actual.PreviousPaymentDetail);
+            Assert.AreEqual(expectedDto.PreviousPaymentDetail.PaymentAmount, actual.PreviousPaymentDetail!.PaymentAmount);
+            Assert.AreEqual(expectedDto.PreviousPaymentDetail.PaymentMode, actual.PreviousPaymentDetail.PaymentMode);
+            Assert.AreEqual(expectedDto.PreviousPaymentDetail.PaymentMethod, actual.PreviousPaymentDetail.PaymentMethod);
+            Assert.AreEqual(expectedDto.PreviousPaymentDetail.PaymentDate, actual.PreviousPaymentDetail.PaymentDate);
         }
     }
 }
