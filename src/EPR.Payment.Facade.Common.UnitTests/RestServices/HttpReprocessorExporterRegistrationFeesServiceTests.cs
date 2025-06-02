@@ -218,6 +218,44 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_UnsuccessfulNotFound_ThrowsValidationException(
+            [Frozen] Mock<IOptionsMonitor<Service>> configMonitorMock,
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            [Frozen, Greedy] HttpClient httpClient,
+            [Frozen] IHttpContextAccessor httpContextAccessor,
+            CancellationTokenSource cancellationTokenSource)
+
+        {
+            // Arrange
+            configMonitorMock.Setup(x => x.Get("RexExpoRegistrationFeesService"))
+                .Returns(_config);
+
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ThrowsAsync(new ResponseCodeException(HttpStatusCode.NotFound, "Not Found."));
+
+            HttpReprocessorExporterRegistrationFeesService serviceUnderTest = new HttpReprocessorExporterRegistrationFeesService(httpClient, httpContextAccessor, configMonitorMock.Object);
+
+            // Act
+            ReprocessorOrExporterRegistrationFeesResponseDto? result = await serviceUnderTest.CalculateFeesAsync(_requestDto, cancellationTokenSource.Token);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeNull();
+
+                handlerMock
+                    .Protected()
+                    .Verify(
+                        "SendAsync",
+                        Times.Once(),
+                        ItExpr.Is<HttpRequestMessage>(msg => msg.Method == HttpMethod.Post),
+                        ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_UnsuccessfulStatusCode_ThrowsValidationException(
             [Frozen] Mock<IOptionsMonitor<Service>> configMonitorMock,
             [Frozen] Mock<HttpMessageHandler> handlerMock,

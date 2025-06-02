@@ -8,10 +8,10 @@ namespace EPR.Payment.Facade.UnitTests.Validations.AccreditationFees
     [TestClass]
     public class AccreditationFeesRequestDtoValidatorTests
     {
-        private AccreditationFeesRequestDtoValidator _validator;
+        private ReprocessorOrExporterAccreditationFeesRequestDtoValidator _validator;
 
         [TestInitialize]
-        public void Setup() => _validator = new AccreditationFeesRequestDtoValidator();
+        public void Setup() => _validator = new ReprocessorOrExporterAccreditationFeesRequestDtoValidator();
 
         private ReprocessorOrExporterAccreditationFeesRequestDto CreateValidDto()
         {
@@ -42,8 +42,8 @@ namespace EPR.Payment.Facade.UnitTests.Validations.AccreditationFees
             var result = _validator.Validate(dto);
             Assert.IsFalse(result.IsValid);
 
-            var hasReferenceRequired = result.Errors.Any(e => e.PropertyName == nameof(dto.Regulator) && e.ErrorMessage == ValidationMessages.ReferenceRequired);
-            Assert.IsTrue(hasReferenceRequired, $"Expected an error '{ValidationMessages.ReferenceRequired}' for Regulator but got: {string.Join(", ", result.Errors.Where(e => e.PropertyName == nameof(dto.Regulator)).Select(e => e.ErrorMessage))}");
+            var hasReferenceRequired = result.Errors.Any(e => e.PropertyName == nameof(dto.Regulator) && e.ErrorMessage == ValidationMessages.RegulatorRequired);
+            Assert.IsTrue(hasReferenceRequired, $"Expected an error '{ValidationMessages.RegulatorRequired}' for Regulator but got: {string.Join(", ", result.Errors.Where(e => e.PropertyName == nameof(dto.Regulator)).Select(e => e.ErrorMessage))}");
         }
 
         [TestMethod]
@@ -211,7 +211,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.AccreditationFees
             Assert.IsFalse(result.IsValid);
             Assert.IsTrue(result.Errors.Any(e =>
                 e.PropertyName == nameof(dto.Regulator) &&
-                e.ErrorMessage == ValidationMessages.ReferenceRequired));
+                e.ErrorMessage == ValidationMessages.RegulatorRequired));
         }
 
         [TestMethod]

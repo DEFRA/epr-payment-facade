@@ -1,15 +1,13 @@
-﻿using EPR.Payment.Facade.Common.Configuration;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.AccreditationFees;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter
 {
@@ -26,8 +24,8 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrE
                   configMonitor.Get("RexExpoRegistrationFeesService").EndPointName
                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ExpoRegServiceEndPointNameMissing))
         {
-            var config = configMonitor.Get("RexExpoRegistrationFeesService");
         }
+
         public async Task<ReprocessorOrExporterRegistrationFeesResponseDto?> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             try
