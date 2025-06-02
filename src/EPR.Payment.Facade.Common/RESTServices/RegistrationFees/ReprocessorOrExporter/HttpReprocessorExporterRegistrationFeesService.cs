@@ -19,15 +19,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrE
            IOptionsMonitor<Service> configMonitor)
            : base(httpClient,
                   httpContextAccessor,
-                  configMonitor.Get("ReprocessorExporterRegistrationFeesService").Url
+                  configMonitor.Get("RexExpoRegistrationFeesService").Url
                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ReproExpoRegServiceUrlMissing),
-                  configMonitor.Get("ReprocessorExporterRegistrationFeesService").EndPointName
+                  configMonitor.Get("RexExpoRegistrationFeesService").EndPointName
                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ExpoRegServiceEndPointNameMissing))
         {
-            var config = configMonitor.Get("ReprocessorExporterRegistrationFeesService");
+            var config = configMonitor.Get("RexExpoRegistrationFeesService");
         }
-        public async Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesAsync(
-            ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             try
             {

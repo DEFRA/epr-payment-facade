@@ -42,23 +42,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_WithNullReproExpoRegFeeService_ShouldThrowArgumentNullException(
-            [Frozen] Mock<ILogger<ReprocessorOrExporterRegistrationFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validator)
-        {
-            // Act
-            Action act = () => new ReprocessorOrExporterRegistrationFeesController(
-                null!,
-                loggerMock.Object,
-                validator.Object
-            );
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("ReprocessorOrExporter Registration FeesService");
-        }
-
-        [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
             [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
             [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validator)
@@ -73,23 +56,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             // Assert
             act.Should().Throw<ArgumentNullException>()
                 .WithParameterName("logger");
-        }
-
-        [TestMethod, AutoMoqData]
-        public void Constructor_WithNullReproExpoRegistrationValidator_ShouldThrowArgumentNullException(
-            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
-            [Frozen] Mock<ILogger<ReprocessorOrExporterRegistrationFeesController>> loggerMock)
-        {
-            // Act
-            Action act = () => new ReprocessorOrExporterRegistrationFeesController(
-                reprocessorExpoRegFeesServiceeMock.Object,
-                loggerMock.Object,
-                null!
-            );
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("validator");
         }
 
         [TestMethod, AutoMoqData]

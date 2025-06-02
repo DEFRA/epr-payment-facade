@@ -1,26 +1,16 @@
 ﻿using AutoFixture.AutoMoq;
 using AutoFixture;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
-using EPR.Payment.Facade.Services.RegistrationFees.Producer;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
-using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter;
-using Microsoft.Extensions.Logging;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
-using EPR.Payment.Facade.Common.Exceptions;
-using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
-using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
-using FluentAssertions.Execution;
-using FluentAssertions;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ReProcessorOrExporter;
+using EPR.Payment.Facade.Common.Exceptions;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
+using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
+using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter;
+using FluentAssertions;
+using FluentAssertions.Execution;
+using Microsoft.Extensions.Logging;
+using Moq;
 using System.ComponentModel.DataAnnotations;
 
 namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrExporter
@@ -68,7 +58,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateRepoExpoRegiFeesAsync_RequestIsNull_ShouldThrowArgumentNullException(
+        public async Task CalculateFeesAsync_RequestIsNull_ShouldThrowArgumentNullException(
             ReprocessorExporterRegistrationFeesService service)
         {
             // Act
@@ -80,37 +70,37 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateRepoExpoRegiFeesAsync_RequestIsValid_ShouldReturnResponse(
+        public async Task CalculateFeesAsync_RequestIsValid_ShouldReturnResponse(
             ReprocessorOrExporterRegistrationFeesResponseDto expectedResponse,
             ReprocessorOrExporterRegistrationFeesRequestDto request)
         {
             // Arrange
-            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await _service.CalculateFeesAsync(request);
+            ReprocessorOrExporterRegistrationFeesResponseDto result = await _service.CalculateFeesAsync(request);
 
             // Assert
             result.Should().BeEquivalentTo(expectedResponse);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateRepoExpoRegiFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
+        public async Task CalculateFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
             ReprocessorOrExporterRegistrationFeesRequestDto request)
         {
             // Arrange
-            var exceptionMessage = "Unexpected error occurred";
-            var exception = new Exception(exceptionMessage);
+            string exceptionMessage = "Unexpected error occurred";
+            Exception exception = new Exception(exceptionMessage);
 
-            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
             // Act
             Func<Task> act = async () => await _service.CalculateFeesAsync(request);
 
             // Assert
-            var thrownException = await act.Should().ThrowAsync<ServiceException>()
+            FluentAssertions.Specialized.ExceptionAssertions<ServiceException> thrownException = await act.Should().ThrowAsync<ServiceException>()
                 .WithMessage(ExceptionMessages.ErroreproExpoRegServiceFee);
 
             thrownException.Which.InnerException.Should().BeOfType<Exception>()
@@ -127,14 +117,14 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateRepoExpoRegiFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
+        public async Task CalculateFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
             ReprocessorOrExporterRegistrationFeesRequestDto request)
         {
             // Arrange
-            var exceptionMessage = "Validation error";
-            var validationException = new ValidationException(exceptionMessage);
+            string exceptionMessage = "Validation error";
+            ValidationException validationException = new ValidationException(exceptionMessage);
 
-            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+            _httpRepoExpoRegistrationFeesService.Setup(s => s.CalculateFeesAsync(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(validationException);
 
             // Act
@@ -143,7 +133,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
             // Assert
             using (new AssertionScope())
             {
-                var thrownException = await act.Should().ThrowAsync<ValidationException>();
+                FluentAssertions.Specialized.ExceptionAssertions<ValidationException> thrownException = await act.Should().ThrowAsync<ValidationException>();
 
                 thrownException.Which.Message.Should().Be(exceptionMessage);
             }

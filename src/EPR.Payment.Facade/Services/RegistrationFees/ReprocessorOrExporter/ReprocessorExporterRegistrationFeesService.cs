@@ -14,14 +14,23 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter
         private readonly ILogger<ReprocessorExporterRegistrationFeesService> _logger;
 
         public ReprocessorExporterRegistrationFeesService(
-            IHttpReprocessorExporterRegistrationFeesService httpReprocessorExporterRegistrationFees,
+            IHttpReprocessorExporterRegistrationFeesService httpReprocessorExporterRegistrationFeesService,
             ILogger<ReprocessorExporterRegistrationFeesService> logger)
         {
-            _httpReprocessorExporterRegistrationFees = httpReprocessorExporterRegistrationFees ?? throw new ArgumentNullException(nameof(httpReprocessorExporterRegistrationFees));
+            _httpReprocessorExporterRegistrationFees = httpReprocessorExporterRegistrationFeesService ?? throw new ArgumentNullException(nameof(httpReprocessorExporterRegistrationFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
+
+        public Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), ExceptionMessages.ErroreproExpoRegServiceFee);
+
+            return CalculateFeesInternalAsync(request);
+        }
+
+        private async Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesInternalAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             try
             {
