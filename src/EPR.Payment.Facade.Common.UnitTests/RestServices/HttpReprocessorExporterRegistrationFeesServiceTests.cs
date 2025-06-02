@@ -153,7 +153,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             {
                 await act.Should()
                     .ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErroreproExpoRegServiceFee);
+                    .WithMessage(ExceptionMessages.UnexpectedErroreproExpoRegServiceFees);
 
                 handlerMock
                     .Protected()
