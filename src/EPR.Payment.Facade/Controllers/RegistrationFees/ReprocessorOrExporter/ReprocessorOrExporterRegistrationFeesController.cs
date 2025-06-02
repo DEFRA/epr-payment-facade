@@ -69,8 +69,18 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter
 
             try
             {
-                var reprocessorExporterRegistrationFeesResponse = await _reprocessorExporterRegistrationFeesService.CalculateFeesAsync(reProcessorOrExporterFeesRequestDto, cancellationToken);
-                return Ok(reprocessorExporterRegistrationFeesResponse);
+                ReprocessorOrExporterRegistrationFeesResponseDto? reproxpoRegistrationFeesResponse = await _reprocessorExporterRegistrationFeesService.CalculateFeesAsync(reProcessorOrExporterFeesRequestDto, cancellationToken);
+                if(reproxpoRegistrationFeesResponse is null)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Title = "Not Found Error",
+                        Detail = "Reprocessor/Exporter Registration fees data not found.",
+                        Status = StatusCodes.Status404NotFound
+                    });
+                }
+
+                return Ok(reproxpoRegistrationFeesResponse);
             }
             catch (ValidationException ex)
             {

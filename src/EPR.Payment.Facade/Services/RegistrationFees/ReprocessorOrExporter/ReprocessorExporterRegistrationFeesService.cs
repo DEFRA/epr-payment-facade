@@ -22,7 +22,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter
         }
 
 
-        public Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
+        public Task<ReprocessorOrExporterRegistrationFeesResponseDto?> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErroreproExpoRegServiceFee);
@@ -30,7 +30,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter
             return CalculateFeesInternalAsync(request);
         }
 
-        private async Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesInternalAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
+        private async Task<ReprocessorOrExporterRegistrationFeesResponseDto?> CalculateFeesInternalAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             try
             {

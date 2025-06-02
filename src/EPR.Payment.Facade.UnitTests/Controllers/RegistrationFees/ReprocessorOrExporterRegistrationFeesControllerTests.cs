@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter.Interfaces;
+using System.Threading;
 
 namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
 {
@@ -73,7 +74,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -99,7 +100,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -130,7 +131,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -161,7 +162,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ThrowsAsync(serviceException);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -193,7 +194,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ThrowsAsync(exception);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -207,6 +208,35 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 problemDetails?.Title.Should().Be("Unexpected Error");
                 problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErroreproExpoRegServiceFees);
             }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ReturnsNotFound_WhenServiceReturnsNull(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> _mockService,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validatorMock,
+            [Greedy] ReprocessorOrExporterRegistrationFeesController controller,
+            [Frozen] ReprocessorOrExporterRegistrationFeesRequestDto request)
+        {
+
+            // Setup
+            validatorMock
+                .Setup(v => v.Validate(request))
+                .Returns(new ValidationResult());
+            _mockService
+                .Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ReprocessorOrExporterRegistrationFeesResponseDto?)null);
+
+            // Act
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+
+             // Assert
+            result.Should().BeOfType<NotFoundObjectResult>();
+            var notFoundResult = result as NotFoundObjectResult;
+            notFoundResult!.Value.Should().BeOfType<ProblemDetails>();
+            var problem = notFoundResult.Value as ProblemDetails;
+            problem!.Title.Should().Be("Not Found Error");
+            problem.Detail.Should().Be("Reprocessor/Exporter Registration fees data not found.");
+            problem.Status.Should().Be(StatusCodes.Status404NotFound);
         }
     }
 }

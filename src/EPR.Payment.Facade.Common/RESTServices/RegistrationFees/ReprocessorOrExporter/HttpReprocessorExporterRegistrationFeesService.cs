@@ -26,7 +26,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrE
         {
             var config = configMonitor.Get("RexExpoRegistrationFeesService");
         }
-        public async Task<ReprocessorOrExporterRegistrationFeesResponseDto> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ReprocessorOrExporterRegistrationFeesResponseDto?> CalculateFeesAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -35,13 +35,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrE
                     request,
                     cancellationToken);
             }
-            catch (HttpRequestException ex)
+            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                throw new ServiceException(ExceptionMessages.ErroreproExpoRegServiceFee, ex);
-            }
-            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
-            {
-                throw new ValidationException(ex.Message.Trim('"'));
+                return default;
             }
             catch (Exception ex)
             {
