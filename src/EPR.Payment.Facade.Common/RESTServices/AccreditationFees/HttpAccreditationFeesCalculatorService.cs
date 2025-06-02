@@ -48,7 +48,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.AccreditationFees
             }
             catch (Exception ex)
             {
-                throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees, ex);
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingAccreditationFees, ex);
             }
         }
     }

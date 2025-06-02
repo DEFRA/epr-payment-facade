@@ -157,7 +157,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             using (new AssertionScope())
             {
                 await act.Should().ThrowAsync<ServiceException>()
-                    .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+                    .WithMessage(ExceptionMessages.ErrorCalculatingAccreditationFees);
 
 
                 handlerMock.Protected().Verify(

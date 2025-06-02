@@ -24,6 +24,7 @@ namespace EPR.Payment.Facade.Controllers.AccreditationFees
         [HttpPost("accreditation-fee")]
         [ProducesResponseType(typeof(ReprocessorOrExporterAccreditationFeesResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerOperation(
             Summary = "Calculates the accreditation fee for a exporter or reprocessor",
