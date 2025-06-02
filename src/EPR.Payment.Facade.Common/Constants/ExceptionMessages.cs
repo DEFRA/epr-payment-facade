@@ -80,5 +80,11 @@
         public const string GovPayServiceBaseUrlMissing = "GovPayService BaseUrl configuration is missing. Please ensure the GovPayService URL is configured properly.";
         public const string GovPayServiceBearerTokenMissing = "GovPayService BearerToken configuration is missing. Please ensure the BearerToken is provided for authentication.";
 
+        // Reprocess Exporter Registration Fees Service exceptions
+        public const string ReproExpoRegServiceUrlMissing = "ReprocessorOrExporterRegistrationService url configuration is missing.";
+        public const string ExpoRegServiceEndPointNameMissing = "ReprocessorOrExporterRegistrationService EndPointName configuration is missing.";
+        public const string ExpoRegServiceHttpClientNameMissing = "ReprocessorOrExporterRegistration HttpClientName configuration is missing.";
+        public const string ErroreproExpoRegServiceFee = "Error occurred while calculating ReprocessorOrExporterRegistration fees.";
+        public const string UnexpectedErroreproExpoRegServiceFees = "An unexpected error occurred while calculating reprocessorOrExporter registration fees.";
     }
 }

@@ -10,6 +10,8 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
@@ -32,6 +34,7 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("ProducerFeesService", configuration.GetSection("Services:ProducerFeesService"));
             services.Configure<Service>("ComplianceSchemeFeesService", configuration.GetSection("Services:ComplianceSchemeFeesService"));
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
+            services.Configure<Service>("RexExpoRegistrationFeesService", configuration.GetSection("Services:RexExpoRegistrationFeesService"));
             services.Configure<Service>("PaymentService", configuration.GetSection("Services:PaymentService"));
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
@@ -92,6 +95,15 @@ namespace EPR.Payment.Facade.Helpers
                 {
                     var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
                     ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
+            
+            services.AddHttpClient<IHttpReprocessorExporterRegistrationFeesService, HttpReprocessorExporterRegistrationFeesService>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.RexExpoRegistrationFeesService;
+                    ValidateServiceConfiguration(config, ExceptionMessages.RegistrationFeesServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
 

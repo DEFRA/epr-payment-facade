@@ -21,6 +21,8 @@ namespace EPR.Payment.Facade.Common.Configuration
         
         public Service ProducerResubmissionFeesService { get; set; } = new Service();
         
+        public Service RexExpoRegistrationFeesService { get; set; } = new Service();
+        
         public Service RexExpoAccreditationFeesService { get; set; } = new Service();
     }
 

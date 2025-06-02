@@ -43,6 +43,16 @@
         public const string UnexpectedErrorWhileProcessingComplianceSchemeRequest = "An unexpected error occurred while processing compliance scheme request in {MethodName}";
         // Used in controller when an unexpected error occurs during processing.
 
+        // Log Messages for Reprocess Exporter Registration
+        public const string ErrorOccuredWhileRetrievingRepoExpoRegFees = "An error occurred while retrieving Reprocess Exporter Registration fees in {MethodName} request";
+        // Used in service when an error occurs during the retrieval of Reprocess Exporter Registration fees.
+
+        public const string UnexpectedErrorWhileRetrievingRepoExpoRegFees = "An unexpected error occurred while retrieving Reprocess Exporter Registration fees in {MethodName} request";
+        // Used in service when an unexpected error occurs during the retrieval of Reprocess Exporter Registration fees.
+
+        public const string UnexpectedErrorWhileProcessingRepoExpoRegistrationRequest = "An unexpected error occurred while processing RepoExpo registration request in {MethodName}";
+        // Used in controller when an unexpected error occurs during processing.
+
         // Log Messages for ReprocessorOrExporterAccreditation
         public const string ErrorOccuredWhileCalculatingReprocessorOrExporterAccreditationFees = "An error occurred while calculating ReprocessorOrExporter accreditation fees in {MethodName} request";
 
