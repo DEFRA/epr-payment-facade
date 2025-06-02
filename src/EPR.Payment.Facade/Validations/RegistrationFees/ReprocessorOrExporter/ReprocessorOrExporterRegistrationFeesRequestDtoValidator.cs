@@ -1,5 +1,4 @@
 ﻿using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Enums;
 using EPR.Payment.Facade.Validations.Common;
@@ -17,18 +16,18 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees.ReprocessorOrExporter
                      .Must(RegulatorValidationHelper.IsValidRegulator).WithMessage(ValidationMessages.RegulatorInvalid);
 
             RuleFor(x => x.SubmissionDate)
-                    .Cascade(CascadeMode.Stop)
-                    .MustBeValidSubmissionDate();
-
-            RuleFor(x => x.SubmissionDate)
-            .NotEmpty().WithMessage(ValidationMessages.ReprocessorExporterDateRequired)
-                .LessThan(DateTime.UtcNow).WithMessage(ValidationMessages.RexExFutureResubmissionDate);
-
-            RuleFor(x => x.MaterialType)
-                .NotEmpty().WithMessage(ValidationMessages.MaterialTypeInvalid);
+                .Cascade(CascadeMode.Stop)
+                .MustBeValidSubmissionDate();
 
             RuleFor(x => x.RequestorType)
-                .NotEmpty().WithMessage(ValidationMessages.RequestorTypeInvalid);
+               .NotNull().WithMessage(ValidationMessages.EmptyRequestorType)
+               .IsInEnum()
+               .WithMessage(ValidationMessages.InvalidRequestorType + string.Join(",", Enum.GetNames(typeof(RequestorTypes))));
+
+            RuleFor(x => x.MaterialType)
+               .NotNull().WithMessage(ValidationMessages.EmptyMaterialType)
+               .IsInEnum()
+               .WithMessage(ValidationMessages.InvalidMaterialType + string.Join(",", Enum.GetNames(typeof(MaterialTypes))));
         }
     }
 }
