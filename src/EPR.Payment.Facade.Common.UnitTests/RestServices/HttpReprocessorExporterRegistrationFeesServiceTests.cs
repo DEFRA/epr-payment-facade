@@ -112,7 +112,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             HttpReprocessorExporterRegistrationFeesService serviceUnderTest = new HttpReprocessorExporterRegistrationFeesService(httpClient, httpContextAccessor, configMonitorMock.Object);
 
             // Act
-            ReprocessorOrExporterRegistrationFeesResponseDto result = await serviceUnderTest.CalculateFeesAsync(_requestDto, cancellationTokenSource.Token);
+            ReprocessorOrExporterRegistrationFeesResponseDto? result = await serviceUnderTest.CalculateFeesAsync(_requestDto, cancellationTokenSource.Token);
 
             // Assert
             result.Should().BeEquivalentTo(_responseDto);
@@ -192,7 +192,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Act
             Func<Task> act = async () =>
             {
-                ReprocessorOrExporterRegistrationFeesResponseDto response = await serviceUnderTest.CalculateFeesAsync(_requestDto, cancellationTokenSource.Token);
+                ReprocessorOrExporterRegistrationFeesResponseDto? response = await serviceUnderTest.CalculateFeesAsync(_requestDto, cancellationTokenSource.Token);
                 // Manually check for null content to simulate the exception throwing
                 if (response == null)
                 {
