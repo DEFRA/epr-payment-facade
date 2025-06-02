@@ -1,7 +1,14 @@
-﻿using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
+﻿using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Constants;
+using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ReProcessorOrExporter;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ReProcessorOrExporter;
 using EPR.Payment.Facade.Common.Enums;
+using EPR.Payment.Facade.Common.Exceptions;
+using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.RegistrationFees.ReProcessorOrExporter;
+using FluentAssertions.Execution;
+using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -9,130 +16,227 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
+using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter.Interfaces;
+using System.Threading;
 
 namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
 {
-
     [TestClass]
     public class ReprocessorOrExporterRegistrationFeesControllerTests
     {
-        private Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> _mockValidator;
-        private Mock<ILogger<ReprocessorOrExporterRegistrationFeesController>> _mockLogger;
-        private ReprocessorOrExporterRegistrationFeesController _controller;
-
-        [TestInitialize]
-        public void Setup()
+        [TestMethod, AutoMoqData]
+        public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
+            [Frozen] Mock<ILogger<ReprocessorOrExporterRegistrationFeesController>> loggerMock,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validator)
         {
-            _mockValidator = new Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>>();
-            _mockLogger = new Mock<ILogger<ReprocessorOrExporterRegistrationFeesController>>();
-
-            _controller = new ReprocessorOrExporterRegistrationFeesController(
-            _mockLogger.Object,
-            _mockValidator.Object
+            // Act
+            var controller = new ReprocessorOrExporterRegistrationFeesController(
+                reprocessorExpoRegFeesServiceeMock.Object,
+                loggerMock.Object,
+                validator.Object
             );
 
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                    new Claim(ClaimTypes.Name, "testuser")
-                }, "mock"));
-
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = user }
-            };
+            // Assert
+            controller.Should().NotBeNull();
+            controller.Should().BeAssignableTo<ReprocessorOrExporterRegistrationFeesController>();
         }
 
-        [TestMethod]
-        public async Task CalculateFeesAsync_ReturnsBadRequest_WhenValidationFails()
+        [TestMethod, AutoMoqData]
+        public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validator)
         {
-            // Arrange
-            _mockValidator.Setup(v => v.Validate(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>()))
-            .Returns(new ValidationResult(new List<ValidationFailure>
-            {
-                    new ValidationFailure("MaterialType", "MaterialType is required")
-            }));
-
-            var request = new ReprocessorOrExporterRegistrationFeesRequestDto
-            {
-                RequestorType = RequestorTypes.Reprocessors,
-                Regulator = "GB-ENG",
-                SubmissionDate = DateTime.UtcNow,
-                MaterialType = null,
-            };
-
             // Act
-            var result = await _controller.CalculateFeesAsync(request, CancellationToken.None);
+            Action act = () => new ReprocessorOrExporterRegistrationFeesController(
+                reprocessorExpoRegFeesServiceeMock.Object,
+                null!,
+                validator.Object
+            );
 
             // Assert
-            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            var problem = (ProblemDetails)((BadRequestObjectResult)result).Value;
-            Assert.IsTrue(problem.Detail.Contains("MaterialType is required"));
+            act.Should().Throw<ArgumentNullException>()
+                .WithParameterName("logger");
         }
 
-        [TestMethod]
-        public async Task CalculateFeesAsync_ReturnsOk_WhenRequestIsValid()
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ValidRequest_ReturnsOk(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validatorMock,
+            [Greedy] ReprocessorOrExporterRegistrationFeesController controller,
+            [Frozen] ReprocessorOrExporterRegistrationFeesRequestDto request,
+            [Frozen] ReprocessorOrExporterRegistrationFeesResponseDto expectedResponse)
         {
             // Arrange
-            _mockValidator.Setup(v => v.Validate(It.IsAny<ReprocessorOrExporterRegistrationFeesRequestDto>()))
+            var validationResult = new ValidationResult();
+            validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+            reprocessorExpoRegFeesServiceeMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<OkObjectResult>();
+                var okResult = result as OkObjectResult;
+                okResult?.Value.Should().BeEquivalentTo(expectedResponse);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_InvalidRequest_ReturnsBadRequest(
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validatorMock,
+            [Greedy] ReprocessorOrExporterRegistrationFeesController controller,
+            [Frozen] ReprocessorOrExporterRegistrationFeesRequestDto request)
+        {
+            // Arrange
+            var validationFailures = new List<ValidationFailure>
+            {
+                new ValidationFailure("MemberType", ValidationMessages.InvalidMemberType)
+            };
+            var validationResult = new ValidationResult(validationFailures);
+            validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+
+            // Act
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                var problemDetails = badRequestResult?.Value as ProblemDetails;
+
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Title.Should().Be("Validation Error");
+                problemDetails?.Detail.Should().Contain(ValidationMessages.InvalidMemberType);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ServiceThrowsValidationException_ReturnsBadRequest(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validatorMock,
+            [Greedy] ReprocessorOrExporterRegistrationFeesController controller,
+            [Frozen] ReprocessorOrExporterRegistrationFeesRequestDto request)
+        {
+            // Arrange
+            var validationResult = new ValidationResult();
+            validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+
+            var validationException = new ValidationException("Validation error");
+            reprocessorExpoRegFeesServiceeMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(validationException);
+
+            // Act
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                var problemDetails = badRequestResult?.Value as ProblemDetails;
+
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Title.Should().Be("Validation Error");
+                problemDetails?.Detail.Should().Be(validationException.Message);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ServiceThrowsServiceException_ReturnsInternalServerError(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validatorMock,
+            [Greedy] ReprocessorOrExporterRegistrationFeesController controller,
+            [Frozen] ReprocessorOrExporterRegistrationFeesRequestDto request)
+        {
+            // Arrange
+            var validationResult = new ValidationResult();
+            validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+
+            var serviceException = new ServiceException(ExceptionMessages.ErroreproExpoRegServiceFee);
+            reprocessorExpoRegFeesServiceeMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(serviceException);
+
+            // Act
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<ObjectResult>();
+                var objectResult = result as ObjectResult;
+                var problemDetails = objectResult?.Value as ProblemDetails;
+
+                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Title.Should().Be("Service Error");
+                problemDetails?.Detail.Should().Be(ExceptionMessages.ErroreproExpoRegServiceFee);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ServiceThrowsException_ReturnsInternalServerError(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> reprocessorExpoRegFeesServiceeMock,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validatorMock,
+            [Greedy] ReprocessorOrExporterRegistrationFeesController controller,
+            [Frozen] ReprocessorOrExporterRegistrationFeesRequestDto request)
+        {
+            // Arrange
+            var validationResult = new ValidationResult();
+            validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
+
+            var exception = new Exception("Unexpected error");
+            reprocessorExpoRegFeesServiceeMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<ObjectResult>();
+                var objectResult = result as ObjectResult;
+                var problemDetails = objectResult?.Value as ProblemDetails;
+
+                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+                problemDetails.Should().NotBeNull();
+                problemDetails?.Title.Should().Be("Unexpected Error");
+                problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErroreproExpoRegServiceFees);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ReturnsNotFound_WhenServiceReturnsNull(
+            [Frozen] Mock<IReprocessorExporterRegistrationFeesService> _mockService,
+            [Frozen] Mock<IValidator<ReprocessorOrExporterRegistrationFeesRequestDto>> validatorMock,
+            [Greedy] ReprocessorOrExporterRegistrationFeesController controller,
+            [Frozen] ReprocessorOrExporterRegistrationFeesRequestDto request)
+        {
+
+            // Setup
+            validatorMock
+                .Setup(v => v.Validate(request))
                 .Returns(new ValidationResult());
-
-            var request = new ReprocessorOrExporterRegistrationFeesRequestDto
-            {
-                RequestorType = RequestorTypes.Reprocessors,
-                Regulator = "GB-ENG",
-                SubmissionDate = DateTime.UtcNow,
-                MaterialType = MaterialTypes.Plastic
-            };
+            _mockService
+                .Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ReprocessorOrExporterRegistrationFeesResponseDto?)null);
 
             // Act
-            var result = await _controller.CalculateFeesAsync(request, CancellationToken.None);
+            IActionResult result = await controller.CalculateFeesAsync(request, CancellationToken.None);
 
-            // Assert
-            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            var response = (ReprocessorOrExporterRegistrationFeesResponseDto)((OkObjectResult)result).Value;
-            Assert.AreEqual("Plastic", response.MaterialType);
-            Assert.AreEqual(100.0m, response.RegistrationFee);
-            Assert.IsNull(response.PreviousPaymentDetail);
+             // Assert
+            result.Should().BeOfType<NotFoundObjectResult>();
+            var notFoundResult = result as NotFoundObjectResult;
+            notFoundResult!.Value.Should().BeOfType<ProblemDetails>();
+            var problem = notFoundResult.Value as ProblemDetails;
+            problem!.Title.Should().Be("Not Found Error");
+            problem.Detail.Should().Be("Reprocessor/Exporter Registration fees data not found.");
+            problem.Status.Should().Be(StatusCodes.Status404NotFound);
         }
-
-
-        [TestMethod]
-        public void Should_Set_And_Get_ApplicationReferenceNumber_When_NotNull()
-        {
-            // Arrange
-            var expectedReference = "APP-123456";
-
-            // Act
-            var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
-            {
-                RequestorType = RequestorTypes.Exporters,
-                Regulator = "GB-ENG",
-                SubmissionDate = DateTime.UtcNow,
-                MaterialType = MaterialTypes.Plastic,
-                ApplicationReferenceNumber = expectedReference
-            };
-
-            // Assert
-            Assert.AreEqual(expectedReference, dto.ApplicationReferenceNumber);
-        }
-
-
-        [TestMethod]
-        public void Should_Handle_Null_ApplicationReferenceNumber()
-        {
-            // Act
-            var dto = new ReprocessorOrExporterRegistrationFeesRequestDto
-            {
-                RequestorType = RequestorTypes.Reprocessors,
-                Regulator = "GB-SCT",
-                SubmissionDate = DateTime.UtcNow,
-                MaterialType = MaterialTypes.Plastic,
-                ApplicationReferenceNumber = null
-            };
-
-            // Assert
-            Assert.IsNull(dto.ApplicationReferenceNumber);
-        }
-
     }
 }
