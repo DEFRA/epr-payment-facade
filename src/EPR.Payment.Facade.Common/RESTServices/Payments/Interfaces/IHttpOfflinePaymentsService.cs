@@ -6,5 +6,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
     public interface IHttpOfflinePaymentsService
     {
         Task InsertOfflinePaymentAsync(OfflinePaymentRequestDto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default);
+        Task InsertOfflinePaymentAsync(OfflinePaymentRequestV2Dto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default);
     }
 }

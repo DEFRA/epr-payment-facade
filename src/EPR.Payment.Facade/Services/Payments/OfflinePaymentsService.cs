@@ -22,5 +22,13 @@ namespace EPR.Payment.Facade.Services.Payments
 
             await _httpOfflinePaymentsService.InsertOfflinePaymentAsync(request, cancellationToken);
         }
+
+        public async Task OfflinePaymentAsync(OfflinePaymentRequestV2Dto request, CancellationToken cancellationToken = default)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorResubmissionFees);
+
+            await _httpOfflinePaymentsService.InsertOfflinePaymentAsync(request, cancellationToken);
+        }
     }
 }

@@ -36,5 +36,18 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                 throw new ServiceException(ExceptionMessages.ErrorInsertingOfflinePayment, ex);
             }
         }
+
+        public async Task InsertOfflinePaymentAsync(OfflinePaymentRequestV2Dto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)
+        {
+            var url = UrlConstants.OfflinePaymentsInsertV2;
+            try
+            {
+                await Post<Guid>(url, offlinePaymentStatusInsertRequest, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new ServiceException(ExceptionMessages.ErrorInsertingOfflinePayment, ex);
+            }
+        }
     }
 }
