@@ -1,6 +1,9 @@
-﻿using EPR.Payment.Facade.Common.Configuration;
+﻿using System.Diagnostics.CodeAnalysis;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.HttpHandlers;
+using EPR.Payment.Facade.Common.RESTServices.AccreditationFees;
+using EPR.Payment.Facade.Common.RESTServices.AccreditationFees.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
@@ -13,10 +16,7 @@ using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
-using EPR.Payment.Facade.Services.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
-using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Helpers
 {
@@ -39,6 +39,7 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
+            services.Configure<Service>("RexExpoAccreditationFeesService", configuration.GetSection("Services:RexExpoAccreditationFeesService"));
 
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
@@ -123,6 +124,16 @@ namespace EPR.Payment.Facade.Helpers
                     ValidateServiceConfiguration(config, ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
+
+
+            services.AddHttpClient<IHttpAccreditationFeesCalculatorService, HttpAccreditationFeesCalculatorService>()
+               .AddHttpMessageHandler<TokenAuthorizationHandler>()
+               .ConfigureHttpClient((sp, client) =>
+               {
+                   var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.RexExpoAccreditationFeesService;
+                   ValidateServiceConfiguration(config, ExceptionMessages.ReprocessorOrExporterAccreditationFeesServiceBaseUrlMissing);
+                   client.BaseAddress = new Uri(config.Url!);
+               });
 
             // Register additional services without TokenAuthorizationHandler
             services.AddTransient<IHttpGovPayService>(sp =>

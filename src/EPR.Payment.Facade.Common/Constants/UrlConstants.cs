@@ -26,5 +26,8 @@
 
         // Reprocessor , Exporter Registration fees service endpoints
         public const string CalculateRexExpoRegistrationFee = "reprocessororexporter/registration-fee";
+
+        // Accreditation fees service endpoints
+        public const string CalculateReprocessorOrExporterAccreditationFees = "reprocessorexporter/accreditation-fee";
     }
 }
