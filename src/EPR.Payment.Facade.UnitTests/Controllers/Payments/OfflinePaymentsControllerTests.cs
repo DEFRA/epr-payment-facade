@@ -4,7 +4,6 @@ using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.Payments;
-using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -35,9 +34,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             _offlinePaymentsServiceMock = new Mock<IOfflinePaymentsService>();
             _offlinePaymentRequestValidatorMock = _fixture.Freeze<Mock<IValidator<OfflinePaymentRequestDto>>>();
             _offlinePaymentRequestV2ValidatorMock = _fixture.Freeze<Mock<IValidator<OfflinePaymentRequestV2Dto>>>();
-            _loggerMock = _fixture.Freeze<Mock<ILogger<OfflinePaymentsController>>>();
-            _controller = _fixture.Create<OfflinePaymentsController>();
-           // _controller = new OfflinePaymentsController(_offlinePaymentsServiceMock.Object, _loggerMock.Object, _offlinePaymentRequestValidatorMock.Object, _offlinePaymentRequestV2ValidatorMock.Object);
+            _loggerMock = _fixture.Freeze<Mock<ILogger<OfflinePaymentsController>>>();           
+            _controller = new OfflinePaymentsController(_offlinePaymentsServiceMock.Object, _loggerMock.Object, _offlinePaymentRequestValidatorMock.Object, _offlinePaymentRequestV2ValidatorMock.Object);
             _cancellationToken = new CancellationToken();
         }
 
@@ -218,19 +216,23 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InsertOnlinePaymentV2_RequestValidationFails_ShouldReturnsBadRequestWithValidationErrorDetails(
-           [Frozen] OfflinePaymentRequestDto request)
+        public async Task InsertOnlinePaymentV2_RequestValidationFails_ShouldReturnsBadRequestWithValidationErrorDetails()
         {
             // Arrange
             var validationFailures = new List<ValidationFailure>
             {
                 new ValidationFailure("Reference", "Reference is required"),
                 new ValidationFailure("Regulator", "Regulator is required"),
-                new ValidationFailure("PaymentMethod", "The PaymentMethod field is required.")
-                
+                new ValidationFailure("PaymentMethod", "The PaymentMethod field is required.")                
             };
 
-            _offlinePaymentRequestValidatorMock.Setup(v => v.Validate(It.IsAny<OfflinePaymentRequestV2Dto>()))
+            var request = _fixture.Build<OfflinePaymentRequestV2Dto>().Create();
+            request.PaymentMethod = null;
+            request.Reference = string.Empty;
+            request.Regulator = string.Empty;
+
+
+            _offlinePaymentRequestV2ValidatorMock.Setup(v => v.Validate(It.IsAny<OfflinePaymentRequestV2Dto>()))
                 .Returns(new ValidationResult(validationFailures));
 
             // Act
@@ -241,7 +243,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             {
                 var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Which;
                 var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Which;
-                problemDetails.Detail.Should().Be("Reference is required; Regulator is required;The PaymentMethod field is required.");
+                problemDetails.Detail.Should().Be("Reference is required; Regulator is required; The PaymentMethod field is required.");
             }
         }
 

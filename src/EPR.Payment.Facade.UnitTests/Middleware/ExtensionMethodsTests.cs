@@ -48,6 +48,9 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
         { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.Url)}", "https://offline-payment.service" },
         { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.EndPointName)}", "offline-payment" },
         { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "offline-paymentHttpClient" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.Url)}", "https://offline-payment.service" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.EndPointName)}", "api/v2/offline-payment" },
+        { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.HttpClientName)}", "offline-paymentHttpClient" },
         { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.Url)}", "https://govpay.service" },
         { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.EndPointName)}", "govpay" },
         { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.GovPayService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
@@ -84,6 +87,11 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 offlinePaymentServiceConfig.Url.Should().Be("https://offline-payment.service");
                 offlinePaymentServiceConfig.EndPointName.Should().Be("offline-payment");
 
+                var offlinePaymentServiceV2Config = optionsMonitor.Get("OfflinePaymentServiceV2");
+                offlinePaymentServiceV2Config.Should().NotBeNull();
+                offlinePaymentServiceV2Config.Url.Should().Be("https://offline-payment.service");
+                offlinePaymentServiceV2Config.EndPointName.Should().Be("api/v2/offline-payment");
+
                 var govPayServiceConfig = optionsMonitor.Get("GovPayService");
                 govPayServiceConfig.Should().NotBeNull();
                 govPayServiceConfig.Url.Should().Be("https://govpay.service");
@@ -108,6 +116,10 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 var httpOfflinePaymentsService = serviceProvider?.GetService<IHttpOfflinePaymentsService>();
                 httpOfflinePaymentsService.Should().NotBeNull();
                 httpOfflinePaymentsService.Should().BeOfType<HttpOfflinePaymentsService>();
+
+                var httpOfflinePaymentsServiceV2 = serviceProvider?.GetService<IHttpOfflinePaymentsServiceV2>();
+                httpOfflinePaymentsServiceV2.Should().NotBeNull();
+                httpOfflinePaymentsServiceV2.Should().BeOfType<HttpOfflinePaymentsServiceV2>();
 
                 var httpGovPayService = serviceProvider?.GetService<IHttpGovPayService>();
                 httpGovPayService.Should().NotBeNull();
@@ -183,7 +195,11 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.Url)}", null! },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.EndPointName)}", "offline-payment" },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.Url)}", "https://offline-payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.EndPointName)}", "api/v2/offline-payment" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.HttpClientName)}", "offline-paymentHttpClient" },
+
             };
 
             var configurationBuilder = new ConfigurationBuilder()
@@ -192,6 +208,37 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
 
             // Act
             Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>();
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("OfflinePaymentService BaseUrl configuration is missing Url configuration is missing.");
+        }
+
+        [TestMethod]
+        public void AddFacadeOfflinePaymentDependencies_WithMissingV2UrlConfiguration_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var configurationData = new Dictionary<string, string>
+            {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.Url)}", "https://offline-payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.EndPointName)}", "offline-payment" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.Url)}", null! },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.EndPointName)}", "api/v2/offline-payment" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.HttpClientName)}", "offline-paymentHttpClient" },
+
+            };
+
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddInMemoryCollection(configurationData!)
+                .Build();
+
+            // Act
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsServiceV2>();
 
             // Assert
             act.Should().Throw<InvalidOperationException>()
@@ -210,7 +257,10 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.Url)}", "https://offline-payment.service" },
                 { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.EndPointName)}", null! },
-                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" }
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.Url)}", "https://offline-payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.EndPointName)}", "HttpClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.HttpClientName)}", "HttpClient" },
             };
 
             var configurationBuilder = new ConfigurationBuilder()
@@ -219,6 +269,36 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
 
             // Act
             Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsService>();
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("OfflinePaymentService BaseUrl configuration is missing EndPointName configuration is missing.");
+        }
+
+        [TestMethod]
+        public void AddFacadeOfflinePaymentsDependencies_WithMissingV2EndPointNameConfiguration_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var configurationData = new Dictionary<string, string>
+            {
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.ProducerFeesService)}:{nameof(Service.ServiceClientId)}", "ServiceClientId" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.Url)}", "https://payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.EndPointName)}", "payment" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.PaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.Url)}", "https://offline-payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.EndPointName)}", "offline-payment" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentService)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.Url)}", "https://offline-payment.service" },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.EndPointName)}", null! },
+                { $"{ServicesConfiguration.SectionName}:{nameof(ServicesConfiguration.OfflinePaymentServiceV2)}:{nameof(Service.HttpClientName)}", "HttpClient" },
+            };
+
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddInMemoryCollection(configurationData!)
+                .Build();
+
+            // Act
+            Action act = () => _services?.AddFacadeDependencies(configurationBuilder).BuildServiceProvider().GetService<IHttpOfflinePaymentsServiceV2>();
 
             // Assert
             act.Should().Throw<InvalidOperationException>()

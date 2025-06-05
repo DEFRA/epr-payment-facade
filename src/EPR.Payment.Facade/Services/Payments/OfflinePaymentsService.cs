@@ -8,11 +8,14 @@ namespace EPR.Payment.Facade.Services.Payments
     public class OfflinePaymentsService : IOfflinePaymentsService
     {
         private readonly IHttpOfflinePaymentsService _httpOfflinePaymentsService;
+        private readonly IHttpOfflinePaymentsServiceV2 _httpOfflinePaymentsServiceV2;
 
         public OfflinePaymentsService(
-            IHttpOfflinePaymentsService httpOfflinePaymentsService)
+            IHttpOfflinePaymentsService httpOfflinePaymentsService, IHttpOfflinePaymentsServiceV2 httpOfflinePaymentsServiceV2)
         {
             _httpOfflinePaymentsService = httpOfflinePaymentsService ?? throw new ArgumentNullException(nameof(httpOfflinePaymentsService));
+            _httpOfflinePaymentsServiceV2 = httpOfflinePaymentsServiceV2 ?? throw new ArgumentNullException(nameof(httpOfflinePaymentsServiceV2)); ;
+
         }
 
         public async Task OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default)
@@ -28,7 +31,7 @@ namespace EPR.Payment.Facade.Services.Payments
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorResubmissionFees);
 
-            await _httpOfflinePaymentsService.InsertOfflinePaymentAsync(request, cancellationToken);
+            await _httpOfflinePaymentsServiceV2.InsertOfflinePaymentAsync(request, cancellationToken);
         }
     }
 }

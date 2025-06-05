@@ -8,23 +8,23 @@ using Microsoft.Extensions.Options;
 
 namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
-    public class HttpOfflinePaymentsService : BaseHttpService, IHttpOfflinePaymentsService
+    public class HttpOfflinePaymentsServiceV2 : BaseHttpService, IHttpOfflinePaymentsServiceV2
     {
-        public HttpOfflinePaymentsService(
+        public HttpOfflinePaymentsServiceV2(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
             IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   configMonitor.Get("OfflinePaymentService").Url
+                   configMonitor.Get("OfflinePaymentServiceV2").Url
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceBaseUrlMissing),
-                   configMonitor.Get("OfflinePaymentService").EndPointName
+                   configMonitor.Get("OfflinePaymentServiceV2").EndPointName
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceEndPointNameMissing))
         {
-            var config = configMonitor.Get("OfflinePaymentService");
-        }
+            var config = configMonitor.Get("OfflinePaymentServiceV2");
+        }       
 
-        public async Task InsertOfflinePaymentAsync(OfflinePaymentRequestDto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)
+        public async Task InsertOfflinePaymentAsync(OfflinePaymentRequestV2Dto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.OfflinePaymentsInsert;
             try

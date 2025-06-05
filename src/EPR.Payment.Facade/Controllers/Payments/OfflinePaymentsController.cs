@@ -60,7 +60,7 @@ namespace EPR.Payment.Facade.Controllers.Payments{
             return await ExecuteWithErrorHanding(() => _offlinePaymentsService.OfflinePaymentAsync(offlinePaymentRequestDto, cancellationToken));
         }
 
-        [ApiExplorerSettings(GroupName = "v1")]
+        [ApiExplorerSettings(GroupName = "v2")]
         [HttpPost("v2/offline-payments")]
         [ProducesResponseType(StatusCodes.Status204NoContent, Type = typeof(NoContentResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
@@ -73,9 +73,9 @@ namespace EPR.Payment.Facade.Controllers.Payments{
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ContentResult))]
         [FeatureGate("EnableOfflinePayment")]
-        public async Task<IActionResult> OfflinePaymentV2([FromBody] OfflinePaymentRequestDto offlinePaymentRequestV2Dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> OfflinePaymentV2([FromBody] OfflinePaymentRequestV2Dto offlinePaymentRequestV2Dto, CancellationToken cancellationToken)
         {
-            var validatorResult = _offlinePaymentRequestValidator.Validate(offlinePaymentRequestV2Dto);
+            var validatorResult = _offlinePaymentRequestV2Validator.Validate(offlinePaymentRequestV2Dto);
 
             if (!validatorResult.IsValid)
             {

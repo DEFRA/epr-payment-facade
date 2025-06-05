@@ -1,5 +1,4 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 
 namespace EPR.Payment.Facade.Services.Payments.Interfaces
 {

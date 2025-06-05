@@ -8,8 +8,7 @@
         public const string GetOnlinePaymentDetails = "online-payments/{externalPaymentId}";
 
         // Payments service endpoints
-        public const string OfflinePaymentsInsert = "offline-payments";
-        public const string OfflinePaymentsInsertV2 = "v2/offline-payments";
+        public const string OfflinePaymentsInsert = "offline-payments";        
 
         // GovPay service endpoints
         public const string GovPayInitiatePayment = "payments";

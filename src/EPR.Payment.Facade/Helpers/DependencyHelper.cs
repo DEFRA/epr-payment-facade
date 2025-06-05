@@ -34,6 +34,7 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
             services.Configure<Service>("PaymentService", configuration.GetSection("Services:PaymentService"));
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
+            services.Configure<Service>("OfflinePaymentServiceV2", configuration.GetSection("Services:OfflinePaymentServiceV2"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
 
@@ -108,6 +109,15 @@ namespace EPR.Payment.Facade.Helpers
                 .ConfigureHttpClient((sp, client) =>
                 {
                     var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OfflinePaymentService;
+                    ValidateServiceConfiguration(config, ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
+
+            services.AddHttpClient<IHttpOfflinePaymentsServiceV2, HttpOfflinePaymentsServiceV2>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OfflinePaymentServiceV2;
                     ValidateServiceConfiguration(config, ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
