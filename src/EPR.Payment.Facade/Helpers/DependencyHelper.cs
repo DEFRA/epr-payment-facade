@@ -36,6 +36,7 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
             services.Configure<Service>("RexExpoRegistrationFeesService", configuration.GetSection("Services:RexExpoRegistrationFeesService"));
             services.Configure<Service>("PaymentService", configuration.GetSection("Services:PaymentService"));
+            services.Configure<Service>("OnlineV2PaymentService", configuration.GetSection("Services:OnlineV2PaymentService"));
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
@@ -115,6 +116,15 @@ namespace EPR.Payment.Facade.Helpers
                     ValidateServiceConfiguration(config, ExceptionMessages.OnlinePaymentServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
+
+            services.AddHttpClient<IHttpOnlinePaymentsV2Service, HttpOnlinePaymentsV2Service>()
+               .AddHttpMessageHandler<TokenAuthorizationHandler>()
+               .ConfigureHttpClient((sp, client) =>
+               {
+                   var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OnlineV2PaymentService;
+                   ValidateServiceConfiguration(config, ExceptionMessages.OnlinePaymentServiceBaseUrlMissing);
+                   client.BaseAddress = new Uri(config.Url!);
+               });            
 
             services.AddHttpClient<IHttpOfflinePaymentsService, HttpOfflinePaymentsService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()

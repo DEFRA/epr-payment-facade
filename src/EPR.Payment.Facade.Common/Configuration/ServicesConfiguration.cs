@@ -8,7 +8,10 @@ namespace EPR.Payment.Facade.Common.Configuration
         public static string SectionName => "Services";
 
         public Service PaymentService { get; set; } = new Service();
-        
+
+        public Service OnlineV2PaymentService { get; set; } = new Service();
+
+
         public Service OfflinePaymentService { get; set; } = new Service();
         
         public Service GovPayService { get; set; } = new Service();
