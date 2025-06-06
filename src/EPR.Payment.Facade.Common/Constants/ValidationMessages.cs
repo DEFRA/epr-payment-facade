@@ -18,9 +18,11 @@
         public const string RegulatorNotENG = "Online payment is not supported for this regulator.";
         public const string DescriptionRequired = "The Description field is required.";
         public const string InvalidDescription = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee'.";
+        public const string InvalidDescriptionV2 = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee' or 'Accreditation fee'.";
         public const string InvalidRegulatorOffline = "Regulator is invalid; acceptable values are 'GB-ENG', 'GB-SCT', 'GB-WLS' and 'GB-NIR'.";
         public const string OfflineReferenceRequired = "The Reference field is required.";
         public const string OfflineRegulatorRequired = "The Regulator field is required.";
+        public const string OfflinePaymentMethodRequired = "The PaymentMethod field is required.";
 
         // Common Validation Messages
         public const string RegulatorRequired = "Regulator is required.";
@@ -31,7 +33,6 @@
         public const string InvalidSubmissionDate = "Submission date is mandatory and must be a valid date.";
         public const string FutureSubmissionDate = "Submission date cannot be a date in the future.";
         public const string SubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
-
 
         // Compliance Scheme Resubmission Fee Validation Messages
         public const string ResubmissionDateRequired = "Resubmission date is mandatory and must be a valid date.";
