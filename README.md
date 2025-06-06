@@ -45,12 +45,31 @@ appsettings.Development.json
   },
   "AllowedHosts": "*",
   "FeatureManagement": {
-    "EnablePaymentsFeature": true,
+    "EnableOnlinePaymentsFeature": true,
     "EnablePaymentInitiation": true,
     "EnablePaymentCompletion": true,
     "EnableProducersFeesFeature": true,
     "EnableProducersFeesCalculation": true,
-    "EnableProducerResubmissionFee": true
+    "EnableProducerResubmissionFee": true,
+    "EnableComplianceSchemeFeature": true,
+    "EnableComplianceSchemeFees": true,
+    "EnableHomePage": true,
+    "EnableProducersResubmissionFeesFeature": true,
+    "EnableResubmissionComplianceSchemeFeature": true,
+    "EnableResubmissionFeesCalculation": true,
+    "EnableOfflinePaymentsFeature": true,
+    "EnableOfflinePayment": true,
+    "EnableOfflinePaymentV2": true,
+    "EnableAuthenticationFeature": false,
+    "EnableReprocessorOrExporterRegistrationFeesFeature": true,
+    "EnableReprocessorOrExporterRegistrationFeesCalculation": true
+  },
+   "AzureAdB2C": {
+    "Instance": "*****",
+    "Domain": "*****",
+    "ClientId": "*****",
+    "SignUpSignInPolicyId": "*****",
+    "Scopes": "*****",
   },
   "Services": {
     "PaymentServiceHealthCheck": {
@@ -68,10 +87,40 @@ appsettings.Development.json
       "BearerToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "Retries": 3
     },
+    "ProducerFeesService": {
+      "Url": "https://localhost:7107/",
+      "EndPointName": "api/v1",
+      "HttpClientName": "producer_fees_service_client",
+      "ServiceClientId": "********-****-****-****-************"
+    },
+    "ComplianceSchemeFeesService": {
+      "Url": "https://localhost:7107/",
+      "EndPointName": "api/v1",
+      "HttpClientName": "compliance_scheme_fees_service_client",
+      "ServiceClientId": "********-****-****-****-************"
+    },
+    "OfflinePaymentService": {
+      "Url": "https://localhost:7107/",
+      "EndPointName": "api/v1",
+      "HttpClientName": "offline_payment_service_client",
+       "ServiceClientId": "********-****-****-****-************"
+    },
+    "OfflinePaymentServiceV2": {
+      "Url": "https://localhost:7107/",
+      "EndPointName": "api/v2",
+      "HttpClientName": "offline_payment_service_client",
+       "ServiceClientId": "********-****-****-****-************"
+    },
     "RegistrationFeesService": {
       "Url": "https://localhost:7107/",
       "EndPointName": "api/v1",
       "HttpClientName": "registration_fees_service_client"
+    },
+     "ProducerResubmissionFeesService": {
+      "Url": "https://localhost:7107/",
+      "EndPointName": "api/v1",
+      "HttpClientName": "producer_resubmission_fees_service_client",
+       "ServiceClientId": "********-****-****-****-************"
     }
   },
   "PaymentServiceOptions": {
