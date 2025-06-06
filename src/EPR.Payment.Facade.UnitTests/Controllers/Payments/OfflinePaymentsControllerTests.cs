@@ -132,7 +132,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var request = _fixture.Build<OfflinePaymentRequestDto>().Create();
 
             //Act
-            var result = await _controller.OfflinePayment(request, _cancellationToken);
+            IActionResult result = await _controller.OfflinePayment(request, _cancellationToken);
 
             //Assert
             result.Should().BeOfType<NoContentResult>();
@@ -153,7 +153,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 .Returns(new ValidationResult(validationFailures));
 
             // Act
-            var result = await _controller.OfflinePayment(request, CancellationToken.None);
+            IActionResult result = await _controller.OfflinePayment(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -173,7 +173,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                                .ThrowsAsync(new Exception("Test Exception"));
 
             // Act
-            var result = await _controller.OfflinePayment(request, _cancellationToken);
+            IActionResult result = await _controller.OfflinePayment(request, _cancellationToken);
 
             // Assert
             result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -190,7 +190,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             _offlinePaymentsServiceMock.Setup(s => s.OfflinePaymentAsync(It.IsAny<OfflinePaymentRequestDto>(), _cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await _controller.OfflinePayment(request, _cancellationToken);
+            IActionResult result = await _controller.OfflinePayment(request, _cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -209,7 +209,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var request = _fixture.Build<OfflinePaymentRequestV2Dto>().Create();
 
             //Act
-            var result = await _controller.OfflinePaymentV2(request, _cancellationToken);
+            IActionResult result = await _controller.OfflinePaymentV2(request, _cancellationToken);
 
             //Assert
             result.Should().BeOfType<NoContentResult>();
@@ -236,7 +236,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 .Returns(new ValidationResult(validationFailures));
 
             // Act
-            var result = await _controller.OfflinePaymentV2(request, CancellationToken.None);
+            IActionResult result = await _controller.OfflinePaymentV2(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -256,7 +256,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                                .ThrowsAsync(new Exception("Test Exception"));
 
             // Act
-            var result = await _controller.OfflinePaymentV2(request, _cancellationToken);
+            IActionResult result = await _controller.OfflinePaymentV2(request, _cancellationToken);
 
             // Assert
             result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
@@ -273,7 +273,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             _offlinePaymentsServiceMock.Setup(s => s.OfflinePaymentAsync(It.IsAny<OfflinePaymentRequestV2Dto>(), _cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await _controller.OfflinePaymentV2(request, _cancellationToken);
+            IActionResult result = await _controller.OfflinePaymentV2(request, _cancellationToken);
 
             // Assert
             using (new AssertionScope())

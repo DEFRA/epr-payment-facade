@@ -84,6 +84,12 @@ appsettings.Development.json
             "HttpClientName": "offline_payment_service_client",
             "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
         },
+        "OfflinePaymentServiceV2": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "api/v2",
+            "HttpClientName": "offline_payment_service_v2_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        },
         "RegistrationFeesService": {
             "Url": "https://localhost:7107/",
             "EndPointName": "api/v1",
