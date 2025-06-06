@@ -36,103 +36,106 @@ appsettings.Development.json
 
 ```
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning",
-      "Microsoft.FeatureManagement": "Information"
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+        }
+    },
+    "AzureAdB2C": {
+        "Instance": "https://xxxxxxx.b2clogin.com",
+        "Domain": "xxxxxxx.onmicrosoft.com",
+        "ClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx",
+        "SignUpSignInPolicyId": "B2C_1A_EPR_SignUpSignIn",
+        "Scopes": "https://xxxxxxx.onmicrosoft.com/epr-dev-payments-facade/payment-service"
+    },
+    "Services": {
+        "PaymentServiceHealthCheck": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "health"
+        },
+        "PaymentService": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "v1",
+            "HttpClientName": "payment_service_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        },
+        "GovPayService": {
+            "Url": "https://publicapi.payments.service.gov.uk",
+            "EndPointName": "v1",
+            "BearerToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "ServiceClientId": "TEST"
+        },
+        "ProducerFeesService": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "api/v1",
+            "HttpClientName": "producer_fees_service_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        },
+        "ComplianceSchemeFeesService": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "api/v1",
+            "HttpClientName": "compliance_scheme_fees_service_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        },
+        "OfflinePaymentService": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "api/v1",
+            "HttpClientName": "offline_payment_service_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        },
+        "RegistrationFeesService": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "api/v1",
+            "HttpClientName": "registration_fees_service_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        },
+        "ProducerResubmissionFeesService": {
+            "Url": "https://devrwdwebwab425.azurewebsites.net/",
+            "EndPointName": "api/v1",
+            "HttpClientName": "producer_resubmission_fees_service_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        },
+        "RexExpoAccreditationFeesService": {
+            "Url": "https://localhost:7107/",
+            "EndPointName": "api/v1",
+            "HttpClientName": "rexexpo_accreditation_fees_service_client",
+            "ServiceClientId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+        }
+    },
+    "PaymentServiceOptions": {
+        "ReturnUrl": "https://localhost:7274/GovPayCallback",
+        "Description": "Static payment description",
+        "ErrorUrl": "https://localhost:7274/"
+    },
+    "AllowedOrigins": [
+        "https://localhost:7166",
+        "https://card.payments.service.gov.uk"
+    ],
+    "AllowedHosts": "*",
+    "FeatureManagement": {
+        "EnableOnlinePaymentsFeature": true,
+        "EnablePaymentInitiation": true,
+        "EnablePaymentCompletion": true,
+        "EnableProducersFeesFeature": true,
+        "EnableProducersFeesCalculation": true,
+        "EnableProducerResubmissionFee": true,
+        "EnableComplianceSchemeFeature": true,
+        "EnableComplianceSchemeFees": true,
+        "EnableHomePage": true,
+        "EnableProducersResubmissionFeesFeature": true,
+        "EnableResubmissionComplianceSchemeFeature": true,
+        "EnableResubmissionFeesCalculation": true,
+        "EnableOfflinePaymentsFeature": true,
+        "EnableOfflinePayment": true,
+        "EnableAuthenticationFeature": false,
+        "EnableReprocessorOrExporterRegistrationFeesFeature": true,
+        "EnableReprocessorOrExporterRegistrationFeesCalculation": true,
+        "EnableReprocessorOrExporterAccreditationFeesFeature": true,
+        "EnableReprocessorOrExporterAccreditationFeesCalculation": true
     }
-  },
-  "AllowedHosts": "*",
-  "FeatureManagement": {
-    "EnableOnlinePaymentsFeature": true,
-    "EnablePaymentInitiation": true,
-    "EnablePaymentCompletion": true,
-    "EnableProducersFeesFeature": true,
-    "EnableProducersFeesCalculation": true,
-    "EnableProducerResubmissionFee": true,
-    "EnableComplianceSchemeFeature": true,
-    "EnableComplianceSchemeFees": true,
-    "EnableHomePage": true,
-    "EnableProducersResubmissionFeesFeature": true,
-    "EnableResubmissionComplianceSchemeFeature": true,
-    "EnableResubmissionFeesCalculation": true,
-    "EnableOfflinePaymentsFeature": true,
-    "EnableOfflinePayment": true,
-    "EnableOfflinePaymentV2": true,
-    "EnableAuthenticationFeature": false,
-    "EnableReprocessorOrExporterRegistrationFeesFeature": true,
-    "EnableReprocessorOrExporterRegistrationFeesCalculation": true
-  },
-   "AzureAdB2C": {
-    "Instance": "*****",
-    "Domain": "*****",
-    "ClientId": "*****",
-    "SignUpSignInPolicyId": "*****",
-    "Scopes": "*****",
-  },
-  "Services": {
-    "PaymentServiceHealthCheck": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "health"
-    },
-    "PaymentService": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "api/v1",
-      "HttpClientName": "payment_service_client"
-    },
-    "GovPayService": {
-      "Url": "https://publicapi.payments.service.gov.uk",
-      "EndPointName": "v1",
-      "BearerToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-      "Retries": 3
-    },
-    "ProducerFeesService": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "api/v1",
-      "HttpClientName": "producer_fees_service_client",
-      "ServiceClientId": "********-****-****-****-************"
-    },
-    "ComplianceSchemeFeesService": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "api/v1",
-      "HttpClientName": "compliance_scheme_fees_service_client",
-      "ServiceClientId": "********-****-****-****-************"
-    },
-    "OfflinePaymentService": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "api/v1",
-      "HttpClientName": "offline_payment_service_client",
-       "ServiceClientId": "********-****-****-****-************"
-    },
-    "OfflinePaymentServiceV2": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "api/v2",
-      "HttpClientName": "offline_payment_service_client",
-       "ServiceClientId": "********-****-****-****-************"
-    },
-    "RegistrationFeesService": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "api/v1",
-      "HttpClientName": "registration_fees_service_client"
-    },
-     "ProducerResubmissionFeesService": {
-      "Url": "https://localhost:7107/",
-      "EndPointName": "api/v1",
-      "HttpClientName": "producer_resubmission_fees_service_client",
-       "ServiceClientId": "********-****-****-****-************"
-    }
-  },
-  "PaymentServiceOptions": {
-    "ReturnUrl": "https://localhost:7274/GovPayCallback",
-    "Description": "Registration fee",
-    "ErrorUrl": "https://localhost:7274/"
-  },
-  "AllowedOrigins": [
-    "https://localhost:7166",
-    "https://card.payments.service.gov.uk"
-  ]
 }
+
 ```
 
 ### Building the Application

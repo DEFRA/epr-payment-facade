@@ -1,20 +1,22 @@
-﻿using EPR.Payment.Facade.Common.Configuration;
+﻿using System.Diagnostics.CodeAnalysis;
+using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.HttpHandlers;
+using EPR.Payment.Facade.Common.RESTServices.AccreditationFees;
+using EPR.Payment.Facade.Common.RESTServices.AccreditationFees.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.Payments;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces;
-using EPR.Payment.Facade.Services.Payments;
-using EPR.Payment.Facade.Services.Payments.Interfaces;
 using Microsoft.Extensions.Options;
-using System.Diagnostics.CodeAnalysis;
 
 namespace EPR.Payment.Facade.Helpers
 {
@@ -32,11 +34,13 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("ProducerFeesService", configuration.GetSection("Services:ProducerFeesService"));
             services.Configure<Service>("ComplianceSchemeFeesService", configuration.GetSection("Services:ComplianceSchemeFeesService"));
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
+            services.Configure<Service>("RexExpoRegistrationFeesService", configuration.GetSection("Services:RexExpoRegistrationFeesService"));
             services.Configure<Service>("PaymentService", configuration.GetSection("Services:PaymentService"));
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
             services.Configure<Service>("OfflinePaymentServiceV2", configuration.GetSection("Services:OfflinePaymentServiceV2"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
+            services.Configure<Service>("RexExpoAccreditationFeesService", configuration.GetSection("Services:RexExpoAccreditationFeesService"));
 
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
@@ -94,6 +98,15 @@ namespace EPR.Payment.Facade.Helpers
                     ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
+            
+            services.AddHttpClient<IHttpReprocessorExporterRegistrationFeesService, HttpReprocessorExporterRegistrationFeesService>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.RexExpoRegistrationFeesService;
+                    ValidateServiceConfiguration(config, ExceptionMessages.RegistrationFeesServiceBaseUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
 
             services.AddHttpClient<IHttpOnlinePaymentsService, HttpOnlinePaymentsService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
@@ -112,6 +125,16 @@ namespace EPR.Payment.Facade.Helpers
                     ValidateServiceConfiguration(config, ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
+
+
+            services.AddHttpClient<IHttpAccreditationFeesCalculatorService, HttpAccreditationFeesCalculatorService>()
+               .AddHttpMessageHandler<TokenAuthorizationHandler>()
+               .ConfigureHttpClient((sp, client) =>
+               {
+                   var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.RexExpoAccreditationFeesService;
+                   ValidateServiceConfiguration(config, ExceptionMessages.ReprocessorOrExporterAccreditationFeesServiceBaseUrlMissing);
+                   client.BaseAddress = new Uri(config.Url!);
+               });
 
             services.AddHttpClient<IHttpOfflinePaymentsServiceV2, HttpOfflinePaymentsServiceV2>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
