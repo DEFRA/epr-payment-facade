@@ -72,7 +72,7 @@ namespace EPR.Payment.Facade.Controllers.Payments{
         [SwaggerResponse(StatusCodes.Status204NoContent, $"Returns No Content", typeof(NoContentResult))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ContentResult))]
-        [FeatureGate("EnableOfflinePayment")]
+        [FeatureGate("EnableOfflinePaymentV2")]
         public async Task<IActionResult> OfflinePaymentV2([FromBody] OfflinePaymentRequestV2Dto offlinePaymentRequestV2Dto, CancellationToken cancellationToken)
         {
             var validatorResult = _offlinePaymentRequestV2Validator.Validate(offlinePaymentRequestV2Dto);
