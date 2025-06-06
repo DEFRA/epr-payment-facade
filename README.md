@@ -128,6 +128,7 @@ appsettings.Development.json
         "EnableResubmissionFeesCalculation": true,
         "EnableOfflinePaymentsFeature": true,
         "EnableOfflinePayment": true,
+        "EnableOfflinePaymentV2": true,
         "EnableAuthenticationFeature": false,
         "EnableReprocessorOrExporterRegistrationFeesFeature": true,
         "EnableReprocessorOrExporterRegistrationFeesCalculation": true,
