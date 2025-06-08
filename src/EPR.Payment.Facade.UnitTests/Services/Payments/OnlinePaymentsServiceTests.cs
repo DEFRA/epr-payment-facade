@@ -6,6 +6,7 @@ using EPR.Payment.Common.Mapping;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
+using EPR.Payment.Facade.Common.Dtos.Request.Payments.V2Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
 using EPR.Payment.Facade.Common.Enums;
@@ -30,16 +31,19 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
         private IFixture _fixture = null!;
         private Mock<IHttpGovPayService> _httpGovPayServiceMock = null!;
         private Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock = null!;
+        private Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceMockV2 = null!;
         private Mock<ILogger<OnlinePaymentsService>> _loggerMock = null!;
         private Mock<IOptions<OnlinePaymentServiceOptions>> _optionsMock = null!;
         private OnlinePaymentsService _service = null!;
         private IMapper _mapper = null!;
         private Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoMock = null!;
+        private Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestV2DtoValidator = null!;
 
         [TestInitialize]
         public void TestInitialize()
         {
             _onlinePaymentRequestDtoMock = new Mock<IValidator<OnlinePaymentRequestDto>>();
+            _onlinePaymentRequestV2DtoValidator = new Mock<IValidator<OnlinePaymentRequestV2Dto>>();
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
             var throwingRecursionBehaviors = _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList();
             foreach (var behavior in throwingRecursionBehaviors)
@@ -50,6 +54,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
 
             _httpGovPayServiceMock = _fixture.Freeze<Mock<IHttpGovPayService>>();
             _httpOnlinePaymentsServiceMock = _fixture.Freeze<Mock<IHttpOnlinePaymentsService>>();
+            _httpOnlinePaymentsServiceMockV2 = _fixture.Freeze<Mock<IHttpOnlinePaymentsV2Service>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<OnlinePaymentsService>>>();
             _optionsMock = _fixture.Freeze<Mock<IOptions<OnlinePaymentServiceOptions>>>();
 
@@ -67,10 +72,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             _service = new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceMockV2.Object,
                 _loggerMock.Object,
                 _optionsMock.Object,
                 _mapper,
-                _onlinePaymentRequestDtoMock.Object);
+                _onlinePaymentRequestDtoMock.Object,
+                _onlinePaymentRequestV2DtoValidator.Object);
         }
 
         [TestMethod, AutoMoqData]
@@ -79,9 +86,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _paymentServiceOptionsMock,
             [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
             [Frozen] Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock,
+            [Frozen] Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceV2Mock,
             [Frozen] Mock<ILogger<OnlinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock,
-            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock)
+            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
         {
             // Arrange
             _paymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
@@ -90,10 +99,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             var service = new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceV2Mock.Object,
                 _loggerMock.Object,
                 _paymentServiceOptionsMock.Object,
                 _mapperMock.Object,
-                _onlinePaymentRequestDtoValidatorMock.Object);
+                _onlinePaymentRequestDtoValidatorMock.Object,
+                _onlinePaymentRequestDtoValidatorV2Mock.Object);
 
             // Assert
             service.Should().NotBeNull();
@@ -104,9 +115,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             [Frozen] OnlinePaymentServiceOptions _onlinePaymentServiceOptions,
             [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
             [Frozen] Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock,
+            [Frozen] Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceV2Mock,
             [Frozen] Mock<ILogger<OnlinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock,
-            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock)
+            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
         {
             // Arrange
             _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
@@ -115,10 +128,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             Action act = () => new OnlinePaymentsService(
                 null!,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceV2Mock.Object,
                 _loggerMock.Object,
                 _onlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
-                _onlinePaymentRequestDtoValidatorMock.Object);
+                _onlinePaymentRequestDtoValidatorMock.Object,
+                _onlinePaymentRequestDtoValidatorV2Mock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpGovPayService");
@@ -131,7 +146,9 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
             [Frozen] Mock<ILogger<OnlinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock,
-            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock)
+            [Frozen] Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceV2Mock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
         {
             // Arrange
             _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
@@ -140,23 +157,27 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             Action act = () => new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 null!,
+                _httpOnlinePaymentsServiceV2Mock.Object,
                 _loggerMock.Object,
                 _onlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
-                _onlinePaymentRequestDtoValidatorMock.Object);
+                _onlinePaymentRequestDtoValidatorMock.Object,
+                _onlinePaymentRequestDtoValidatorV2Mock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpOnlinePaymentsService");
         }
 
         [TestMethod, AutoMoqData]
-        public void Constructor_WhenLoggerIsNull_ShouldThrowArgumentNullException(
+        public void Constructor_WhenHttpV2OnlinePaymentsServiceIsNull_ShouldThrowArgumentNullException(
             [Frozen] OnlinePaymentServiceOptions _onlinePaymentServiceOptions,
             [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
-            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
             [Frozen] Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<ILogger<OnlinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock,
-            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock)
+            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
         {
             // Arrange
             _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
@@ -166,9 +187,40 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
                 null!,
+                _loggerMock.Object,
                 _onlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
-                _onlinePaymentRequestDtoValidatorMock.Object);
+                _onlinePaymentRequestDtoValidatorMock.Object,
+                _onlinePaymentRequestDtoValidatorV2Mock.Object);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("httpOnlinePaymentsV2Service");
+        }
+
+        [TestMethod, AutoMoqData]
+        public void Constructor_WhenLoggerIsNull_ShouldThrowArgumentNullException(
+            [Frozen] OnlinePaymentServiceOptions _onlinePaymentServiceOptions,
+            [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
+            [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
+            [Frozen] Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock,
+            [Frozen] Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceV2Mock,
+            [Frozen] Mock<IMapper> _mapperMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
+        {
+            // Arrange
+            _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
+
+            // Act
+            Action act = () => new OnlinePaymentsService(
+                _httpGovPayServiceMock.Object,
+                _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceV2Mock.Object,
+                null!,
+                _onlinePaymentServiceOptionsMock.Object,
+                _mapperMock.Object,
+                _onlinePaymentRequestDtoValidatorMock.Object,
+                _onlinePaymentRequestDtoValidatorV2Mock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
@@ -179,9 +231,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
             [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
             [Frozen] Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock,
+            [Frozen] Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceV2Mock,
             [Frozen] Mock<ILogger<OnlinePaymentsService>> _loggerMock,
             [Frozen] Mock<IMapper> _mapperMock,
-            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock)
+            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
         {
             // Arrange
             _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns((OnlinePaymentServiceOptions)null!);
@@ -190,10 +244,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             Action act = () => new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceV2Mock.Object,
                 _loggerMock.Object,
                 _onlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
-                _onlinePaymentRequestDtoValidatorMock.Object);
+                _onlinePaymentRequestDtoValidatorMock.Object, _onlinePaymentRequestDtoValidatorV2Mock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("onlinePaymentServiceOptions");
@@ -205,8 +260,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
             [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
             [Frozen] Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock,
+            [Frozen] Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceV2Mock,
             [Frozen] Mock<ILogger<OnlinePaymentsService>> _loggerMock,
-            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock)
+            [Frozen] Mock<IValidator<OnlinePaymentRequestDto>> _onlinePaymentRequestDtoValidatorMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
         {
             // Arrange
             _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
@@ -215,10 +272,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             Action act = () => new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceV2Mock.Object,
                 _loggerMock.Object,
                 _onlinePaymentServiceOptionsMock.Object,
                 null!,
-                _onlinePaymentRequestDtoValidatorMock.Object);
+                _onlinePaymentRequestDtoValidatorMock.Object,
+                _onlinePaymentRequestDtoValidatorV2Mock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("mapper");
@@ -228,10 +287,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
         public void Constructor_WhenOnlinePaymentRequestDtoValidatorIsNull_ShouldThrowArgumentNullException(
             [Frozen] OnlinePaymentServiceOptions _onlinePaymentServiceOptions,
             [Frozen] Mock<IOptions<OnlinePaymentServiceOptions>> _onlinePaymentServiceOptionsMock,
+            [Frozen] Mock<IHttpOnlinePaymentsV2Service> _httpOnlinePaymentsServiceV2Mock,
             [Frozen] Mock<IHttpGovPayService> _httpGovPayServiceMock,
             [Frozen] Mock<IHttpOnlinePaymentsService> _httpOnlinePaymentsServiceMock,
             [Frozen] Mock<ILogger<OnlinePaymentsService>> _loggerMock,
-            [Frozen] Mock<IMapper> _mapperMock)
+            [Frozen] Mock<IMapper> _mapperMock,
+            [Frozen] Mock<IValidator<OnlinePaymentRequestV2Dto>> _onlinePaymentRequestDtoValidatorV2Mock)
         {
             // Arrange
             _onlinePaymentServiceOptionsMock.Setup(x => x.Value).Returns(_onlinePaymentServiceOptions);
@@ -240,10 +301,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             Action act = () => new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceV2Mock.Object,
                 _loggerMock.Object,
                 _onlinePaymentServiceOptionsMock.Object,
                 _mapperMock.Object,
-                null!);
+                null!, _onlinePaymentRequestDtoValidatorV2Mock.Object);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("onlinePaymentRequestDtoValidator");
@@ -618,10 +680,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             var service = new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceMockV2.Object,
                 _loggerMock.Object,
                 _optionsMock.Object,
                 _mapper,
-                _onlinePaymentRequestDtoMock.Object);
+                _onlinePaymentRequestDtoMock.Object,
+                _onlinePaymentRequestV2DtoValidator.Object);
             // Act & Assert
             await service.Invoking(async s => await s.InitiateOnlinePaymentAsync(request, new CancellationToken()))
                 .Should().ThrowAsync<InvalidOperationException>()
@@ -756,10 +820,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             _service = new OnlinePaymentsService(
                 _httpGovPayServiceMock.Object,
                 _httpOnlinePaymentsServiceMock.Object,
+                _httpOnlinePaymentsServiceMockV2.Object,
                 loggerMock.Object,
                 Options.Create(new OnlinePaymentServiceOptions { ReturnUrl = "https://example.com/return" }),
                 new MapperConfiguration(cfg => cfg.AddProfile<PaymentRequestMappingProfile>()).CreateMapper(),
-                _onlinePaymentRequestDtoMock.Object);
+                _onlinePaymentRequestDtoMock.Object,_onlinePaymentRequestV2DtoValidator.Object);
 
             // Act
             Func<Task> act = async () => await _service.CompleteOnlinePaymentAsync(externalPaymentId, new CancellationToken());

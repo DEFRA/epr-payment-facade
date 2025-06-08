@@ -3,10 +3,11 @@ using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments.V2Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments.V2Payments;
 using EPR.Payment.Facade.Common.Exceptions;
+using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
+namespace EPR.Payment.Facade.Common.RESTServices.Payments
 {
     public class HttpOnlinePaymentsV2Service : BaseHttpService, IHttpOnlinePaymentsV2Service
     {
