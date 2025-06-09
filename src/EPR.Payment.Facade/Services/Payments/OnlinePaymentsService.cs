@@ -159,7 +159,8 @@ namespace EPR.Payment.Facade.Services.Payments
                 Regulator = onlinePaymentDetails.Regulator,
                 Amount = onlinePaymentDetails.Amount,
                 Email = paymentStatusResponse?.Email,
-                Description = onlinePaymentDetails.Description
+                Description = onlinePaymentDetails.Description,
+                RequestorType = onlinePaymentDetails.RequestorType
             };
         }
 
