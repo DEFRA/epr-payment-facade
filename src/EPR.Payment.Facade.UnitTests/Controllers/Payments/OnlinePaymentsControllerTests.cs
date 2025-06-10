@@ -35,7 +35,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -405,7 +405,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentV2Async(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -432,7 +432,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentV2Async(request, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -458,7 +458,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentV2Async(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
 
             // Assert
 
@@ -492,7 +492,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -516,7 +516,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentV2Async(invalidRequest, cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.InitiateOnlinePaymentV2(invalidRequest, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePaymentV2(invalidRequest, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -544,7 +544,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
