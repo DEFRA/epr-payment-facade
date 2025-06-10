@@ -12,9 +12,21 @@ namespace EPR.Payment.Facade.Validations.Payments
                .NotNull()
                .WithMessage(ValidationMessages.UserIdRequired);
 
+            RuleFor(x => x.OrganisationId)
+               .NotNull()
+               .WithMessage(ValidationMessages.OrganisationIdRequired);
+
             RuleFor(x => x.Reference)
                 .NotEmpty()
                 .WithMessage(ValidationMessages.OfflineReferenceRequired);
+
+            RuleFor(x => x.Amount)
+                .NotNull()
+                .WithMessage(ValidationMessages.AmountRequiredAndGreaterThanZero);
+
+            RuleFor(x => x.Amount)
+             .GreaterThanOrEqualTo(1)
+             .WithMessage("Amount must be at least 1.");
 
             if (isAccreditationFee)
             {

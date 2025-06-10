@@ -4,8 +4,6 @@ using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments.V2Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments.Common;
-using EPR.Payment.Facade.Common.Enums.Payments;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Controllers.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
@@ -45,6 +43,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{expectedResponse.NextUrl}'");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentAsync(request, cancellationToken), Times.Once());
             }
         }
 
@@ -130,7 +129,8 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiateOnlinePayment_AmountZero_ReturnsBadRequest([Greedy] OnlinePaymentsController controller)
+        public async Task InitiateOnlinePayment_AmountZero_ReturnsBadRequest([Greedy] OnlinePaymentsController controller,
+           [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock )
         {
             // Arrange
             var request = new OnlinePaymentRequestDto
@@ -146,7 +146,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -154,11 +154,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentAsync(request, cancellationToken), Times.Never());
             }
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiateOnlinePayment_AmountNegative_ReturnsBadRequest([Greedy] OnlinePaymentsController controller)
+        public async Task InitiateOnlinePayment_AmountNegative_ReturnsBadRequest([Greedy] OnlinePaymentsController controller,
+             [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock)
         {
             // Arrange
             var request = new OnlinePaymentRequestDto
@@ -174,7 +176,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -182,6 +184,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentAsync(request, cancellationToken), Times.Never());
             }
         }
 
@@ -198,7 +201,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentAsync(request, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
 
@@ -218,12 +221,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/error'");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentAsync(request, cancellationToken), Times.Once());
             }
         }
 
         [TestMethod, AutoMoqData]
         public async Task InitiateOnlinePayment_InvalidRequest_ReturnsBadRequest(
-            [Greedy] OnlinePaymentsController controller)
+            [Greedy] OnlinePaymentsController controller, [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock)
         {
             // Arrange
             var request = new OnlinePaymentRequestDto { Description = PaymentDescConstants.RegistrationFee }; // Invalid request
@@ -232,7 +236,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -240,6 +244,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<SerializableError>();
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentAsync(request, cancellationToken), Times.Never());
             }
         }
 
@@ -264,6 +269,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentAsync(invalidRequest, cancellationToken), Times.Once());
             }
         }
 
@@ -281,7 +287,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.InitiateOnlinePaymentAsync(request, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await controller.InitiateOnlinePayment(request, cancellationToken);
+            IActionResult result = await controller.InitiateOnlinePayment(request, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -291,6 +297,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentAsync(request, cancellationToken), Times.Once());
             }
         }
 
@@ -306,7 +313,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken)).ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
+            IActionResult result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -325,7 +332,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var cancellationToken = new CancellationToken();
 
             // Act
-            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
+            IActionResult result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (var scope = new AssertionScope())
@@ -354,7 +361,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
+            IActionResult result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -379,7 +386,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             onlinePaymentsServiceMock.Setup(s => s.CompleteOnlinePaymentAsync(externalPaymentId, cancellationToken)).ThrowsAsync(exception);
 
             // Act
-            var result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
+            IActionResult result = await controller.CompleteOnlinePayment(externalPaymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -415,6 +422,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{expectedResponse.NextUrl}'");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentV2Async(request, cancellationToken), Times.Once());
             }
         }
 
@@ -442,6 +450,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain($"window.location.href = '{errorUrl}'");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentV2Async(request, cancellationToken), Times.Once());
             }
         }
 
@@ -478,12 +487,14 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 contentResult?.StatusCode.Should().Be(StatusCodes.Status200OK);
                 contentResult?.ContentType.Should().Be("text/html");
                 contentResult?.Content.Should().Contain("window.location.href = 'https://example.com/error'");
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentV2Async(request, cancellationToken), Times.Once());
             }
         }
 
         [TestMethod, AutoMoqData]
         public async Task InitiateV2OnlinePayment_InvalidRequest_ReturnsBadRequest(
-            [Greedy] OnlinePaymentsController controller)
+            [Greedy] OnlinePaymentsController controller,
+            [Frozen] Mock<IOnlinePaymentsService> onlinePaymentsServiceMock)
         {
             // Arrange
             var request = new OnlinePaymentRequestV2Dto { Description = PaymentDescConstants.RegistrationFee }; // Invalid request
@@ -500,6 +511,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<SerializableError>();
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentV2Async(request, cancellationToken), Times.Never());
             }
         }
 
@@ -524,11 +536,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
+                onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentV2Async(invalidRequest, cancellationToken), Times.Once());
             }
         }
 
         [TestMethod, AutoMoqData]
-        public async Task InitiateV2OnlinePayment_AmountNegative_ReturnsBadRequest([Greedy] OnlinePaymentsController controller)
+        public async Task InitiateV2OnlinePayment_AmountNegative_ReturnsBadRequest([Greedy] OnlinePaymentsController controller,
+            [Frozen] Mock<IOnlinePaymentsService> _onlinePaymentsServiceMock)
         {
             // Arrange
             var request = new OnlinePaymentRequestV2Dto
@@ -552,6 +566,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 result.Should().BeOfType<BadRequestObjectResult>();
                 var badRequestResult = result as BadRequestObjectResult;
                 badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+                _onlinePaymentsServiceMock.Verify(x => x.InitiateOnlinePaymentV2Async(request, cancellationToken), Times.Never());
             }
         }
     }

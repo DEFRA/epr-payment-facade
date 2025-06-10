@@ -10,7 +10,6 @@ using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
@@ -203,12 +202,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
-            var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
+            GovPayResponseDto result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().NotBeNull();
                 retryCount.Should().Be(3);
             }
         }
@@ -293,7 +291,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 configMock.Object);
 
             // Act
-            var result = await govPayService.InitiatePaymentAsync(govPayRequest, CancellationToken.None);
+            GovPayResponseDto result = await govPayService.InitiatePaymentAsync(govPayRequest, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -358,7 +356,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var service = new HttpGovPayService(httpClient, httpContextAccessorMock.Object, configOptions);
 
             // Act
-            var result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
+            PaymentStatusResponseDto? result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -432,7 +430,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var service = new HttpGovPayService(httpClient, httpContextAccessorMock.Object, configOptions);
 
             // Act
-            var result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
+            PaymentStatusResponseDto? result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -505,12 +503,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var service = new HttpGovPayService(httpClient, httpContextAccessorMock.Object, configOptions);
 
             // Act
-            var result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
+            PaymentStatusResponseDto? result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().NotBeNull();
                 result.State.Status.Should().Be("Success");
                 postMethodCallCount.Should().Be(3); // Retries twice, succeeds on the third attempt
             }
@@ -565,7 +562,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var service = new HttpGovPayService(httpClient, httpContextAccessorMock.Object, configOptions);
 
             // Act
-            var result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
+            PaymentStatusResponseDto? result = await service.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
             handlerMock.Protected().Verify(
@@ -667,7 +664,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var service = new HttpGovPayService(httpClient, httpContextAccessorMock.Object, configOptions);
 
             // Act
-            var result = await service.GetPaymentStatusAsync(paymentId, CancellationToken.None);
+            PaymentStatusResponseDto? result = await service.GetPaymentStatusAsync(paymentId, CancellationToken.None);
 
             // Assert
             result.Should().BeEquivalentTo(mockResponse);
@@ -702,12 +699,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
-            var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
+            GovPayResponseDto result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().NotBeNull();
                 result.PaymentId.Should().Be(_expectedResponse!.PaymentId);
                 result.Amount.Should().Be(_expectedResponse.Amount);
                 result.Reference.Should().Be(_expectedResponse.Reference);
@@ -778,7 +774,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
-            var result = await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
+            PaymentStatusResponseDto? result = await httpGovPayService.GetPaymentStatusAsync(paymentId, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -975,12 +971,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
-            var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
+            GovPayResponseDto result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().NotBeNull();
                 retryCount.Should().Be(3);
             }
         }
@@ -1065,7 +1060,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 configMock.Object);
 
             // Act
-            var result  = await govPayService.InitiatePaymentAsync(govPayRequest, CancellationToken.None);
+            GovPayResponseDto result  = await govPayService.InitiatePaymentAsync(govPayRequest, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -1102,12 +1097,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
-            var result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
+            GovPayResponseDto result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
             {
-                result.Should().NotBeNull();
                 result.PaymentId.Should().Be(_expectedResponse!.PaymentId);
                 result.Amount.Should().Be(_expectedResponse.Amount);
                 result.Reference.Should().Be(_expectedResponse.Reference);

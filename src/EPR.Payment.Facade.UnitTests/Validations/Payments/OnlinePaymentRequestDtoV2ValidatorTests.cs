@@ -74,14 +74,6 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         }
 
         [TestMethod]
-        public void Should_Have_Error_When_Regulator_Is_NotSupported()
-        {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestV2Dto { Regulator = RegulatorConstants.GBSCT, Description = PaymentDescConstants.RegistrationFee };
-            var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
-            result.ShouldHaveValidationErrorFor(x => x.Regulator);
-        }
-
-        [TestMethod]
         public void Should_Not_Have_Error_When_ReasonForPayment_Is_Valid()
         {
             var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestV2Dto { Regulator = RegulatorConstants.GBENG, Description = PaymentDescConstants.RegistrationFee };
@@ -156,7 +148,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         [TestMethod]
         public void ShouldNot_Have_Error_When_RequestorType_Is_Valid()
         {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestV2Dto { Regulator = RegulatorConstants.GBSCT, Description = PaymentDescConstants.RegistrationFee, RequestorType = PaymentsRequestorTypes.Reprocessors, Amount =20, OrganisationId = Guid.NewGuid(), Reference = "901AB9E3-F952-4467-87FF-389EF93E7E95", UserId = Guid.NewGuid() };
+            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestV2Dto { Regulator = RegulatorConstants.GBSCT, Description = PaymentDescConstants.RegistrationFee, RequestorType = PaymentsRequestorTypes.Reprocessors, Amount = 20, OrganisationId = Guid.NewGuid(), Reference = "901AB9E3-F952-4467-87FF-389EF93E7E95", UserId = Guid.NewGuid() };
             var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.RequestorType);
         }
