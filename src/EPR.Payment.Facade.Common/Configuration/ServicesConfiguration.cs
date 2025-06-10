@@ -10,7 +10,9 @@ namespace EPR.Payment.Facade.Common.Configuration
         public Service PaymentService { get; set; } = new Service();
         
         public Service OfflinePaymentService { get; set; } = new Service();
-        
+
+        public Service OfflinePaymentServiceV2 { get; set; } = new Service();
+
         public Service GovPayService { get; set; } = new Service();
         
         public Service ProducerFeesService { get; set; } = new Service();
