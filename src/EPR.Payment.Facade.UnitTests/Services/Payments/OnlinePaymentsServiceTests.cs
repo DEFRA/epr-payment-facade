@@ -428,7 +428,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 Amount = paymentDetails.Amount,
                 Email = paymentStatusResponse.Email,
                 Description = paymentDetails.Description,
-                RequestorType = paymentDetails.Regulator
+                RequestorType = paymentDetails.RequestorType
             });
         }
 
