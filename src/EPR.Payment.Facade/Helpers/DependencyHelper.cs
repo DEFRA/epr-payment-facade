@@ -38,6 +38,7 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("PaymentService", configuration.GetSection("Services:PaymentService"));
             services.Configure<Service>("OnlineV2PaymentService", configuration.GetSection("Services:OnlineV2PaymentService"));
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
+            services.Configure<Service>("OfflinePaymentServiceV2", configuration.GetSection("Services:OfflinePaymentServiceV2"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
             services.Configure<Service>("RexExpoAccreditationFeesService", configuration.GetSection("Services:RexExpoAccreditationFeesService"));
@@ -144,6 +145,15 @@ namespace EPR.Payment.Facade.Helpers
                    ValidateServiceConfiguration(config, ExceptionMessages.ReprocessorOrExporterAccreditationFeesServiceBaseUrlMissing);
                    client.BaseAddress = new Uri(config.Url!);
                });
+
+            services.AddHttpClient<IHttpOfflinePaymentsServiceV2, HttpOfflinePaymentsServiceV2>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OfflinePaymentServiceV2;
+                    ValidateServiceConfiguration(config, ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
 
             // Register additional services without TokenAuthorizationHandler
             services.AddTransient<IHttpGovPayService>(sp =>
