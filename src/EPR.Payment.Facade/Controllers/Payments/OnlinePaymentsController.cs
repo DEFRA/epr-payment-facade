@@ -105,6 +105,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
             }
         }
 
+        [ApiExplorerSettings(GroupName = "v1")]
         [HttpPost("v1/{externalPaymentId}/complete")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompleteOnlinePaymentResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
