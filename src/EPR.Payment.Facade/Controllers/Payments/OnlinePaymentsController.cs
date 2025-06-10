@@ -226,7 +226,7 @@ namespace EPR.Payment.Facade.Controllers.Payments
                 {
                     Content = CreateHtmlContent(_errorUrl),
                     ContentType = "text/html",
-                    StatusCode = StatusCodes.Status200OK
+                    StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
         }
