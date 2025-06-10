@@ -26,25 +26,6 @@ namespace EPR.Payment.Common.Mapping
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount!.Value))
                 .ForMember(dest => dest.ReasonForPayment, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Status, opt => opt.Ignore());
-
-            CreateMap<OnlinePaymentRequestV2Dto, UpdateOnlinePaymentRequestV2Dto>()
-                .ForMember(dest => dest.ExternalPaymentId, opt => opt.Ignore())
-                .ForMember(dest => dest.GovPayPaymentId, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => PaymentStatus.InProgress))
-                .ForMember(dest => dest.UpdatedByOrganisationId, opt => opt.MapFrom(src => src.OrganisationId!.Value))
-                .ForMember(dest => dest.UpdatedByUserId, opt => opt.MapFrom(src => src.UserId!.Value))
-                .ForMember(dest => dest.ErrorCode, opt => opt.Ignore())
-                .ForMember(dest => dest.ErrorMessage, opt => opt.Ignore());
-
-            CreateMap<OnlinePaymentDetailsV2Dto, UpdateOnlinePaymentRequestV2Dto>()
-                .ForMember(dest => dest.UpdatedByUserId, opt => opt.MapFrom(src => src.UpdatedByUserId))
-                .ForMember(dest => dest.UpdatedByOrganisationId, opt => opt.MapFrom(src => src.UpdatedByOrganisationId))
-                .ForMember(dest => dest.ExternalPaymentId, opt => opt.MapFrom(src => src.ExternalPaymentId))
-                .ForMember(dest => dest.Reference, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.ErrorCode, opt => opt.Ignore())
-                .ForMember(dest => dest.ErrorMessage, opt => opt.Ignore())
-                .ForMember(dest => dest.GovPayPaymentId, opt => opt.Ignore());
         }
     }
 }

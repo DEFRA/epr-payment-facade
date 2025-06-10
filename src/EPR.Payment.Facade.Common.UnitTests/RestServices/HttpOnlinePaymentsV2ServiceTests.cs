@@ -25,7 +25,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private InsertOnlinePaymentRequestV2Dto _insertOnlinePaymentRequestDto = null!;
-        private UpdateOnlinePaymentRequestV2Dto _updateOnlinePaymentRequestDto = null!;
         private Guid _paymentId;
 
         [TestInitialize]
@@ -52,16 +51,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 Amount = 100,
                 ReasonForPayment = "Payment description",
                 Status = Common.Enums.PaymentStatus.Initiated,
-                RequestorType = PaymentsRequestorTypes.Producers
-            };
-            _updateOnlinePaymentRequestDto = new UpdateOnlinePaymentRequestV2Dto
-            {
-                ExternalPaymentId = Guid.NewGuid(),
-                GovPayPaymentId = "govpay123",
-                UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid(),
-                Reference = "123456",
-                Status = Common.Enums.PaymentStatus.InProgress,
                 RequestorType = PaymentsRequestorTypes.Producers
             };
             _paymentId = Guid.NewGuid();
