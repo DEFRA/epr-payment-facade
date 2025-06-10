@@ -183,7 +183,34 @@ namespace EPR.Payment.Facade.Services.Payments
             return govPayRequest;
         }
 
+        private GovPayRequestV2Dto CreateGovPayRequest(OnlinePaymentRequestV2Dto request, Guid externalPaymentId)
+        {
+            var returnUrl = _onlinePaymentServiceOptions.ReturnUrl;
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                throw new InvalidOperationException(ExceptionMessages.ReturnUrlNotConfigured);
+            }
+            returnUrl = $"{returnUrl}?id={externalPaymentId}";
+
+            var govPayRequest = _mapper.Map<GovPayRequestV2Dto>(request);
+            govPayRequest.return_url = returnUrl;
+
+            return govPayRequest;
+        }
+
         private async Task<GovPayResponseDto> InitiateGovPayPaymentAsync(GovPayRequestDto govPayRequest, CancellationToken cancellationToken)
+        {
+            var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest, cancellationToken);
+
+            if (string.IsNullOrEmpty(govPayResponse.PaymentId))
+            {
+                throw new InvalidOperationException(ExceptionMessages.GovPayResponseInvalid);
+            }
+
+            return govPayResponse;
+        }
+
+        private async Task<GovPayResponseDto> InitiateGovPayPaymentAsync(GovPayRequestV2Dto govPayRequest, CancellationToken cancellationToken)
         {
             var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest, cancellationToken);
 
@@ -246,52 +273,6 @@ namespace EPR.Payment.Facade.Services.Payments
                 throw new ServiceException(ExceptionMessages.UnexpectedErrorInsertingOnlinePayment, ex);
             }
         }
-
-
-        //For V2 version
-        public async Task<OnlinePaymentResponseDto> InitiateOnlinePaymentV2Async(OnlinePaymentRequestV2Dto request, CancellationToken cancellationToken = default)
-        {
-            var validatorResult = await _onlinePaymentRequestV2DtoValidator.ValidateAsync(request, cancellationToken);
-
-            if (!validatorResult.IsValid)
-            {
-                throw new ValidationException(validatorResult.Errors.Aggregate("", (current, error) => current + $"{error.ErrorMessage}"));
-            }
-            var externalPaymentId = await InsertOnlinePaymentAsync(request, cancellationToken);
-
-            var govPayRequest = CreateGovPayRequest(request, externalPaymentId);
-
-            var govPayResponse = await InitiateGovPayPaymentAsync(govPayRequest, cancellationToken);
-
-            await UpdateOnlinePaymentStatusAsync(externalPaymentId, request, govPayResponse.PaymentId!, cancellationToken);
-
-            return CreateOnlinePaymentResponse(govPayResponse);
-        }
-        private async Task<GovPayResponseDto> InitiateGovPayPaymentAsync(GovPayRequestV2Dto govPayRequest, CancellationToken cancellationToken)
-        {
-            var govPayResponse = await _httpGovPayService.InitiatePaymentAsync(govPayRequest, cancellationToken);
-
-            if (string.IsNullOrEmpty(govPayResponse.PaymentId))
-            {
-                throw new InvalidOperationException(ExceptionMessages.GovPayResponseInvalid);
-            }
-
-            return govPayResponse;
-        }
-        private GovPayRequestV2Dto CreateGovPayRequest(OnlinePaymentRequestV2Dto request, Guid externalPaymentId)
-        {
-            var returnUrl = _onlinePaymentServiceOptions.ReturnUrl;
-            if (string.IsNullOrEmpty(returnUrl))
-            {
-                throw new InvalidOperationException(ExceptionMessages.ReturnUrlNotConfigured);
-            }
-            returnUrl = $"{returnUrl}?id={externalPaymentId}";
-
-            var govPayRequest = _mapper.Map<GovPayRequestV2Dto>(request);
-            govPayRequest.return_url = returnUrl;
-
-            return govPayRequest;
-        }
         private async Task<Guid> InsertOnlinePaymentAsync(OnlinePaymentRequestV2Dto request, CancellationToken cancellationToken)
         {
             var insertRequest = _mapper.Map<InsertOnlinePaymentRequestV2Dto>(request);
@@ -311,6 +292,24 @@ namespace EPR.Payment.Facade.Services.Payments
                 _logger.LogError(ex, LogMessages.UnexpectedErrorInsertingOnlinePayment);
                 throw new ServiceException(ExceptionMessages.UnexpectedErrorInsertingOnlinePayment, ex);
             }
+        }
+        public async Task<OnlinePaymentResponseDto> InitiateOnlinePaymentV2Async(OnlinePaymentRequestV2Dto request, CancellationToken cancellationToken = default)
+        {
+            var validatorResult = await _onlinePaymentRequestV2DtoValidator.ValidateAsync(request, cancellationToken);
+
+            if (!validatorResult.IsValid)
+            {
+                throw new ValidationException(validatorResult.Errors.Aggregate("", (current, error) => current + $"{error.ErrorMessage}"));
+            }
+            var externalPaymentId = await InsertOnlinePaymentAsync(request, cancellationToken);
+
+            var govPayRequest = CreateGovPayRequest(request, externalPaymentId);
+
+            var govPayResponse = await InitiateGovPayPaymentAsync(govPayRequest, cancellationToken);
+
+            await UpdateOnlinePaymentStatusAsync(externalPaymentId, request, govPayResponse.PaymentId!, cancellationToken);
+
+            return CreateOnlinePaymentResponse(govPayResponse);
         }
     }
 }

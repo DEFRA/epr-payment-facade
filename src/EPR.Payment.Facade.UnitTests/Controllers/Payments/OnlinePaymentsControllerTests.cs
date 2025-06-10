@@ -526,5 +526,33 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
                 badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Be(validationException.Message);
             }
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task InitiateV2OnlinePayment_AmountNegative_ReturnsBadRequest([Greedy] OnlinePaymentsController controller)
+        {
+            // Arrange
+            var request = new OnlinePaymentRequestV2Dto
+            {
+                UserId = Guid.NewGuid(),
+                OrganisationId = Guid.NewGuid(),
+                Regulator = "Test Regulator",
+                Reference = "Test Reference",
+                Amount = -1, // Invalid amount
+                Description = PaymentDescConstants.RegistrationFee
+            };
+
+            var cancellationToken = new CancellationToken();
+
+            // Act
+            var result = await controller.InitiateOnlinePaymentV2(request, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<BadRequestObjectResult>();
+                var badRequestResult = result as BadRequestObjectResult;
+                badRequestResult?.Value.Should().BeOfType<ProblemDetails>().Which.Detail.Should().Contain("Amount must be greater than 0");
+            }
+        }
     }
 }

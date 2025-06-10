@@ -1,8 +1,6 @@
 ﻿using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments.V2Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments.V2Payments;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +21,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                   configMonitor.Get("OnlineV2PaymentService").EndPointName
                       ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OnlinePaymentServiceEndPointNameMissing))
         {
-            var config = configMonitor.Get("OnlineV2PaymentService");
+            
         }
 
         public async Task<Guid> InsertOnlinePaymentAsync(InsertOnlinePaymentRequestV2Dto onlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)
