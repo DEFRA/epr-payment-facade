@@ -418,19 +418,20 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
         }
 
         [TestMethod]
-        [DataRow("u4g456vpdeamkg72ihjt129io6", "success", true, null, null, PaymentStatus.Success, DisplayName = "CompletePayment_SuccessStatus_UpdatesPaymentStatus")]
-        [DataRow("ubs761va12akse548htbu2oie5", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, DisplayName = "CompletePayment_CardDeclined_UpdatesPaymentStatus")]
-        [DataRow("mpni2094aqjf89q5k2rdveed2o", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, DisplayName = "CompletePayment_CardExpired_UpdatesPaymentStatus")]
-        [DataRow("ke41o2t96h1983os203no7q5so", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, DisplayName = "CompletePayment_InvalidCVC_UpdatesPaymentStatus")]
-        [DataRow("jgpldh7b1i5qmh59ru6ia67386", "error", true, "Payment provider returned an error", "P0050", PaymentStatus.Error, DisplayName = "CompletePayment_GeneralError_UpdatesPaymentStatus")]
-        [DataRow("n9nvasa4782ogtuh19e8mum68r", "failed", true, "Payment was cancelled by the user", "P0030", PaymentStatus.UserCancelled, DisplayName = "CompletePayment_UserCancelled_UpdatesPaymentStatus")]
+        [DataRow("u4g456vpdeamkg72ihjt129io6", "success", true, null, null, PaymentStatus.Success, "Reprocessors", DisplayName = "CompletePayment_SuccessStatus_UpdatesPaymentStatus")]
+        [DataRow("ubs761va12akse548htbu2oie5", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, "Reprocessors", DisplayName = "CompletePayment_CardDeclined_UpdatesPaymentStatus")]
+        [DataRow("mpni2094aqjf89q5k2rdveed2o", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, "Exporters", DisplayName = "CompletePayment_CardExpired_UpdatesPaymentStatus")]
+        [DataRow("ke41o2t96h1983os203no7q5so", "failed", true, "Payment method rejected", "P0010", PaymentStatus.Failed, "Exporters", DisplayName = "CompletePayment_InvalidCVC_UpdatesPaymentStatus")]
+        [DataRow("jgpldh7b1i5qmh59ru6ia67386", "error", true, "Payment provider returned an error", "P0050", PaymentStatus.Error, "Reprocessors", DisplayName = "CompletePayment_GeneralError_UpdatesPaymentStatus")]
+        [DataRow("n9nvasa4782ogtuh19e8mum68r", "failed", true, "Payment was cancelled by the user", "P0030", PaymentStatus.UserCancelled, "Reprocessors", DisplayName = "CompletePayment_UserCancelled_UpdatesPaymentStatus")]
         public async Task CompleteOnlinePayment_UpdatesPaymentStatus(
             string govPayPaymentId,
             string status,
             bool finished,
             string message,
             string code,
-            PaymentStatus expectedStatus)
+            PaymentStatus expectedStatus,
+            string requestorType)
         {
             // Arrange
 
@@ -458,7 +459,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             _httpOnlinePaymentsServiceMock.Setup(s => s.GetOnlinePaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -489,7 +491,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 Regulator = paymentDetails.Regulator,
                 Amount = paymentDetails.Amount,
                 Email = paymentStatusResponse.Email,
-                Description = paymentDetails.Description
+                Description = paymentDetails.Description,
+                RequestorType = paymentDetails.RequestorType
             });
         }
 
@@ -509,13 +512,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
 
             var onlinePaymentDetails = new OnlinePaymentDetailsDto
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             _httpOnlinePaymentsServiceMock.Setup(s => s.GetOnlinePaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -543,13 +548,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
 
             var onlinePaymentDetails = new OnlinePaymentDetailsDto
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             var paymentStatusResponse = new PaymentStatusResponseDto
@@ -575,13 +582,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
 
             var onlinePaymentDetails = new OnlinePaymentDetailsDto
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             var paymentStatusResponse = new PaymentStatusResponseDto
@@ -608,13 +617,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
 
             var onlinePaymentDetails = new OnlinePaymentDetailsDto
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             paymentStatusResponse.PaymentId = govPayPaymentId;
@@ -640,13 +651,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
 
             var onlinePaymentDetails = new OnlinePaymentDetailsDto
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             paymentStatusResponse.PaymentId = govPayPaymentId;
@@ -797,6 +810,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
             paymentStatusResponse.PaymentId = govPayPaymentId;
             paymentStatusResponse.State = new State { Status = "error", Finished = true, Code = "P0050" }; // Ensure error code is provided
 
@@ -805,7 +819,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             _httpOnlinePaymentsServiceMock.Setup(s => s.GetOnlinePaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -956,6 +971,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
             paymentStatusResponse.PaymentId = govPayPaymentId;
+            var requestorType = "TestReq";
             paymentStatusResponse.State = new State { Status = "invalid_status", Finished = true };
 
             var onlinePaymentDetails = new OnlinePaymentDetailsDto
@@ -963,7 +979,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             _httpOnlinePaymentsServiceMock?.Setup(s => s.GetOnlinePaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -1050,13 +1067,15 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
 
             var onlinePaymentDetails = new OnlinePaymentDetailsDto
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             paymentStatusResponse.PaymentId = govPayPaymentId;
@@ -1080,6 +1099,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
             paymentStatusResponse.PaymentId = govPayPaymentId;
             paymentStatusResponse.State = new State { Status = "failed", Finished = true, Code = null };
 
@@ -1088,7 +1108,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             _httpOnlinePaymentsServiceMock.Setup(s => s.GetOnlinePaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -1112,6 +1133,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
             paymentStatusResponse.PaymentId = govPayPaymentId;
             paymentStatusResponse.State = new State { Status = "error", Finished = true, Code = null };
 
@@ -1120,7 +1142,8 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
                 UpdatedByUserId = Guid.NewGuid(),
-                UpdatedByOrganisationId = Guid.NewGuid()
+                UpdatedByOrganisationId = Guid.NewGuid(),
+                RequestorType = requestorType
             };
 
             _httpOnlinePaymentsServiceMock.Setup(s => s.GetOnlinePaymentDetailsAsync(externalPaymentId, It.IsAny<CancellationToken>()))
@@ -1146,6 +1169,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             // Arrange
             var externalPaymentId = Guid.NewGuid();
             var govPayPaymentId = "12345";
+            var requestorType = "TestReq";
             paymentStatusResponse.PaymentId = govPayPaymentId;
             paymentStatusResponse.State = new State { Status = "unknown_status", Finished = true };
 
@@ -1153,6 +1177,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.Payments
             {
                 GovPayPaymentId = govPayPaymentId,
                 ExternalPaymentId = externalPaymentId,
+                RequestorType = requestorType,
                 UpdatedByUserId = Guid.NewGuid(),
                 UpdatedByOrganisationId = Guid.NewGuid()
             };
