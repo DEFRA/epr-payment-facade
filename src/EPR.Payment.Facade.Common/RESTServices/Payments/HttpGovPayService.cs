@@ -65,6 +65,25 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
             }
         }
 
+        //V2
+        public async Task<GovPayResponseDto> InitiatePaymentAsync(GovPayRequestV2Dto paymentRequestDto, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var url = UrlConstants.GovPayInitiatePayment;
+
+                // Use the retry policy when calling the Post method
+                return await _paymentRetryPolicy.ExecuteAsync(async () =>
+                {
+                    return await Post<GovPayResponseDto>(url, paymentRequestDto, cancellationToken);
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new ServiceException(ExceptionMessages.ErrorInitiatingPayment, ex);
+            }
+        }
+
         public async Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId, CancellationToken cancellationToken = default)
         {
             try

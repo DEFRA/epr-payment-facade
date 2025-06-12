@@ -98,6 +98,7 @@ builder.Services.AddDependencies();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(PaymentRequestMappingProfile));
+builder.Services.AddAutoMapper(typeof(PaymentRequestMappingProfileV2));
 
 // Add CORS configuration
 builder.Services.AddCors(options =>
@@ -163,6 +164,7 @@ bool enablePaymentInitiation = await featureManager.IsEnabledAsync("EnablePaymen
 bool enablePaymentStatus = await featureManager.IsEnabledAsync("EnablePaymentStatus");
 bool enablePaymentStatusInsert = await featureManager.IsEnabledAsync("EnablePaymentStatusInsert");
 bool enableHomePage = await featureManager.IsEnabledAsync("EnableHomePage");
+bool enableV2OnlinePaymentsFeature = await featureManager.IsEnabledAsync("EnableV2OnlinePaymentsFeature");
 
 logger.LogInformation("EnableOnlinePaymentsFeature: {EnableOnlinePaymentsFeature}", enableOnlinePaymentsFeature);
 logger.LogInformation("EnablePaymentInitiation: {EnablePaymentInitiation}", enablePaymentInitiation);
