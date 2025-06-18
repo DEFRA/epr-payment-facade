@@ -15,12 +15,15 @@
         public const string ReferenceRequired = "Reference is required.";
         public const string AmountRequiredAndGreaterThanZero = "Amount is required and must be greater than zero.";
         public const string RegulatorInvalid = "Invalid Regulator.";
+        public const string RequestorTypeNotValid= "Invalid Requestor Type.";
         public const string RegulatorNotENG = "Online payment is not supported for this regulator.";
         public const string DescriptionRequired = "The Description field is required.";
         public const string InvalidDescription = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee'.";
+        public const string InvalidDescriptionV2 = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee' or 'Accreditation fee'.";
         public const string InvalidRegulatorOffline = "Regulator is invalid; acceptable values are 'GB-ENG', 'GB-SCT', 'GB-WLS' and 'GB-NIR'.";
         public const string OfflineReferenceRequired = "The Reference field is required.";
         public const string OfflineRegulatorRequired = "The Regulator field is required.";
+        public const string OfflinePaymentMethodRequired = "The PaymentMethod field is required.";
 
         // Common Validation Messages
         public const string RegulatorRequired = "Regulator is required.";
@@ -32,12 +35,29 @@
         public const string FutureSubmissionDate = "Submission date cannot be a date in the future.";
         public const string SubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
 
-
         // Compliance Scheme Resubmission Fee Validation Messages
         public const string ResubmissionDateRequired = "Resubmission date is mandatory and must be a valid date.";
         public const string FutureResubmissionDate = "Resubmission date cannot be a date in the future.";
         public const string ResubmissionDateMustBeUtc = "Resubmission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string ReferenceNumberRequired = "Reference Number is required.";
         public const string MemberCountGreaterThanZero = "Member Count must be greater than zero.";
+
+        // Reprocessor-Exporter Registration Fees Validation Messages
+        public const string ReprocessorExporterDateRequired = "Submission date is mandatory and must be a valid date.";
+        public const string RexExFutureResubmissionDate = "Submission date cannot be a date in the future.";
+        public const string RexExsubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
+        public const string MaterialTypeInvalid = "Invalid MaterialType.";
+        public const string RequestorTypeInvalid = "Invalid RequestorType.";
+        public const string RegulatorTypeInvalid = "Invalid Regulator.";
+
+        //  AccreditationFeesRequestDto Validation Messages
+        public const string EmptyRequestorType = "Requestor type is required";
+        public const string InvalidRequestorType = "Requestor type must be one of the following: ";
+        public const string EmptyTonnageBand = "Tonnage band is required";
+        public const string InvalidTonnageBand = "Tonnage band must be one of the following: ";
+        public const string EmptyMaterialType = "Material type is required";
+        public const string InvalidMaterialType = "Material type must be one of the following: ";
+        public static string InvalidNumberOfOverseasSiteForExporter = $"Number of Overseas site must be greater than 0 and less than equal to {ReprocessorExporterConstants.MaxNumberOfOverseasSitesAllowed} for requestor type of exporter.";
+        public const string InvalidNumberOfOverseasSiteForReprocessor = "Number of Overseas site must be 0 for requestor type of reprocessor.";
     }
 }

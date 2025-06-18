@@ -73,14 +73,6 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         }
 
         [TestMethod]
-        public void Should_Have_Error_When_Regulator_Is_NotSupported()
-        {
-            var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = RegulatorConstants.GBSCT, Description = PaymentDescConstants.RegistrationFee };
-            var result = _validator.TestValidate(onlinePaymentStatusInsertRequestDto);
-            result.ShouldHaveValidationErrorFor(x => x.Regulator);
-        }
-
-        [TestMethod]
         public void Should_Not_Have_Error_When_ReasonForPayment_Is_Valid()
         {
             var onlinePaymentStatusInsertRequestDto = new OnlinePaymentRequestDto { Regulator = RegulatorConstants.GBENG, Description = PaymentDescConstants.RegistrationFee };

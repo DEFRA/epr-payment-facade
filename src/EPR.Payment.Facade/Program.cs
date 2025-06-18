@@ -13,6 +13,7 @@ using Microsoft.FeatureManagement;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using System.Security.Authentication;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,8 @@ if (builder.Environment.IsDevelopment())
 var azureAdB2CConfig = builder.Configuration.GetSection("AzureAdB2C");
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 builder.Services.AddFluentValidation(fv =>
 {
     fv.RegisterValidatorsFromAssemblyContaining<OnlinePaymentRequestDtoValidator>();
@@ -40,6 +42,7 @@ builder.Services.AddSwaggerGen(setupAction =>
 {
     setupAction.EnableAnnotations();
     setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v1" });
+    setupAction.SwaggerDoc("v2", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v2" });
     setupAction.DocumentFilter<FeatureEnabledDocumentFilter>();
     setupAction.OperationFilter<FeatureGateOperationFilter>();
 
@@ -95,6 +98,7 @@ builder.Services.AddDependencies();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(PaymentRequestMappingProfile));
+builder.Services.AddAutoMapper(typeof(PaymentRequestMappingProfileV2));
 
 // Add CORS configuration
 builder.Services.AddCors(options =>
@@ -160,6 +164,7 @@ bool enablePaymentInitiation = await featureManager.IsEnabledAsync("EnablePaymen
 bool enablePaymentStatus = await featureManager.IsEnabledAsync("EnablePaymentStatus");
 bool enablePaymentStatusInsert = await featureManager.IsEnabledAsync("EnablePaymentStatusInsert");
 bool enableHomePage = await featureManager.IsEnabledAsync("EnableHomePage");
+bool enableV2OnlinePaymentsFeature = await featureManager.IsEnabledAsync("EnableV2OnlinePaymentsFeature");
 
 logger.LogInformation("EnableOnlinePaymentsFeature: {EnableOnlinePaymentsFeature}", enableOnlinePaymentsFeature);
 logger.LogInformation("EnablePaymentInitiation: {EnablePaymentInitiation}", enablePaymentInitiation);
@@ -174,6 +179,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi v1");
+        c.SwaggerEndpoint("/swagger/v2/swagger.json", "PaymentFacadeApi v2");
         c.RoutePrefix = "swagger";
 
         // OAuth2 settings for Swagger UI

@@ -1,10 +1,14 @@
 ﻿using EPR.Payment.Facade.HealthCheck;
+using EPR.Payment.Facade.Services.AccreditationFees;
+using EPR.Payment.Facade.Services.AccreditationFees.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter;
+using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter.Interfaces;
 using EPR.Payment.Facade.Services.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Services.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Services.ResubmissionFees.Producer;
@@ -35,6 +39,8 @@ namespace EPR.Payment.Facade.Extension
             services.AddScoped<IProducerResubmissionFeesService, ProducerResubmissionFeesService>();
             services.AddScoped<IComplianceSchemeCalculatorService, ComplianceSchemeCalculatorService>();
             services.AddScoped<IComplianceSchemeResubmissionFeesService, ComplianceSchemeResubmissionFeesService>();
+            services.AddScoped<IReprocessorExporterRegistrationFeesService, ReprocessorExporterRegistrationFeesService>();
+            services.AddScoped<IAccreditationFeesCalculatorService, AccreditationFeesCalculatorService>();
 
             return services;
         }

@@ -6,6 +6,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces
     public interface IHttpGovPayService
     {
         Task<GovPayResponseDto> InitiatePaymentAsync(GovPayRequestDto paymentRequestDto, CancellationToken cancellationToken = default);
+        Task<GovPayResponseDto> InitiatePaymentAsync(GovPayRequestV2Dto paymentRequestDto, CancellationToken cancellationToken = default);
         Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string paymentId, CancellationToken cancellationToken = default);
     }
 }
