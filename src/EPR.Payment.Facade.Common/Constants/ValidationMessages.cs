@@ -13,16 +13,15 @@
         public const string UserIdRequired = "User ID is required.";
         public const string OrganisationIdRequired = "Organisation ID is required.";
         public const string ReferenceRequired = "Reference is required.";
-        public const string AmountRequiredAndGreaterThanZero = "Amount is required and must be greater than zero.";
+        public const string AmountRequired = "Amount is required";
+        public const string AmountGreaterThanZero = "Amount must be greater than zero.";
         public const string RegulatorInvalid = "Invalid Regulator.";
         public const string RequestorTypeNotValid= "Invalid Requestor Type.";
-        public const string RegulatorNotENG = "Online payment is not supported for this regulator.";
+        public const string RegulatorNotENG = "Online payment is not supported for this regulator, acceptable value is 'GB-ENG'.";
         public const string DescriptionRequired = "The Description field is required.";
         public const string InvalidDescription = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee'.";
         public const string InvalidDescriptionV2 = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee' or 'Accreditation fee'.";
-        public const string InvalidRegulatorOffline = "Regulator is invalid; acceptable values are 'GB-ENG', 'GB-SCT', 'GB-WLS' and 'GB-NIR'.";
-        public const string OfflineReferenceRequired = "The Reference field is required.";
-        public const string OfflineRegulatorRequired = "The Regulator field is required.";
+        public const string InvalidRegulatorOffline = "Regulator is invalid; acceptable values are 'GB-ENG', 'GB-SCT', 'GB-WLS' and 'GB-NIR'.";                
         public const string OfflinePaymentMethodRequired = "The PaymentMethod field is required.";
 
         // Common Validation Messages

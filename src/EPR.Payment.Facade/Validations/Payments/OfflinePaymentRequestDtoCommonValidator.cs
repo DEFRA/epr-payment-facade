@@ -14,7 +14,7 @@ namespace EPR.Payment.Facade.Validations.Payments
 
             RuleFor(x => x.Reference)
                 .NotEmpty()
-                .WithMessage(ValidationMessages.OfflineReferenceRequired);
+                .WithMessage(ValidationMessages.ReferenceRequired);
 
             if (isAccreditationFee)
             {
@@ -38,7 +38,7 @@ namespace EPR.Payment.Facade.Validations.Payments
             RuleFor(x => x.Regulator)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(ValidationMessages.OfflineRegulatorRequired)
+                .WithMessage(ValidationMessages.RegulatorRequired)
                 .Must(text => text == RegulatorConstants.GBENG || text == RegulatorConstants.GBSCT || text == RegulatorConstants.GBWLS || text == RegulatorConstants.GBNIR)
                 .WithMessage(ValidationMessages.InvalidRegulatorOffline);
         }

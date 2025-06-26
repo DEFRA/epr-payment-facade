@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
+﻿namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
 {
     public class OnlinePaymentRequestDto
     {

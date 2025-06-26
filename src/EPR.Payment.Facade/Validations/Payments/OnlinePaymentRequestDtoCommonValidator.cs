@@ -18,15 +18,15 @@ namespace EPR.Payment.Facade.Validations.Payments
 
             RuleFor(x => x.Reference)
                 .NotEmpty()
-                .WithMessage(ValidationMessages.OfflineReferenceRequired);
+                .WithMessage(ValidationMessages.ReferenceRequired);
 
             RuleFor(x => x.Amount)
                 .NotNull()
-                .WithMessage(ValidationMessages.AmountRequiredAndGreaterThanZero);
+                .WithMessage(ValidationMessages.AmountRequired);
 
             RuleFor(x => x.Amount)
-             .GreaterThanOrEqualTo(1)
-             .WithMessage("Amount must be at least 1.");
+             .GreaterThan(0)
+             .WithMessage(ValidationMessages.AmountGreaterThanZero);
 
             if (isAccreditationFee)
             {
@@ -48,11 +48,11 @@ namespace EPR.Payment.Facade.Validations.Payments
             }
 
             RuleFor(x => x.Regulator)
-                .Cascade(CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(ValidationMessages.OfflineRegulatorRequired)
-                .Must(text => text == RegulatorConstants.GBENG || text == RegulatorConstants.GBSCT || text == RegulatorConstants.GBWLS || text == RegulatorConstants.GBNIR)
-                .WithMessage(ValidationMessages.InvalidRegulatorOffline);
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(ValidationMessages.RegulatorRequired)
+            .Must(text => text == RegulatorConstants.GBENG)
+            .WithMessage(ValidationMessages.RegulatorNotENG);
         }
     }
 }
