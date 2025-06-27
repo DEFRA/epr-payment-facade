@@ -4,48 +4,13 @@ using FluentValidation;
 
 namespace EPR.Payment.Facade.Validations.Payments
 {
-    public class OnlinePaymentRequestDtoCommonValidator<T> : AbstractValidator<T> where T : OnlinePaymentRequestDto
+    public class OnlinePaymentRequestDtoCommonValidator<T> : BasePaymentRequestDtoCommonValidator<T> where T: OnlinePaymentRequestDto
     {
-        public OnlinePaymentRequestDtoCommonValidator(bool isAccreditationFee = false)
-        {
-            RuleFor(x => x.UserId)
-               .NotNull()
-               .WithMessage(ValidationMessages.UserIdRequired);
-
+        public OnlinePaymentRequestDtoCommonValidator(bool isAccreditationFee) : base(isAccreditationFee)
+        {               
             RuleFor(x => x.OrganisationId)
-               .NotNull()
-               .WithMessage(ValidationMessages.OrganisationIdRequired);
-
-            RuleFor(x => x.Reference)
-                .NotEmpty()
-                .WithMessage(ValidationMessages.ReferenceRequired);
-
-            RuleFor(x => x.Amount)
                 .NotNull()
-                .WithMessage(ValidationMessages.AmountRequired);
-
-            RuleFor(x => x.Amount)
-             .GreaterThan(0)
-             .WithMessage(ValidationMessages.AmountGreaterThanZero);
-
-            if (isAccreditationFee)
-            {
-                RuleFor(x => x.Description)
-               .Cascade(CascadeMode.Stop)
-               .NotEmpty()
-               .WithMessage(ValidationMessages.DescriptionRequired)
-               .Must(text => text == PaymentDescConstants.RegistrationFee || text == PaymentDescConstants.PackagingResubmissionFee || text == PaymentDescConstants.AccreditationFee)
-               .WithMessage(ValidationMessages.InvalidDescriptionV2);
-            }
-            else
-            {
-                RuleFor(x => x.Description)
-               .Cascade(CascadeMode.Stop)
-               .NotEmpty()
-               .WithMessage(ValidationMessages.DescriptionRequired)
-               .Must(text => text == PaymentDescConstants.RegistrationFee || text == PaymentDescConstants.PackagingResubmissionFee)
-               .WithMessage(ValidationMessages.InvalidDescription);
-            }
+                .WithMessage(ValidationMessages.OrganisationIdRequired);
 
             RuleFor(x => x.Regulator)
             .Cascade(CascadeMode.Stop)

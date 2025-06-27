@@ -4,37 +4,10 @@ using FluentValidation;
 
 namespace EPR.Payment.Facade.Validations.Payments
 {
-    public class OfflinePaymentRequestDtoCommonValidator<T> : AbstractValidator<T> where T : OfflinePaymentRequestDto
+    public class OfflinePaymentRequestDtoCommonValidator<T> : BasePaymentRequestDtoCommonValidator<T> where T: OfflinePaymentRequestDto        
     {
-        public OfflinePaymentRequestDtoCommonValidator(bool isAccreditationFee = false)
+        public OfflinePaymentRequestDtoCommonValidator(bool isAccreditationFee) : base (isAccreditationFee)
         {
-            RuleFor(x => x.UserId)
-               .NotNull()
-               .WithMessage(ValidationMessages.UserIdRequired);
-
-            RuleFor(x => x.Reference)
-                .NotEmpty()
-                .WithMessage(ValidationMessages.ReferenceRequired);
-
-            if (isAccreditationFee)
-            {
-                RuleFor(x => x.Description)
-               .Cascade(CascadeMode.Stop)
-               .NotEmpty()
-               .WithMessage(ValidationMessages.DescriptionRequired)
-               .Must(text => text == PaymentDescConstants.RegistrationFee || text == PaymentDescConstants.PackagingResubmissionFee || text == PaymentDescConstants.AccreditationFee)
-               .WithMessage(ValidationMessages.InvalidDescriptionV2);
-            }
-            else
-            {
-                RuleFor(x => x.Description)
-               .Cascade(CascadeMode.Stop)
-               .NotEmpty()
-               .WithMessage(ValidationMessages.DescriptionRequired)
-               .Must(text => text == PaymentDescConstants.RegistrationFee || text == PaymentDescConstants.PackagingResubmissionFee)
-               .WithMessage(ValidationMessages.InvalidDescription);
-            }
-
             RuleFor(x => x.Regulator)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
