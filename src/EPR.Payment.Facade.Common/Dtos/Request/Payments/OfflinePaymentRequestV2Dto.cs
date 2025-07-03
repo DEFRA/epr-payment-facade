@@ -1,4 +1,5 @@
 ﻿using EPR.Payment.Facade.Common.Enums.Payments;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
@@ -7,5 +8,6 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public OfflinePaymentMethodTypes? PaymentMethod { get; set; }
+        public Guid? OrganisationId { get; set; }
     }
 }
