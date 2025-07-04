@@ -1,5 +1,4 @@
 ﻿using EPR.Payment.Facade.Common.Enums.Payments;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 
 namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
