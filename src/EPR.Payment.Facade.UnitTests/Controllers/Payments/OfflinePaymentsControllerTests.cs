@@ -146,7 +146,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             var validationFailures = new List<ValidationFailure>
             {
                 new ValidationFailure("Reference", "Reference is required"),
-                new ValidationFailure("Regulator", "Regulator is required")
+                new ValidationFailure("Regulator", "Regulator is required"),
+                new ValidationFailure("PaymentMethod", "PaymentMethod is required"),
+                new ValidationFailure("OrganisationId", "Organisation ID is required."),
+                new ValidationFailure("UserId", "User id is required."),
+                new ValidationFailure("Description", "The Description field is required."),
+                new ValidationFailure("Description", "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee'.")
             };
 
             _offlinePaymentRequestValidatorMock.Setup(v => v.Validate(It.IsAny<OfflinePaymentRequestDto>()))
@@ -160,7 +165,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             {
                 var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Which;
                 var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Which;
-                problemDetails.Detail.Should().Be("Reference is required; Regulator is required");
+                problemDetails.Detail.Should().Be("Reference is required; Regulator is required; PaymentMethod is required; Organisation ID is required.; User id is required.; The Description field is required.; Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee'.");
             }
         }
 
