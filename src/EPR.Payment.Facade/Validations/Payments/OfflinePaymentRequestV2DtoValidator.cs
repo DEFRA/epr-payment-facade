@@ -11,6 +11,14 @@ namespace EPR.Payment.Facade.Validations.Payments
             RuleFor(x => x.PaymentMethod)
               .NotNull()
               .WithMessage(ValidationMessages.OfflinePaymentMethodRequired);
+
+            RuleFor(x => x.OrganisationId)
+              .NotNull()
+              .WithMessage(ValidationMessages.OfflinePaymentOrgIdRequired);
+
+            RuleFor(x => x.OrganisationId)
+             .NotEqual(Guid.Empty)
+             .WithMessage(ValidationMessages.OfflinePaymentOrgIdNotDefaultGuid);
         }
     }
 }

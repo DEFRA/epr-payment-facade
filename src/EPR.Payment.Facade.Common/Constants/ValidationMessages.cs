@@ -24,6 +24,8 @@
         public const string OfflineReferenceRequired = "The Reference field is required.";
         public const string OfflineRegulatorRequired = "The Regulator field is required.";
         public const string OfflinePaymentMethodRequired = "The PaymentMethod field is required.";
+        public const string OfflinePaymentOrgIdRequired = "Organization Id must not be null";
+        public const string OfflinePaymentOrgIdNotDefaultGuid = "Organization Id must not be default Guid value";
 
         // Common Validation Messages
         public const string RegulatorRequired = "Regulator is required.";
