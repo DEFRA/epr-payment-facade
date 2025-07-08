@@ -23,6 +23,8 @@
         public const string InvalidDescriptionV2 = "Description is invalid; acceptable values are 'Registration fee' or 'Packaging data resubmission fee' or 'Accreditation fee'.";
         public const string InvalidRegulatorOffline = "Regulator is invalid; acceptable values are 'GB-ENG', 'GB-SCT', 'GB-WLS' and 'GB-NIR'.";                
         public const string OfflinePaymentMethodRequired = "The PaymentMethod field is required.";
+        public const string OfflinePaymentOrgIdRequired = "Organization Id must not be null";
+        public const string OfflinePaymentOrgIdNotDefaultGuid = "Organization Id must not be default Guid value";
 
         // Common Validation Messages
         public const string RegulatorRequired = "Regulator is required.";

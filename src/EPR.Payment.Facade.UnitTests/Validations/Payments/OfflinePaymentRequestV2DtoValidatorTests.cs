@@ -104,5 +104,30 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
             var result = _validator.TestValidate(paymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.PaymentMethod);
         }
+
+        [TestMethod]
+        public void ShouldNot_Have_Error_When_OrganisationId_Is_Valid()
+        {
+            var paymentStatusInsertRequestDto = new OfflinePaymentRequestV2Dto { Regulator = RegulatorConstants.GBENG, Amount = 10, Reference = "Test Reference", UserId = Guid.NewGuid(), Description = PaymentDescConstants.RegistrationFee, PaymentMethod = OfflinePaymentMethodTypes.Cheque, OrganisationId=Guid.NewGuid() };
+            var result = _validator.TestValidate(paymentStatusInsertRequestDto);
+            result.ShouldNotHaveValidationErrorFor(x => x.OrganisationId);
+        }
+
+        [TestMethod]
+        public void Should_Have_Error_When_OrganisationId_Is_EmptyGuid()
+        {
+
+            var offlinePaymentStatusInsertRequestDto = new OfflinePaymentRequestV2Dto { Regulator = RegulatorConstants.GBENG, Amount = 10, Reference = "Test Reference", UserId = Guid.NewGuid(), Description = "Test Description", OrganisationId = Guid.Empty };
+            var result = _validator.TestValidate(offlinePaymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.OrganisationId);
+        }
+
+        [TestMethod]
+        public void Should_Have_Error_When_OrganisationId_Is_Null()
+        {
+            var offlinePaymentStatusInsertRequestDto = new OfflinePaymentRequestV2Dto { Regulator = RegulatorConstants.GBENG, Amount = 10, Reference = "Test Reference", UserId = Guid.NewGuid(), Description = "Test Description", OrganisationId = null };
+            var result = _validator.TestValidate(offlinePaymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.OrganisationId);
+        }
     }
 }
