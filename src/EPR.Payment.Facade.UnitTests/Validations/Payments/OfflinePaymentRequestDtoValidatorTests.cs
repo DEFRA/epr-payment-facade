@@ -41,9 +41,20 @@ namespace EPR.Payment.Facade.UnitTests.Validations.Payments
         }
 
         [TestMethod]
-        public void Should_Not_Have_Error_When_Amount_Is_Valid()
+        public void Should_Have_Error_When_Amount_Is_Null()
         {
-            var offlinePaymentStatusInsertRequestDto = new OfflinePaymentRequestDto { Amount = 10, Reference = "Test Reference", UserId = Guid.NewGuid(), Description = PaymentDescConstants.RegistrationFee, Regulator = RegulatorConstants.GBENG };
+            var offlinePaymentStatusInsertRequestDto = new OfflinePaymentRequestDto { Amount = null, Reference = "Test Reference", UserId = Guid.NewGuid(), Description = PaymentDescConstants.RegistrationFee, Regulator = RegulatorConstants.GBENG };
+            var result = _validator.TestValidate(offlinePaymentStatusInsertRequestDto);
+            result.ShouldHaveValidationErrorFor(x => x.Amount);
+        }       
+
+        [TestMethod]
+        [DataRow(-10)]
+        [DataRow(0)]
+        [DataRow(10)]
+        public void Should_Not_Have_Error_When_Amount_Is_Valid(int Amount)
+        {
+            var offlinePaymentStatusInsertRequestDto = new OfflinePaymentRequestDto { Amount = Amount, Reference = "Test Reference", UserId = Guid.NewGuid(), Description = PaymentDescConstants.RegistrationFee, Regulator = RegulatorConstants.GBENG };
             var result = _validator.TestValidate(offlinePaymentStatusInsertRequestDto);
             result.ShouldNotHaveValidationErrorFor(x => x.Amount);
         }
