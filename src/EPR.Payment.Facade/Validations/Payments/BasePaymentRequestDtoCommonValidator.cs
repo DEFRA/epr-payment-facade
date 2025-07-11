@@ -18,9 +18,7 @@ namespace EPR.Payment.Facade.Validations.Payments
 
             RuleFor(x => x.Amount)
                 .NotNull()
-                .WithMessage(ValidationMessages.AmountRequired)
-                .GreaterThan(0)
-                .WithMessage(ValidationMessages.AmountGreaterThanZero);
+                .WithMessage(ValidationMessages.AmountRequired);                
 
             if (isAccreditationFee)
             {
