@@ -18,6 +18,10 @@ namespace EPR.Payment.Facade.Validations.Payments
             .WithMessage(ValidationMessages.RegulatorRequired)
             .Must(text => text == RegulatorConstants.GBENG)
             .WithMessage(ValidationMessages.RegulatorNotENG);
+
+            RuleFor(x => x.Amount)              
+               .GreaterThan(0)
+               .WithMessage(ValidationMessages.AmountGreaterThanZero);
         }
     }
 }
