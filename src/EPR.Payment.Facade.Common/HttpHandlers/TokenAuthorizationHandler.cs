@@ -11,7 +11,7 @@ namespace EPR.Payment.Facade.Common.HttpHandlers
     [ExcludeFromCodeCoverage]
     public class TokenAuthorizationHandler : DelegatingHandler
     {
-#pragma warning disable S4487 Seems like it doesnt recognise that it is being used in the #if !DEBUG
+#pragma warning disable S4487
         private readonly TokenRequestContext _tokenRequestContext;
         private readonly DefaultAzureCredential? _credentials;
 #pragma warning restore S4487
