@@ -40,7 +40,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
            ILogger<ReprocessorExporterRegistrationFeesService> logger)
         {
             // Act
-            Action act = () => new ReprocessorExporterRegistrationFeesService(null!, logger);
+            Action act = () => _ = new ReprocessorExporterRegistrationFeesService(null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpReprocessorExporterRegistrationFeesService");
@@ -51,7 +51,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
             IHttpReprocessorExporterRegistrationFeesService httpRepoExpoRegistrationFeesService)
         {
             // Act
-            Action act = () => new ReprocessorExporterRegistrationFeesService(httpRepoExpoRegistrationFeesService, null!);
+            Action act = () => _ = new ReprocessorExporterRegistrationFeesService(httpRepoExpoRegistrationFeesService, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
@@ -79,7 +79,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ReprocessorOrEx
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            ReprocessorOrExporterRegistrationFeesResponseDto result = await _service.CalculateFeesAsync(request);
+            ReprocessorOrExporterRegistrationFeesResponseDto? result = await _service.CalculateFeesAsync(request);
 
             // Assert
             result.Should().BeEquivalentTo(expectedResponse);

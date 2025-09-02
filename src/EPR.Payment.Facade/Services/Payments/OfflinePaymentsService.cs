@@ -14,8 +14,7 @@ namespace EPR.Payment.Facade.Services.Payments
             IHttpOfflinePaymentsService httpOfflinePaymentsService, IHttpOfflinePaymentsServiceV2 httpOfflinePaymentsServiceV2)
         {
             _httpOfflinePaymentsService = httpOfflinePaymentsService ?? throw new ArgumentNullException(nameof(httpOfflinePaymentsService));
-            _httpOfflinePaymentsServiceV2 = httpOfflinePaymentsServiceV2 ?? throw new ArgumentNullException(nameof(httpOfflinePaymentsServiceV2)); ;
-
+            _httpOfflinePaymentsServiceV2 = httpOfflinePaymentsServiceV2 ?? throw new ArgumentNullException(nameof(httpOfflinePaymentsServiceV2));
         }
 
         public async Task OfflinePaymentAsync(OfflinePaymentRequestDto request, CancellationToken cancellationToken = default)

@@ -27,7 +27,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErroreproExpoRegServiceFee);
 
-            return CalculateFeesInternalAsync(request);
+            return CalculateFeesInternalAsync(request, cancellationToken);
         }
 
         private async Task<ReprocessorOrExporterRegistrationFeesResponseDto?> CalculateFeesInternalAsync(ReprocessorOrExporterRegistrationFeesRequestDto request, CancellationToken cancellationToken = default)
