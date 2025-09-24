@@ -21,7 +21,7 @@ namespace EPR.Payment.Facade.Validations.ResubmissionFees.Producer
                 .NotEmpty().WithMessage(ValidationMessages.ReferenceNumberRequired);
 
             RuleFor(x => x.MemberCount)
-                .GreaterThan(0).WithMessage(ValidationMessages.ProducerMemberCountGreaterThanZero);
+                .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.ProducerMemberCountGreaterThanOrEqualToZero);
         }
     }
 }
