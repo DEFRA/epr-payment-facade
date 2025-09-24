@@ -131,6 +131,26 @@ namespace EPR.Payment.Facade.UnitTests.Validations.ResubmissionFees
         }
 
         [TestMethod]
+        public void Validate_ZeroMemberCount_ShouldHaveError()
+        {
+            // Arrange
+            var request = new ProducerResubmissionFeeRequestDto
+            {
+                Regulator = "GB-ENG",
+                ReferenceNumber = "REF1234",
+                ResubmissionDate = DateTime.UtcNow,
+                MemberCount = 0
+            };
+
+            // Act
+            var result = _validator.TestValidate(request);
+
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.MemberCount)
+                .WithErrorMessage(ValidationMessages.ProducerMemberCountGreaterThanZero);
+        }
+
+        [TestMethod]
         public void Validate_ValidRequest_ShouldNotHaveAnyErrors()
         {
             // Arrange
@@ -138,7 +158,8 @@ namespace EPR.Payment.Facade.UnitTests.Validations.ResubmissionFees
             {
                 Regulator = "GB-ENG",
                 ReferenceNumber = "REF1234",
-                ResubmissionDate = DateTime.UtcNow.AddSeconds(-1) // Slightly in the past
+                ResubmissionDate = DateTime.UtcNow.AddSeconds(-1), // Slightly in the past
+                MemberCount = 1
             };
 
             // Act
