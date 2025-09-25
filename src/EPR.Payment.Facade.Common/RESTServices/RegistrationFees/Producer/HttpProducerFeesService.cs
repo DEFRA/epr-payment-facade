@@ -24,7 +24,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
                    configMonitor.Get("ProducerFeesService").EndPointName
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
-            var config = configMonitor.Get("ProducerFeesService");
+            _ = configMonitor.Get("ProducerFeesService");
         }
 
         public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(

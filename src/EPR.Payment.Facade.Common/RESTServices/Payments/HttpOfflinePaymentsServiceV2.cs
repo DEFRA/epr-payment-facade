@@ -21,7 +21,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.Payments
                    configMonitor.Get("OfflinePaymentServiceV2").EndPointName
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.OfflinePaymentServiceEndPointNameMissing))
         {
-            var config = configMonitor.Get("OfflinePaymentServiceV2");
+            _ = configMonitor.Get("OfflinePaymentServiceV2");
         }       
 
         public async Task InsertOfflinePaymentAsync(OfflinePaymentRequestV2Dto offlinePaymentStatusInsertRequest, CancellationToken cancellationToken = default)
