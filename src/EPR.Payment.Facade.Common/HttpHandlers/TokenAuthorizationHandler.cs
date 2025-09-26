@@ -11,8 +11,10 @@ namespace EPR.Payment.Facade.Common.HttpHandlers
     [ExcludeFromCodeCoverage]
     public class TokenAuthorizationHandler : DelegatingHandler
     {
+#pragma warning disable S4487
         private readonly TokenRequestContext _tokenRequestContext;
         private readonly DefaultAzureCredential? _credentials;
+#pragma warning restore S4487
         private readonly ILogger<TokenAuthorizationHandler> _logger;
 
         public TokenAuthorizationHandler(IOptions<Service> serviceConfig, ILogger<TokenAuthorizationHandler> logger)
