@@ -115,5 +115,46 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
             result.ShouldHaveValidationErrorFor(x => x.NoOfSubsidiariesOnlineMarketplace)
                   .WithErrorMessage(ValidationMessages.NumberOfOMPSubsidiariesLessThanOrEqualToNumberOfSubsidiaries);
         }
+
+        [TestMethod]
+        public void Validator_Should_Fail_When_NumberOfLateSubsidiaries_Is_Negative()
+        {
+            // Arrange
+            var dto = new ComplianceSchemeMemberDto
+            {
+                MemberId = "123",
+                MemberType = "Large",
+                NumberOfSubsidiaries = 0,
+                NoOfSubsidiariesOnlineMarketplace = 0,
+                NumberofLateSubsidiaries = -1
+            };
+
+            // Act
+            var result = _validator.TestValidate(dto);
+
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.NumberofLateSubsidiaries)
+                  .WithErrorMessage(ValidationMessages.NumberOfLateSubsidiariesRange);
+        }
+        [TestMethod]
+        public void Validator_Should_Not_Fail_When_NumberOfLateSubsidiaries_Is_Not_Negative()
+        {
+            // Arrange
+            var dto = new ComplianceSchemeMemberDto
+            {
+                MemberId = "123",
+                MemberType = "Large",
+                NumberOfSubsidiaries = 0,
+                NoOfSubsidiariesOnlineMarketplace = 0,
+                NumberofLateSubsidiaries = 0
+            };
+
+            // Act
+            var result = _validator.TestValidate(dto);
+
+            // Assert
+            result.ShouldNotHaveValidationErrorFor(x => x.NumberofLateSubsidiaries);
+        }
+
     }
 }
