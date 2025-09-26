@@ -48,39 +48,39 @@ builder.Services.AddSwaggerGen(setupAction =>
     setupAction.OperationFilter<FeatureGateOperationFilter>();
 
     // Configure OAuth2 for Swagger
-    //setupAction.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
-    //{
-    //    Type = SecuritySchemeType.OAuth2,
-    //    Flows = new OpenApiOAuthFlows
-    //    {
-    //        AuthorizationCode = new OpenApiOAuthFlow
-    //        {
-    //            AuthorizationUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/authorize"),
-    //            TokenUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/token"),
-    //            Scopes = new Dictionary<string, string>
-    //            {
-    //                { azureAdB2CConfig["Scopes"]!, "Access the Payment API" }
-    //            }
-    //        }
-    //    },
-    //    Description = "Authenticate with Azure AD B2C to access this API."
-    //});
+    setupAction.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/authorize"),
+                TokenUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/token"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { azureAdB2CConfig["Scopes"]!, "Access the Payment API" }
+                }
+            }
+        },
+        Description = "Authenticate with Azure AD B2C to access this API."
+    });
 
-    //// Require authentication for all endpoints in Swagger
-    //setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
-    //{
-    //    {
-    //        new OpenApiSecurityScheme
-    //        {
-    //            Reference = new OpenApiReference
-    //            {
-    //                Type = ReferenceType.SecurityScheme,
-    //                Id = "OAuth2"
-    //            }
-    //        },
-    //        new[] { azureAdB2CConfig["Scopes"] }
-    //    }
-    //});
+    // Require authentication for all endpoints in Swagger
+    setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "OAuth2"
+                }
+            },
+            new[] { azureAdB2CConfig["Scopes"] }
+        }
+    });
 });
 
 builder.Services.AddApplicationInsightsTelemetry().AddHealthChecks();

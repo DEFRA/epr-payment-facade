@@ -8,6 +8,11 @@
         public const string NumberOfOMPSubsidiariesLessThanOrEqualToNumberOfSubsidiaries = "Number of online marketplace subsidiaries must be less than or equal to number of subsidiaries.";
         public const string ApplicationReferenceNumberRequired = "Application Reference Number is required.";
         public const string NoOfSubsidiariesOnlineMarketplaceRange = "Number of Subsidiaries with Online Marketplace must be greater than or equal to 0.";
+        public const string FileIdRequired = "FileId is required";
+        public const string ExternalIdRequired = "ExternalId is required";
+        public const string InvoicePeriodRequired = "InvoicePeriod is required";
+        public const string PayerTypeIdRequired = "PayerTypeId is required";
+        public const string PayerIdRequired = "PayerId is required";
 
         // PaymentRequestDto Validation Messages
         public const string UserIdRequired = "User ID is required.";

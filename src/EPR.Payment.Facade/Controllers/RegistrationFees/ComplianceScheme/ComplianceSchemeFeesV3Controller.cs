@@ -19,12 +19,12 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
     public class ComplianceSchemeFeesV3Controller : ControllerBase
     {
         private readonly IComplianceSchemeCalculatorService _complianceSchemeFeesService;
-        private readonly ILogger<ComplianceSchemeFeesController> _logger;
+        private readonly ILogger<ComplianceSchemeFeesV3Controller> _logger;
         private readonly IValidator<ComplianceSchemeFeesRequestV3Dto> _validator;
 
         public ComplianceSchemeFeesV3Controller(
             IComplianceSchemeCalculatorService complianceSchemeFeesService,
-            ILogger<ComplianceSchemeFeesController> logger,
+            ILogger<ComplianceSchemeFeesV3Controller> logger,
             IValidator<ComplianceSchemeFeesRequestV3Dto> validator)
         {
             _complianceSchemeFeesService = complianceSchemeFeesService ?? throw new ArgumentNullException(nameof(complianceSchemeFeesService));
