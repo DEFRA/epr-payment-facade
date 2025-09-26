@@ -43,43 +43,44 @@ builder.Services.AddSwaggerGen(setupAction =>
     setupAction.EnableAnnotations();
     setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v1" });
     setupAction.SwaggerDoc("v2", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v2" });
+    setupAction.SwaggerDoc("v3", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v3" });
     setupAction.DocumentFilter<FeatureEnabledDocumentFilter>();
     setupAction.OperationFilter<FeatureGateOperationFilter>();
 
     // Configure OAuth2 for Swagger
-    setupAction.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
-    {
-        Type = SecuritySchemeType.OAuth2,
-        Flows = new OpenApiOAuthFlows
-        {
-            AuthorizationCode = new OpenApiOAuthFlow
-            {
-                AuthorizationUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/authorize"),
-                TokenUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/token"),
-                Scopes = new Dictionary<string, string>
-                {
-                    { azureAdB2CConfig["Scopes"]!, "Access the Payment API" }
-                }
-            }
-        },
-        Description = "Authenticate with Azure AD B2C to access this API."
-    });
+    //setupAction.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    //{
+    //    Type = SecuritySchemeType.OAuth2,
+    //    Flows = new OpenApiOAuthFlows
+    //    {
+    //        AuthorizationCode = new OpenApiOAuthFlow
+    //        {
+    //            AuthorizationUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/authorize"),
+    //            TokenUrl = new Uri($"{azureAdB2CConfig["Instance"]}/{azureAdB2CConfig["Domain"]}/{azureAdB2CConfig["SignUpSignInPolicyId"]}/oauth2/v2.0/token"),
+    //            Scopes = new Dictionary<string, string>
+    //            {
+    //                { azureAdB2CConfig["Scopes"]!, "Access the Payment API" }
+    //            }
+    //        }
+    //    },
+    //    Description = "Authenticate with Azure AD B2C to access this API."
+    //});
 
-    // Require authentication for all endpoints in Swagger
-    setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "OAuth2"
-                }
-            },
-            new[] { azureAdB2CConfig["Scopes"] }
-        }
-    });
+    //// Require authentication for all endpoints in Swagger
+    //setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
+    //{
+    //    {
+    //        new OpenApiSecurityScheme
+    //        {
+    //            Reference = new OpenApiReference
+    //            {
+    //                Type = ReferenceType.SecurityScheme,
+    //                Id = "OAuth2"
+    //            }
+    //        },
+    //        new[] { azureAdB2CConfig["Scopes"] }
+    //    }
+    //});
 });
 
 builder.Services.AddApplicationInsightsTelemetry().AddHealthChecks();
@@ -180,6 +181,7 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi v1");
         c.SwaggerEndpoint("/swagger/v2/swagger.json", "PaymentFacadeApi v2");
+        c.SwaggerEndpoint("/swagger/v3/swagger.json", "PaymentFacadeApi v3");
         c.RoutePrefix = "swagger";
 
         // OAuth2 settings for Swagger UI
