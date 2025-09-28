@@ -26,6 +26,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private ComplianceSchemeFeesRequestDto _complianceSchemeFeesRequestDto = null!;
+        private ComplianceSchemeFeesRequestV3Dto _complianceSchemeFeesRequestV3Dto = null!;
         private ComplianceSchemeFeesResponseDto _complianceSchemeFeesResponseDto = null!;
 
         [TestInitialize]
@@ -49,6 +50,31 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 Regulator = "GB-ENG",
                 ApplicationReferenceNumber = "A123",
                 SubmissionDate = DateTime.UtcNow,
+                ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
+                {
+                    new ComplianceSchemeMemberDto
+                    {
+                        MemberId = "123",
+                        MemberType = "LARGE",
+                        IsOnlineMarketplace = true,
+                        IsLateFeeApplicable = true,
+                        NumberOfSubsidiaries = 150,
+                        NoOfSubsidiariesOnlineMarketplace = 10
+
+                    }
+                }
+            };
+
+            _complianceSchemeFeesRequestV3Dto = new ComplianceSchemeFeesRequestV3Dto
+            {
+                Regulator = "GB-ENG",
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.UtcNow,
+                FileId = Guid.NewGuid(),
+                ExternalId = Guid.NewGuid(),
+                InvoicePeriod = new DateTimeOffset(),
+                PayerId = 1,
+                PayerTypeId = 1,
                 ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
                 {
                     new ComplianceSchemeMemberDto
@@ -256,6 +282,138 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
 
             // Act
             Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage("An unexpected error occurred while calculating Compliance Scheme fees.");
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsyncV3_ValidRequest_ReturnsRegistrationFeesResponseDto(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
+            });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            var result = await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestV3Dto, cancellationToken);
+
+            // Assert
+            result.Should().BeEquivalentTo(_complianceSchemeFeesResponseDto);
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsyncV3_HttpRequestException_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new HttpRequestException("Unexpected error"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestV3Dto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ServiceException>()
+                    .WithMessage(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
+
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsyncV3_UnsuccessfulStatusCode_ThrowsValidationException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new ResponseCodeException(HttpStatusCode.BadRequest, "Invalid input parameter."));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestV3Dto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("Invalid input parameter.");
+
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsyncV3_Exception_ThrowsException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            Mock<IOptions<Service>> configMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new Exception("Unexpected error."));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestV3Dto, cancellationToken);
 
             // Assert
             using (new AssertionScope())

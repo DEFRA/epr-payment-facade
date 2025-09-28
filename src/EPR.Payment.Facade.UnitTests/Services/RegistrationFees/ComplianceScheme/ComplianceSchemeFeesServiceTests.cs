@@ -130,5 +130,78 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
                 thrownException.Which.Message.Should().Be(exceptionMessage);
             }
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsyncV3_RequestIsValid_ShouldReturnResponse(
+            ComplianceSchemeFeesResponseDto expectedResponse,
+            ComplianceSchemeFeesRequestV3Dto request)
+        {
+            // Arrange
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await _service.CalculateFeesAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedResponse);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsyncV3_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
+            ComplianceSchemeFeesRequestV3Dto request)
+        {
+            // Arrange
+            var exceptionMessage = "Unexpected error occurred";
+            var exception = new Exception(exceptionMessage);
+
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var thrownException = await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
+
+                thrownException.Which.InnerException.Should().BeOfType<Exception>()
+                    .Which.Message.Should().Be(exceptionMessage);
+
+                _loggerMock.Verify(
+                    x => x.Log(
+                        LogLevel.Error,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees)),
+                        exception,
+                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                    Times.Once);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsyncV3_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
+            ComplianceSchemeFeesRequestV3Dto request)
+        {
+            // Arrange
+            var exceptionMessage = "Validation error";
+            var validationException = new ValidationException(exceptionMessage);
+
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(validationException);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var thrownException = await act.Should().ThrowAsync<ValidationException>();
+
+                thrownException.Which.Message.Should().Be(exceptionMessage);
+            }
+        }
     }
 }
