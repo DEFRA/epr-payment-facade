@@ -28,7 +28,35 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             return CalculateProducerFeesInternalAsync(request);
         }
 
+        public Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV3Dto request, CancellationToken cancellationToken)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorCalculatingProducerFees);
+
+            return CalculateProducerFeesInternalV3Async(request);
+        }
+
         private async Task<ProducerFeesResponseDto> CalculateProducerFeesInternalAsync(ProducerFeesRequestDto request)
+        {
+            try
+            {
+                var response = await _httpProducerFeesService.CalculateProducerFeesAsync(request);
+                return response;
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateProducerFeesInternalAsync));
+
+                throw new ValidationException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ExceptionMessages.UnexpectedErrorCalculatingProducerFees);
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees, ex);
+            }
+        }
+
+        private async Task<ProducerFeesResponseDto> CalculateProducerFeesInternalV3Async(ProducerFeesRequestV3Dto request)
         {
             try
             {
