@@ -104,7 +104,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            var result = await controller.CalculateFeesV3Async(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -130,7 +130,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             validatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            var result = await controller.CalculateFeesV3Async(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -161,7 +161,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ThrowsAsync(validationException);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            var result = await controller.CalculateFeesV3Async(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -192,7 +192,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ThrowsAsync(serviceException);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            var result = await controller.CalculateFeesV3Async(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -224,7 +224,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 .ThrowsAsync(exception);
 
             // Act
-            var result = await controller.CalculateFeesAsync(request, CancellationToken.None);
+            var result = await controller.CalculateFeesV3Async(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())

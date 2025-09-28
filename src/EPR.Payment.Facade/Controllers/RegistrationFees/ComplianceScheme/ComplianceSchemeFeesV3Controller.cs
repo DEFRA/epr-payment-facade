@@ -45,12 +45,12 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [FeatureGate("EnableComplianceSchemeFees")]
-        public async Task<IActionResult> CalculateFeesAsync([FromBody] ComplianceSchemeFeesRequestV3Dto complianceSchemeFeesRequestDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> CalculateFeesV3Async([FromBody] ComplianceSchemeFeesRequestV3Dto complianceSchemeFeesRequestDto, CancellationToken cancellationToken)
         {
             ValidationResult validationResult = _validator.Validate(complianceSchemeFeesRequestDto);
             if (!validationResult.IsValid)
             {
-                _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
+                _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesV3Async));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",
@@ -66,7 +66,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
             }
             catch (ValidationException ex)
             {
-                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesV3Async));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",
@@ -76,7 +76,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
             }
             catch (ServiceException ex)
             {
-                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(CalculateFeesAsync));
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(CalculateFeesV3Async));
                 return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
                 {
                     Title = "Service Error",
@@ -86,7 +86,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(CalculateFeesAsync));
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(CalculateFeesV3Async));
                 return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
                 {
                     Title = "Unexpected Error",
