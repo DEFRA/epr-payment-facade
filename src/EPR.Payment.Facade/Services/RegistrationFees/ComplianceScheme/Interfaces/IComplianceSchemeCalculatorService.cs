@@ -7,7 +7,5 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme.Interfac
     public interface IComplianceSchemeCalculatorService
     {
         Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default);
-
-        Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestV3Dto request, CancellationToken cancellationToken = default);
     }
 }

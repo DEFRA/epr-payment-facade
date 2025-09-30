@@ -50,29 +50,5 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
                 throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees, ex);
             }
         }
-
-        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(
-            ComplianceSchemeFeesRequestV3Dto request, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                return await Post<ComplianceSchemeFeesResponseDto>(
-                    UrlConstants.CalculateComplianceSchemeFee,
-                    request,
-                    cancellationToken);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
-            }
-            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
-            {
-                throw new ValidationException(ex.Message.Trim('"'));
-            }
-            catch (Exception ex)
-            {
-                throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees, ex);
-            }
-        }
     }
 }
