@@ -12,7 +12,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
 {
-    [ApiVersion(1)]
+    [ApiVersion(3)]
     [ApiController]
     [Route("api/v{version:apiVersion}/producer")]
     [FeatureGate("EnableProducersFeesFeature")]
@@ -33,6 +33,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
             _registrationValidator = registrationValidator ?? throw new ArgumentNullException(nameof(registrationValidator));
         }
 
+        [ApiExplorerSettings(GroupName = "v3")]
         [MapToApiVersion(3)]
         [HttpPost("registration-fee")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerFeesResponseDto))]

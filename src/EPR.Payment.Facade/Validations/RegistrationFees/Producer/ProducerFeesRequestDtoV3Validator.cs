@@ -44,11 +44,11 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees.Producer
             RuleFor(x => x.InvoicePeriod)
                     .NotEmpty().WithMessage(ValidationMessages.InvoicePeriodRequired);
 
-            RuleFor(x => x.PayerTypeId)
-                    .LessThan(1).WithMessage(ValidationMessages.PayerTypeIdRequired);
+       /*     RuleFor(x => x.PayerTypeId)
+                    .LessThan(1).WithMessage(ValidationMessages.PayerTypeIdRequired);*/
 
-            RuleFor(x => x.PayerId)
-                    .LessThan(1).WithMessage(ValidationMessages.PayerIdRequired);
+/*            RuleFor(x => x.PayerId)
+                    .LessThan(1).WithMessage(ValidationMessages.PayerIdRequired);*/
         }
     }
 }
