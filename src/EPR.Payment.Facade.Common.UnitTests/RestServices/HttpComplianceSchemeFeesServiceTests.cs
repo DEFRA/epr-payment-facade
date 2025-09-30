@@ -26,7 +26,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
         private ComplianceSchemeFeesRequestDto _complianceSchemeFeesRequestDto = null!;
-        private ComplianceSchemeFeesRequestV3Dto _complianceSchemeFeesRequestV3Dto = null!;
         private ComplianceSchemeFeesResponseDto _complianceSchemeFeesResponseDto = null!;
 
         [TestInitialize]
@@ -50,31 +49,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RestServices
                 Regulator = "GB-ENG",
                 ApplicationReferenceNumber = "A123",
                 SubmissionDate = DateTime.UtcNow,
-                ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
-                {
-                    new ComplianceSchemeMemberDto
-                    {
-                        MemberId = "123",
-                        MemberType = "LARGE",
-                        IsOnlineMarketplace = true,
-                        IsLateFeeApplicable = true,
-                        NumberOfSubsidiaries = 150,
-                        NoOfSubsidiariesOnlineMarketplace = 10
-
-                    }
-                }
-            };
-
-            _complianceSchemeFeesRequestV3Dto = new ComplianceSchemeFeesRequestV3Dto
-            {
-                Regulator = "GB-ENG",
-                ApplicationReferenceNumber = "A123",
-                SubmissionDate = DateTime.UtcNow,
-                FileId = Guid.NewGuid(),
-                ExternalId = Guid.NewGuid(),
-                InvoicePeriod = new DateTimeOffset(),
-                PayerId = 1,
-                PayerTypeId = 1,
                 ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
                 {
                     new ComplianceSchemeMemberDto
