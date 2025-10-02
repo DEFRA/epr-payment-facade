@@ -30,7 +30,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
             _complianceSchemeFeesService = complianceSchemeFeesService ?? throw new ArgumentNullException(nameof(complianceSchemeFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _validatorV2 = validatorV2 ?? throw new ArgumentNullException(nameof(validatorV2)); ;
+            _validatorV2 = validatorV2 ?? throw new ArgumentNullException(nameof(validatorV2));
         }
 
         [ApiExplorerSettings(GroupName = "v1")]
