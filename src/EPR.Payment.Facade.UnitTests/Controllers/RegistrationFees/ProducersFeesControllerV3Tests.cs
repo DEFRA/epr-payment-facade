@@ -18,14 +18,14 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Controllers
 {
     [TestClass]
-    public class ProducersFeesControllerV3Tests
+    public class ProducersFeesControllerV2Tests
     {
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ValidRequest_ReturnsOk(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> validatorMock,
-            [Greedy] ProducersFeesV3Controller controller,
-            [Frozen] ProducerFeesRequestV3Dto request,
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> validatorMock,
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerFeesRequestV2Dto request,
             [Frozen] ProducerFeesResponseDto expectedResponse)
         {
             // Arrange
@@ -48,9 +48,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
 
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_InvalidRequest_ReturnsBadRequest(
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> validatorMock,
-            [Greedy] ProducersFeesV3Controller controller,
-            [Frozen] ProducerFeesRequestV3Dto request)
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> validatorMock,
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerFeesRequestV2Dto request)
         {
             // Arrange
             var validationFailures = new List<ValidationFailure>
@@ -79,9 +79,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ServiceThrowsValidationException_ReturnsBadRequest(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> validatorMock,
-            [Greedy] ProducersFeesV3Controller controller,
-            [Frozen] ProducerFeesRequestV3Dto request)
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> validatorMock,
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerFeesRequestV2Dto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
@@ -110,9 +110,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ServiceThrowsServiceException_ReturnsInternalServerError(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> validatorMock,
-            [Greedy] ProducersFeesV3Controller controller,
-            [Frozen] ProducerFeesRequestV3Dto request)
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> validatorMock,
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerFeesRequestV2Dto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
@@ -142,9 +142,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ServiceThrowsException_ReturnsInternalServerError(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> validatorMock,
-            [Greedy] ProducersFeesV3Controller controller,
-            [Frozen] ProducerFeesRequestV3Dto request)
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> validatorMock,
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerFeesRequestV2Dto request)
         {
             // Arrange
             var validationResult = new ValidationResult();
@@ -174,33 +174,37 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
-            [Frozen] Mock<ILogger<ProducersFeesV3Controller>> loggerMock,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> registrationValidator,
+            [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> registrationV2Validator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
-            var controller = new ProducersFeesV3Controller(
+            var controller = new ProducersFeesController(
                 producerFeesServiceMock.Object,
                 loggerMock.Object,
-                registrationValidator.Object
+                registrationValidator.Object,
+                registrationV2Validator.Object
             );
 
             // Assert
             controller.Should().NotBeNull();
-            controller.Should().BeAssignableTo<ProducersFeesV3Controller>();
+            controller.Should().BeAssignableTo<ProducersFeesController>();
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullRegistrationFeesService_ShouldThrowArgumentNullException(
-            [Frozen] Mock<ILogger<ProducersFeesV3Controller>> loggerMock,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> registrationValidator,
+            [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> registrationV2Validator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
-            Action act = () => new ProducersFeesV3Controller(
+            Action act = () => new ProducersFeesController(
                 null!,
                 loggerMock.Object,
-                registrationValidator.Object
+                registrationValidator.Object,
+                registrationV2Validator.Object
             );
 
             // Assert
@@ -211,14 +215,16 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV3Dto>> registrationValidator,
+            [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
+            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> registrationV2Validator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
-            Action act = () => new ProducersFeesV3Controller(
+            Action act = () => new ProducersFeesController(
                 producerFeesServiceMock.Object,
                 null!,
-                registrationValidator.Object
+                registrationValidator.Object,
+                registrationV2Validator.Object
             );
 
             // Assert
@@ -229,13 +235,14 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullRegistrationValidator_ShouldThrowArgumentNullException(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
-            [Frozen] Mock<ILogger<ProducersFeesV3Controller>> loggerMock,
+            [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
-            Action act = () => new ProducersFeesV3Controller(
+            Action act = () => new ProducersFeesController(
                 producerFeesServiceMock.Object,
                 loggerMock.Object,
+                null!,
                 null!
             );
 
