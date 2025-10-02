@@ -11,29 +11,32 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
     public class ProducerFeesService : IProducerFeesService
     {
         private readonly IHttpProducerFeesService _httpProducerFeesService;
+        private readonly IHttpProducerFeesV3Service _httpProducerFeeServiceV2;
         private readonly ILogger<ProducerFeesService> _logger;
 
         public ProducerFeesService(IHttpProducerFeesService httpProducerFeesService,
+            IHttpProducerFeesV3Service httpProducerFeesServiceV2,
             ILogger<ProducerFeesService> logger)
         {
             _httpProducerFeesService = httpProducerFeesService ?? throw new ArgumentNullException(nameof(httpProducerFeesService));
+            _httpProducerFeeServiceV2 = httpProducerFeesServiceV2 ?? throw new ArgumentNullException(nameof(httpProducerFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
+        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorCalculatingProducerFees);
 
-            return CalculateProducerFeesInternalAsync(request);
+            return await CalculateProducerFeesInternalAsync(request);
         }
 
-        public Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV3Dto request, CancellationToken cancellationToken)
+        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV3Dto request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorCalculatingProducerFees);
 
-            return CalculateProducerFeesInternalV3Async(request);
+            return await CalculateProducerFeesInternalV3Async(request);
         }
 
         private async Task<ProducerFeesResponseDto> CalculateProducerFeesInternalAsync(ProducerFeesRequestDto request)
@@ -60,7 +63,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
         {
             try
             {
-                var response = await _httpProducerFeesService.CalculateProducerFeesAsync(request);
+                var response = await _httpProducerFeeServiceV2.CalculateProducerFeesAsync(request);
                 return response;
             }
             catch (ValidationException ex)
