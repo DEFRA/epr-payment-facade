@@ -17,7 +17,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Text;
 
-namespace EPR.Payment.Facade.Common.UnitTests.RestServices
+namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
     public class HttpProducerResubmissionFeesServiceTests

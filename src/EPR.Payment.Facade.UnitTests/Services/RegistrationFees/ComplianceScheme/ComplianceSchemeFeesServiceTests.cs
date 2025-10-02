@@ -20,6 +20,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
     {
         private IFixture _fixture = null!;
         private Mock<IHttpComplianceSchemeFeesService> _httpComplianceSchemeFeesServiceMock = null!;
+        private Mock<IHttpComplianceSchemeFeesServiceV2> _httpComplianceSchemeFeesServiceV2Mock = null!;
         private Mock<ILogger<ComplianceSchemeCalculatorService>> _loggerMock = null!;
         private ComplianceSchemeCalculatorService _service = null!;
 
@@ -29,10 +30,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
             _httpComplianceSchemeFeesServiceMock = _fixture.Freeze<Mock<IHttpComplianceSchemeFeesService>>();
+            _httpComplianceSchemeFeesServiceV2Mock = _fixture.Freeze<Mock<IHttpComplianceSchemeFeesServiceV2>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<ComplianceSchemeCalculatorService>>>();
 
             _service = new ComplianceSchemeCalculatorService(
                 _httpComplianceSchemeFeesServiceMock.Object,
+                _httpComplianceSchemeFeesServiceV2Mock.Object,
                 _loggerMock.Object);
         }
 
@@ -41,7 +44,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             ILogger<ComplianceSchemeCalculatorService> logger)
         {
             // Act
-            Action act = () => new ComplianceSchemeCalculatorService(null!, logger);
+            Action act = () => new ComplianceSchemeCalculatorService(null!, null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpComplianceSchemeFeesService");
@@ -49,10 +52,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
 
         [TestMethod, AutoMoqData]
         public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
-            IHttpComplianceSchemeFeesService httpComplianceSchemeFeesService)
+            IHttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            IHttpComplianceSchemeFeesServiceV2 httpComplianceSchemeFeesServiceV2)
         {
             // Act
-            Action act = () => new ComplianceSchemeCalculatorService(httpComplianceSchemeFeesService, null!);
+            Action act = () => new ComplianceSchemeCalculatorService(httpComplianceSchemeFeesService, httpComplianceSchemeFeesServiceV2, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
@@ -117,6 +121,79 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             var validationException = new ValidationException(exceptionMessage);
 
             _httpComplianceSchemeFeesServiceMock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(validationException);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var thrownException = await act.Should().ThrowAsync<ValidationException>();
+
+                thrownException.Which.Message.Should().Be(exceptionMessage);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_V2_RequestIsValid_ShouldReturnResponse(
+            ComplianceSchemeFeesResponseDto expectedResponse,
+            ComplianceSchemeFeesRequestV2Dto request)
+        {
+            // Arrange
+            _httpComplianceSchemeFeesServiceV2Mock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await _service.CalculateFeesAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedResponse);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_V2_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
+            ComplianceSchemeFeesRequestV2Dto request)
+        {
+            // Arrange
+            var exceptionMessage = "Unexpected error occurred";
+            var exception = new Exception(exceptionMessage);
+
+            _httpComplianceSchemeFeesServiceV2Mock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateFeesAsync(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var thrownException = await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingComplianceSchemeFees);
+
+                thrownException.Which.InnerException.Should().BeOfType<Exception>()
+                    .Which.Message.Should().Be(exceptionMessage);
+
+                _loggerMock.Verify(
+                    x => x.Log(
+                        LogLevel.Error,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees)),
+                        exception,
+                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                    Times.Once);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_V2_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
+            ComplianceSchemeFeesRequestV2Dto request)
+        {
+            // Arrange
+            var exceptionMessage = "Validation error";
+            var validationException = new ValidationException(exceptionMessage);
+
+            _httpComplianceSchemeFeesServiceV2Mock.Setup(s => s.CalculateFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(validationException);
 
             // Act

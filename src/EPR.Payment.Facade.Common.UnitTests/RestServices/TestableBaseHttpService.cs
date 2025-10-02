@@ -1,7 +1,7 @@
 ﻿using EPR.Payment.Facade.Common.RESTServices;
 using Microsoft.AspNetCore.Http;
 
-namespace EPR.Payment.Facade.Common.UnitTests.RestServices
+namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     public class TestableBaseHttpService : BaseHttpService
     {
