@@ -43,7 +43,6 @@ builder.Services.AddSwaggerGen(setupAction =>
     setupAction.EnableAnnotations();
     setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v1" });
     setupAction.SwaggerDoc("v2", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v2" });
-    setupAction.SwaggerDoc("v3", new OpenApiInfo { Title = "PaymentFacadeApi", Version = "v3" });
     setupAction.DocumentFilter<FeatureEnabledDocumentFilter>();
     setupAction.OperationFilter<FeatureGateOperationFilter>();
 
@@ -181,7 +180,6 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "PaymentFacadeApi v1");
         c.SwaggerEndpoint("/swagger/v2/swagger.json", "PaymentFacadeApi v2");
-        c.SwaggerEndpoint("/swagger/v3/swagger.json", "PaymentFacadeApi v3");
         c.RoutePrefix = "swagger";
 
         // OAuth2 settings for Swagger UI

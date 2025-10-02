@@ -20,6 +20,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
     {
         private IFixture _fixture = null!;
         private Mock<IHttpComplianceSchemeFeesService> _httpComplianceSchemeFeesServiceMock = null!;
+        private Mock<IHttpComplianceSchemeFeesServiceV2> _httpComplianceSchemeFeesServiceV2Mock = null!;
         private Mock<ILogger<ComplianceSchemeCalculatorService>> _loggerMock = null!;
         private ComplianceSchemeCalculatorService _service = null!;
 
@@ -29,10 +30,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
             _httpComplianceSchemeFeesServiceMock = _fixture.Freeze<Mock<IHttpComplianceSchemeFeesService>>();
+            _httpComplianceSchemeFeesServiceV2Mock = _fixture.Freeze<Mock<IHttpComplianceSchemeFeesServiceV2>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<ComplianceSchemeCalculatorService>>>();
 
             _service = new ComplianceSchemeCalculatorService(
                 _httpComplianceSchemeFeesServiceMock.Object,
+                _httpComplianceSchemeFeesServiceV2Mock.Object,
                 _loggerMock.Object);
         }
 
@@ -41,7 +44,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             ILogger<ComplianceSchemeCalculatorService> logger)
         {
             // Act
-            Action act = () => new ComplianceSchemeCalculatorService(null!, logger);
+            Action act = () => new ComplianceSchemeCalculatorService(null!, null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpComplianceSchemeFeesService");
@@ -49,10 +52,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
 
         [TestMethod, AutoMoqData]
         public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
-            IHttpComplianceSchemeFeesService httpComplianceSchemeFeesService)
+            IHttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            IHttpComplianceSchemeFeesServiceV2 httpComplianceSchemeFeesServiceV2)
         {
             // Act
-            Action act = () => new ComplianceSchemeCalculatorService(httpComplianceSchemeFeesService, null!);
+            Action act = () => new ComplianceSchemeCalculatorService(httpComplianceSchemeFeesService, httpComplianceSchemeFeesServiceV2, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
