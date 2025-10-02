@@ -21,6 +21,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         private readonly IProducerFeesService _producerFeesService;
         private readonly ILogger<ProducersFeesController> _logger;
         private readonly IValidator<ProducerFeesRequestDto> _registrationValidator;
+        private readonly IValidator<ProducerFeesRequestV3Dto> _registrationV3Validator;
 
         public ProducersFeesController(
             IProducerFeesService producerFeesService,
@@ -33,7 +34,8 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
             _registrationValidator = registrationValidator ?? throw new ArgumentNullException(nameof(registrationValidator));
         }
 
-        [HttpPost("registration-fee")]
+        [ApiExplorerSettings(GroupName = "v1")]
+        [HttpPost("v1/registration-fee")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerFeesResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
@@ -51,6 +53,72 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
             if (!validationResult.IsValid)
             {
                 _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Validation Error",
+                    Detail = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)),
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            try
+            {
+                var result = await _producerFeesService.CalculateProducerFeesAsync(producerRegistrationFeesRequestDto, cancellationToken);
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Validation Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+            catch (ServiceException ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(CalculateFeesAsync));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Service Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(CalculateFeesAsync));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Unexpected Error",
+                    Detail = ExceptionMessages.UnexpectedErrorCalculatingFees,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+        }
+
+
+        [ApiExplorerSettings(GroupName = "v2")]
+        [MapToApiVersion(2)]
+        [HttpPost("v2/registration-fee")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerFeesResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
+        [SwaggerOperation(
+           Summary = "Calculates the producer registration fees",
+           Description = "Calculates the producer registration fees based on the provided request data."
+       )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returns the calculated fees for the producer.", typeof(ProducerFeesResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
+        [FeatureGate("EnableProducersFeesCalculationV3")]
+        public async Task<IActionResult> CalculateFeesV3Async([FromBody] ProducerFeesRequestV3Dto producerRegistrationFeesRequestDto, CancellationToken cancellationToken)
+        {
+            ValidationResult validationResult = _registrationV3Validator.Validate(producerRegistrationFeesRequestDto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesV3Async));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",
