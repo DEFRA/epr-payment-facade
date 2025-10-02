@@ -21,6 +21,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
     {
         private IFixture _fixture = null!;
         private Mock<IHttpProducerFeesService> _httpProducerFeesService = null!;
+        private Mock<IHttpProducerFeesV2Service> _httpProducerFeesV2Service = null!;
         private Mock<ILogger<ProducerFeesService>> _loggerMock = null!;
         private ProducerFeesService _service = null!;
 
@@ -34,6 +35,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
 
             _service = new ProducerFeesService(
                 _httpProducerFeesService.Object,
+                _httpProducerFeesV2Service.Object,
                 _loggerMock.Object);
         }
 
@@ -42,7 +44,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             ILogger<ProducerFeesService> logger)
         {
             // Act
-            Action act = () => new ProducerFeesService(null!, logger);
+            Action act = () => new ProducerFeesService(null!, null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpProducerFeesService");
@@ -50,10 +52,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
 
         [TestMethod, AutoMoqData]
         public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
-            IHttpProducerFeesService httpProducerFeesService)
+            IHttpProducerFeesService httpProducerFeesService, IHttpProducerFeesV2Service httpProducerFeesV2Service)
         {
             // Act
-            Action act = () => new ProducerFeesService(httpProducerFeesService, null!);
+            Action act = () => new ProducerFeesService(httpProducerFeesService, httpProducerFeesV2Service, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
