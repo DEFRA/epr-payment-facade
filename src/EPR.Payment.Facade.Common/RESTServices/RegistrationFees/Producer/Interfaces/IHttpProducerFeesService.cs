@@ -7,9 +7,4 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Inter
     {
         Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default);
     }
-
-    public interface IHttpProducerFeesV3Service
-    {
-        Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV3Dto request, CancellationToken cancellationToken = default);
-    }
 }

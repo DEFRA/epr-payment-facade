@@ -11,9 +11,9 @@ using System.Net;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
 {
-    public class HttpProducerFeesService : BaseHttpService, IHttpProducerFeesService
+    public class HttpProducerFeesV2Service : BaseHttpService, IHttpProducerFeesV2Service
     {
-        public HttpProducerFeesService(
+        public HttpProducerFeesV2Service(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
             IOptionsMonitor<Service> configMonitor)
@@ -26,9 +26,9 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
         {
             _ = configMonitor.Get("ProducerFeesService");
         }
-
+   
         public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(
-            ProducerFeesRequestDto request, CancellationToken cancellationToken = default)
+            ProducerFeesRequestV2Dto request, CancellationToken cancellationToken)
         {
             var url = UrlConstants.CalculateProducerRegistrationFees;
 
@@ -37,13 +37,17 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
                 var response = await Post<ProducerFeesResponseDto>(url, request, cancellationToken);
                 return response;
             }
+            catch (HttpRequestException ex)
+            {
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
+            }
             catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
             {
                 throw new ValidationException(ex.Message.Trim('"'));
             }
             catch (Exception ex)
             {
-                throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees, ex);
+                throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees, ex);
             }
         }
     }

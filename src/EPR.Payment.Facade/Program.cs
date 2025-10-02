@@ -33,6 +33,7 @@ builder.Services.AddFluentValidation(fv =>
 {
     fv.RegisterValidatorsFromAssemblyContaining<OnlinePaymentRequestDtoValidator>();
     fv.RegisterValidatorsFromAssemblyContaining<ProducerFeesRequestDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<ProducerFeesRequestDtoV2Validator>();
     fv.AutomaticValidationEnabled = false;
 });
 builder.Services.Configure<OnlinePaymentServiceOptions>(builder.Configuration.GetSection("PaymentServiceOptions"));

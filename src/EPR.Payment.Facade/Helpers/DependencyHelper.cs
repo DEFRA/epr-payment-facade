@@ -74,11 +74,11 @@ namespace EPR.Payment.Facade.Helpers
                     client.BaseAddress = new Uri(config.Url!);
                 });
 
-            services.AddHttpClient<IHttpProducerFeesV3Service, HttpProducerFeesV3Service>()
+            services.AddHttpClient<IHttpProducerFeesV2Service, HttpProducerFeesV2Service>()
             .AddHttpMessageHandler<TokenAuthorizationHandler>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesV3Service;
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesV2Service;
                 ValidateServiceConfiguration(config, ExceptionMessages.ProducerFeesServiceBaseUrlMissing);
                 client.BaseAddress = new Uri(config.Url!);
             });

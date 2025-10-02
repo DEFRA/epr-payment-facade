@@ -21,17 +21,19 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         private readonly IProducerFeesService _producerFeesService;
         private readonly ILogger<ProducersFeesController> _logger;
         private readonly IValidator<ProducerFeesRequestDto> _registrationValidator;
-        private readonly IValidator<ProducerFeesRequestV3Dto> _registrationV3Validator;
+        private readonly IValidator<ProducerFeesRequestV2Dto> _registrationV2Validator;
 
         public ProducersFeesController(
             IProducerFeesService producerFeesService,
             ILogger<ProducersFeesController> logger,
-            IValidator<ProducerFeesRequestDto> registrationValidator
+            IValidator<ProducerFeesRequestDto> registrationValidator,
+            IValidator<ProducerFeesRequestV2Dto> registrationV2Validator
             )
         {
             _producerFeesService = producerFeesService ?? throw new ArgumentNullException(nameof(producerFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _registrationValidator = registrationValidator ?? throw new ArgumentNullException(nameof(registrationValidator));
+            _registrationV2Validator = registrationV2Validator ?? throw new ArgumentNullException(nameof(registrationValidator));
         }
 
         [ApiExplorerSettings(GroupName = "v1")]
@@ -113,12 +115,12 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
         [FeatureGate("EnableProducersFeesCalculationV3")]
-        public async Task<IActionResult> CalculateFeesV3Async([FromBody] ProducerFeesRequestV3Dto producerRegistrationFeesRequestDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> CalculateFeesAsync([FromBody] ProducerFeesRequestV2Dto producerRegistrationFeesRequestDto, CancellationToken cancellationToken)
         {
-            ValidationResult validationResult = _registrationV3Validator.Validate(producerRegistrationFeesRequestDto);
+            ValidationResult validationResult = _registrationV2Validator.Validate(producerRegistrationFeesRequestDto);
             if (!validationResult.IsValid)
             {
-                _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesV3Async));
+                _logger.LogError(LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
                 return BadRequest(new ProblemDetails
                 {
                     Title = "Validation Error",

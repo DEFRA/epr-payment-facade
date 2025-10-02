@@ -11,11 +11,11 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
     public class ProducerFeesService : IProducerFeesService
     {
         private readonly IHttpProducerFeesService _httpProducerFeesService;
-        private readonly IHttpProducerFeesV3Service _httpProducerFeeServiceV2;
+        private readonly IHttpProducerFeesV2Service _httpProducerFeeServiceV2;
         private readonly ILogger<ProducerFeesService> _logger;
 
         public ProducerFeesService(IHttpProducerFeesService httpProducerFeesService,
-            IHttpProducerFeesV3Service httpProducerFeesServiceV2,
+            IHttpProducerFeesV2Service httpProducerFeesServiceV2,
             ILogger<ProducerFeesService> logger)
         {
             _httpProducerFeesService = httpProducerFeesService ?? throw new ArgumentNullException(nameof(httpProducerFeesService));
@@ -31,12 +31,12 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             return await CalculateProducerFeesInternalAsync(request);
         }
 
-        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV3Dto request, CancellationToken cancellationToken)
+        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV2Dto request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorCalculatingProducerFees);
 
-            return await CalculateProducerFeesInternalV3Async(request);
+            return await CalculateProducerFeesInternalV2Async(request);
         }
 
         private async Task<ProducerFeesResponseDto> CalculateProducerFeesInternalAsync(ProducerFeesRequestDto request)
@@ -59,7 +59,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             }
         }
 
-        private async Task<ProducerFeesResponseDto> CalculateProducerFeesInternalV3Async(ProducerFeesRequestV3Dto request)
+        private async Task<ProducerFeesResponseDto> CalculateProducerFeesInternalV2Async(ProducerFeesRequestV2Dto request)
         {
             try
             {
