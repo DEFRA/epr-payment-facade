@@ -39,5 +39,24 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
                 throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
             }
         }
+
+        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestV3Dto request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await _httpComplianceSchemeFeesService.CalculateFeesAsync(request, cancellationToken);
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(CalculateFeesAsync));
+
+                throw new ValidationException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
+            }
+        }
     }
 }

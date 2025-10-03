@@ -32,6 +32,7 @@ namespace EPR.Payment.Facade.Helpers
 
             // Register individual service configurations
             services.Configure<Service>("ProducerFeesService", configuration.GetSection("Services:ProducerFeesService"));
+            services.Configure<Service>("ProducerFeesServiceV3", configuration.GetSection("Services:ProducerFeesServiceV3"));
             services.Configure<Service>("ComplianceSchemeFeesService", configuration.GetSection("Services:ComplianceSchemeFeesService"));
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
             services.Configure<Service>("RexExpoRegistrationFeesService", configuration.GetSection("Services:RexExpoRegistrationFeesService"));
@@ -72,6 +73,15 @@ namespace EPR.Payment.Facade.Helpers
                     ValidateServiceConfiguration(config, ExceptionMessages.ProducerFeesServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
+
+            services.AddHttpClient<IHttpProducerFeesV2Service, HttpProducerFeesV2Service>()
+            .AddHttpMessageHandler<TokenAuthorizationHandler>()
+            .ConfigureHttpClient((sp, client) =>
+            {
+                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesV2Service;
+                ValidateServiceConfiguration(config, ExceptionMessages.ProducerFeesServiceBaseUrlMissing);
+                client.BaseAddress = new Uri(config.Url!);
+            });
 
             services.AddHttpClient<IHttpComplianceSchemeFeesService, HttpComplianceSchemeFeesService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
