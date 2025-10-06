@@ -11,15 +11,15 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
     public class ProducerFeesService : IProducerFeesService
     {
         private readonly IHttpProducerFeesService _httpProducerFeesService;
-        private readonly IHttpProducerFeesV2Service _httpProducerFeeServiceV2;
+        private readonly IHttpProducerFeesV2Service _httpProducerFeeV2Service;
         private readonly ILogger<ProducerFeesService> _logger;
 
         public ProducerFeesService(IHttpProducerFeesService httpProducerFeesService,
-            IHttpProducerFeesV2Service httpProducerFeesServiceV2,
+            IHttpProducerFeesV2Service httpProducerFeesV2Service,
             ILogger<ProducerFeesService> logger)
         {
             _httpProducerFeesService = httpProducerFeesService ?? throw new ArgumentNullException(nameof(httpProducerFeesService));
-            _httpProducerFeeServiceV2 = httpProducerFeesServiceV2 ?? throw new ArgumentNullException(nameof(httpProducerFeesServiceV2));
+            _httpProducerFeeV2Service = httpProducerFeesV2Service ?? throw new ArgumentNullException(nameof(httpProducerFeesV2Service));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -63,7 +63,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
         {
             try
             {
-                var response = await _httpProducerFeeServiceV2.CalculateProducerFeesAsync(request);
+                var response = await _httpProducerFeeV2Service.CalculateProducerFeesAsync(request);
                 return response;
             }
             catch (ValidationException ex)
