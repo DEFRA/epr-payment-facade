@@ -19,7 +19,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             ILogger<ProducerFeesService> logger)
         {
             _httpProducerFeesService = httpProducerFeesService ?? throw new ArgumentNullException(nameof(httpProducerFeesService));
-            _httpProducerFeeServiceV2 = httpProducerFeesServiceV2 ?? throw new ArgumentNullException(nameof(httpProducerFeesService));
+            _httpProducerFeeServiceV2 = httpProducerFeesServiceV2 ?? throw new ArgumentNullException(nameof(httpProducerFeesServiceV2));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 

@@ -32,7 +32,7 @@ namespace EPR.Payment.Facade.Helpers
 
             // Register individual service configurations
             services.Configure<Service>("ProducerFeesService", configuration.GetSection("Services:ProducerFeesService"));
-            services.Configure<Service>("ProducerFeesServiceV3", configuration.GetSection("Services:ProducerFeesServiceV3"));
+            services.Configure<Service>("ProducerFeesServiceV2", configuration.GetSection("Services:ProducerFeesServiceV2"));
             services.Configure<Service>("ComplianceSchemeFeesService", configuration.GetSection("Services:ComplianceSchemeFeesService"));
             services.Configure<Service>("ComplianceSchemeFeesServiceV2", configuration.GetSection("Services:ComplianceSchemeFeesServiceV2"));
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
