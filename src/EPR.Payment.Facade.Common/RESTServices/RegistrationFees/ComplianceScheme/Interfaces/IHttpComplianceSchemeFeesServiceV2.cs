@@ -3,8 +3,8 @@ using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceScheme;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces
 {
-    public interface IHttpComplianceSchemeFeesService
+    public interface IHttpComplianceSchemeFeesServiceV2
     {
-        Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default);
+        Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestV2Dto request, CancellationToken cancellationToken = default);
     }
 }

@@ -11,13 +11,16 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
     public class ComplianceSchemeCalculatorService : IComplianceSchemeCalculatorService
     {
         private readonly IHttpComplianceSchemeFeesService _httpComplianceSchemeFeesService;
+        private readonly IHttpComplianceSchemeFeesServiceV2 _httpComplianceSchemeFeesServiceV2;
         private readonly ILogger<ComplianceSchemeCalculatorService> _logger;
 
         public ComplianceSchemeCalculatorService(
             IHttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            IHttpComplianceSchemeFeesServiceV2 httpComplianceSchemeFeesServiceV2,
             ILogger<ComplianceSchemeCalculatorService> logger)
         {
             _httpComplianceSchemeFeesService = httpComplianceSchemeFeesService ?? throw new ArgumentNullException(nameof(httpComplianceSchemeFeesService));
+            _httpComplianceSchemeFeesServiceV2 = httpComplianceSchemeFeesServiceV2 ?? throw new ArgumentNullException(nameof(httpComplianceSchemeFeesServiceV2));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -40,11 +43,11 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
             }
         }
 
-        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestV3Dto request, CancellationToken cancellationToken = default)
+        public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestV2Dto request, CancellationToken cancellationToken = default)
         {
             try
             {
-                return await _httpComplianceSchemeFeesService.CalculateFeesAsync(request, cancellationToken);
+                return await _httpComplianceSchemeFeesServiceV2.CalculateFeesAsync(request, cancellationToken);
             }
             catch (ValidationException ex)
             {

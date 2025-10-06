@@ -11,24 +11,24 @@ using System.Net;
 
 namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme
 {
-    public class HttpComplianceSchemeFeesService : BaseHttpService, IHttpComplianceSchemeFeesService
+    public class HttpComplianceSchemeFeesServiceV2 : BaseHttpService, IHttpComplianceSchemeFeesServiceV2
     {
-        public HttpComplianceSchemeFeesService(
+        public HttpComplianceSchemeFeesServiceV2(
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
             IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   configMonitor.Get("ComplianceSchemeFeesService").Url
+                   configMonitor.Get("ComplianceSchemeFeesServiceV2").Url
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceUrlMissing),
-                   configMonitor.Get("ComplianceSchemeFeesService").EndPointName
+                   configMonitor.Get("ComplianceSchemeFeesServiceV2").EndPointName
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing))
         {
-            _ = configMonitor.Get("ComplianceSchemeFeesService");
+            _ = configMonitor.Get("ComplianceSchemeFeesServiceV2");
         }
 
         public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(
-            ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default)
+            ComplianceSchemeFeesRequestV2Dto request, CancellationToken cancellationToken = default)
         {
             try
             {
