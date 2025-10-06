@@ -31,7 +31,7 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             return await CalculateProducerFeesInternalAsync(request);
         }
 
-        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV2Dto request, CancellationToken cancellationToken)
+        public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV2Dto request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), ExceptionMessages.ErrorCalculatingProducerFees);
