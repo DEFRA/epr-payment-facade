@@ -28,7 +28,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
         }
    
         public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(
-            ProducerFeesRequestV2Dto request, CancellationToken cancellationToken)
+            ProducerFeesRequestV2Dto request, CancellationToken cancellationToken = default)
         {
             var url = UrlConstants.CalculateProducerRegistrationFees;
 
