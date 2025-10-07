@@ -10,6 +10,8 @@
 
         public int NoOfSubsidiariesOnlineMarketplace { get; set; } // Any integer >= 0
 
+        public int NumberofLateSubsidiaries { get; set; }
+
         public bool IsProducerOnlineMarketplace { get; set; } // True or False
 
         public bool IsLateFeeApplicable { get; set; } // True or False
