@@ -261,8 +261,8 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 FileId = Guid.NewGuid(),
                 ExternalId = Guid.NewGuid(),
                 InvoicePeriod = new DateTimeOffset(),
-                PayerId = 0,
-                PayerTypeId = 1,
+                PayerId = 1,
+                PayerTypeId = 0,
                 ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>()
             };
 
@@ -286,8 +286,8 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
                 FileId = Guid.NewGuid(),
                 ExternalId = Guid.NewGuid(),
                 InvoicePeriod = new DateTimeOffset(),
-                PayerId = 1,
-                PayerTypeId = 0,
+                PayerId = 0,
+                PayerTypeId = 1,
                 ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>()
             };
 
