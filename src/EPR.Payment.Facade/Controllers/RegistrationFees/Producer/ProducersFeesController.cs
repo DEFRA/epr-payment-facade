@@ -13,7 +13,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
 {
     [ApiController]
-    [Route("api/v{version:apiVersion}/producer")]
+    [Route("api/")]
     [FeatureGate("EnableProducersFeesFeature")]
     public class ProducersFeesController : ControllerBase
     {
@@ -113,7 +113,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         [SwaggerResponse(StatusCodes.Status200OK, "Returns the calculated fees for the producer.", typeof(ProducerFeesResponseDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
-        [FeatureGate("EnableProducersFeesCalculationV2")]
+        [FeatureGate("EnableProducersFeesCalculation")]
         public async Task<IActionResult> CalculateFeesAsync([FromBody] ProducerFeesRequestV2Dto producerRegistrationFeesRequestDto, CancellationToken cancellationToken)
         {
             ValidationResult validationResult = _registrationV2Validator.Validate(producerRegistrationFeesRequestDto);
