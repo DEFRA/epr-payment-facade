@@ -12,7 +12,6 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
 {
-    [ApiVersion(1)]
     [ApiController]
     [Route("api/v{version:apiVersion}/producer")]
     [FeatureGate("EnableProducersFeesFeature")]
