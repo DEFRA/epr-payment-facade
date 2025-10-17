@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using EPR.Payment.Facade.Common.Constants;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Exceptions;
@@ -21,6 +20,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
     {
         private IFixture _fixture = null!;
         private Mock<IHttpComplianceSchemeResubmissionFeesService> _httpComplianceSchemeResubmissionFeesService = null!;
+        private Mock<IHttpComplianceSchemeResubmissionFeesServiceV2> _httpComplianceSchemeResubmissionFeesServiceV2 = null!;
         private Mock<ILogger<ComplianceSchemeResubmissionFeesService>> _loggerMock = null!;
         private ComplianceSchemeResubmissionFeesService _service = null!;
 
@@ -30,10 +30,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
             _httpComplianceSchemeResubmissionFeesService = _fixture.Freeze<Mock<IHttpComplianceSchemeResubmissionFeesService>>();
+            _httpComplianceSchemeResubmissionFeesServiceV2 = _fixture.Freeze<Mock<IHttpComplianceSchemeResubmissionFeesServiceV2>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<ComplianceSchemeResubmissionFeesService>>>();
 
             _service = new ComplianceSchemeResubmissionFeesService(
                 _httpComplianceSchemeResubmissionFeesService.Object,
+                _httpComplianceSchemeResubmissionFeesServiceV2.Object,
                 _loggerMock.Object);
         }
 
@@ -42,7 +44,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
             ILogger<ComplianceSchemeResubmissionFeesService> logger)
         {
             // Act
-            Action act = () => new ComplianceSchemeResubmissionFeesService(null!, logger);
+            Action act = () => new ComplianceSchemeResubmissionFeesService(null!, null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpComplianceSchemeResubmissionFeesService");
@@ -50,10 +52,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
 
         [TestMethod, AutoMoqData]
         public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
-            IHttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService)
+            IHttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
+            IHttpComplianceSchemeResubmissionFeesServiceV2 httpComplianceSchemeResubmissionFeesServiceV2)
         {
             // Act
-            Action act = () => new ComplianceSchemeResubmissionFeesService(httpComplianceSchemeResubmissionFeesService, null!);
+            Action act = () => new ComplianceSchemeResubmissionFeesService(httpComplianceSchemeResubmissionFeesService, httpComplianceSchemeResubmissionFeesServiceV2, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");

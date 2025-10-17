@@ -20,6 +20,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
     {
         private IFixture _fixture = null!;
         private Mock<IHttpProducerResubmissionFeesService> _httpProducerResubmissionFeesService = null!;
+        private Mock<IHttpProducerResubmissionFeesServiceV2> _httpProducerResubmissionFeesServiceV2 = null!;
         private Mock<ILogger<ProducerResubmissionFeesService>> _loggerMock = null!;
         private ProducerResubmissionFeesService _service = null!;
 
@@ -29,10 +30,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
             _httpProducerResubmissionFeesService = _fixture.Freeze<Mock<IHttpProducerResubmissionFeesService>>();
+            _httpProducerResubmissionFeesServiceV2 = _fixture.Freeze<Mock<IHttpProducerResubmissionFeesServiceV2>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<ProducerResubmissionFeesService>>>();
 
             _service = new ProducerResubmissionFeesService(
                 _httpProducerResubmissionFeesService.Object,
+                _httpProducerResubmissionFeesServiceV2.Object,
                 _loggerMock.Object);
         }
 
@@ -40,7 +43,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
         public void Constructor_WithNullHttpProducerResubmissionFeesService_ShouldThrowArgumentNullException()
         {
             // Act & Assert
-            Action act = () => new ProducerResubmissionFeesService(null!, new Mock<ILogger<ProducerResubmissionFeesService>>().Object);
+            Action act = () => new ProducerResubmissionFeesService(null!, null!, new Mock<ILogger<ProducerResubmissionFeesService>>().Object);
 
             act.Should().Throw<ArgumentNullException>()
                 .WithMessage("Value cannot be null. (Parameter 'httpProducerResubmissionFeesService')");
@@ -50,7 +53,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
         {
             // Act & Assert
-            Action act = () => new ProducerResubmissionFeesService(new Mock<IHttpProducerResubmissionFeesService>().Object, null!);
+            Action act = () => new ProducerResubmissionFeesService(new Mock<IHttpProducerResubmissionFeesService>().Object, new Mock<IHttpProducerResubmissionFeesServiceV2>().Object, null!);
 
             act.Should().Throw<ArgumentNullException>()
                 .WithMessage("Value cannot be null. (Parameter 'logger')");
@@ -80,6 +83,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             // Arrange
             var service = new ProducerResubmissionFeesService(
                 new Mock<IHttpProducerResubmissionFeesService>().Object,
+                new Mock<IHttpProducerResubmissionFeesServiceV2>().Object,
                 new Mock<ILogger<ProducerResubmissionFeesService>>().Object);
 
             // Act & Assert
@@ -91,6 +95,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ServiceThrowsException_ShouldLogAndThrow(
             [Frozen] Mock<IHttpProducerResubmissionFeesService> httpProducerResubmissionFeesService,
+            [Frozen] Mock<IHttpProducerResubmissionFeesServiceV2> httpProducerResubmissionFeesServiceV2,
             [Frozen] ProducerResubmissionFeeRequestDto request,
             [Frozen] Mock<ILogger<ProducerResubmissionFeesService>> loggerMock)
         {
@@ -100,7 +105,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
                 .Setup(s => s.GetResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
-            var service = new ProducerResubmissionFeesService(httpProducerResubmissionFeesService.Object, loggerMock.Object);
+            var service = new ProducerResubmissionFeesService(httpProducerResubmissionFeesService.Object, httpProducerResubmissionFeesServiceV2.Object, loggerMock.Object);
 
             // Act
             Func<Task> act = async () => await service.GetResubmissionFeeAsync(request, CancellationToken.None);

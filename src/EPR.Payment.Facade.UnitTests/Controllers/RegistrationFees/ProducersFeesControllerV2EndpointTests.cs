@@ -18,7 +18,7 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Controllers
 {
     [TestClass]
-    public class ProducersFeesControllerV2Tests
+    public class ProducersFeesControllerV2EndpointTests
     {
         [TestMethod, AutoMoqData]
         public async Task CalculateFeesAsync_ValidRequest_ReturnsOk(

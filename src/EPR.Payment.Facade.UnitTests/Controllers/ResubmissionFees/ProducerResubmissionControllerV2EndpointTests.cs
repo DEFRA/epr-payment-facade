@@ -16,7 +16,7 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
 {
     [TestClass]
-    public class ProducerResubmissionControllerTests
+    public class ProducerResubmissionControllerV2EndpointTests
     {
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullResubmissionValidator_ShouldThrowArgumentNullException(
@@ -37,10 +37,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_ServiceReturnsAResult_ShouldReturnOkResponse(
+        public async Task GetResubmissionFeeAsyncV2_ServiceReturnsAResult_ShouldReturnOkResponse(
             [Frozen] Mock<IProducerResubmissionFeesService> producerResubmissionFeesService,
-            [Frozen] ProducerResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestDto>> resubmissionValidatorMock,
+            [Frozen] ProducerResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestV2Dto>> resubmissionValidatorMock,
             [Frozen] ProducerResubmissionFeeResponseDto expectedResponse,
             [Greedy] ProducerResubmissionController controller)
         {
@@ -51,7 +51,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
                                            .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.GetResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -63,10 +63,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_ServiceThrowsException_ShouldReturnInternalServerError(
+        public async Task GetResubmissionFeeAsyncV2_ServiceThrowsException_ShouldReturnInternalServerError(
             [Frozen] Mock<IProducerResubmissionFeesService> producerResubmissionFeesService,
-            [Frozen] ProducerResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestDto>> resubmissionValidatorMock,
+            [Frozen] ProducerResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestV2Dto>> resubmissionValidatorMock,
             [Greedy] ProducerResubmissionController controller)
         {
             // Arrange
@@ -76,17 +76,17 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
                                            .ThrowsAsync(new Exception("Test Exception"));
 
             // Act
-            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.GetResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_ThrowsValidationException_ShouldReturnBadRequest(
+        public async Task GetResubmissionFeeAsyncV2_ThrowsValidationException_ShouldReturnBadRequest(
             [Frozen] Mock<IProducerResubmissionFeesService> producerResubmissionFeesService,
-            [Frozen] ProducerResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestDto>> resubmissionValidatorMock,
+            [Frozen] ProducerResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestV2Dto>> resubmissionValidatorMock,
             [Greedy] ProducerResubmissionController controller)
         {
             // Arrange
@@ -96,7 +96,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
                                            .ThrowsAsync(new ValidationException("Validation error"));
 
             // Act
-            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.GetResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -112,9 +112,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task GetResubmissionFeeAsync_InvalidRequest_ShouldReturnBadRequest(
-            [Frozen] ProducerResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestDto>> resubmissionValidatorMock,
+        public async Task GetResubmissionFeeAsyncV2_InvalidRequest_ShouldReturnBadRequest(
+            [Frozen] ProducerResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ProducerResubmissionFeeRequestV2Dto>> resubmissionValidatorMock,
             [Greedy] ProducerResubmissionController controller)
         {
             // Arrange
@@ -126,7 +126,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
             resubmissionValidatorMock.Setup(v => v.Validate(request)).Returns(validationResult);
 
             // Act
-            var result = await controller.GetResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.GetResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())

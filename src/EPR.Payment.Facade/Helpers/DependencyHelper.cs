@@ -111,6 +111,15 @@ namespace EPR.Payment.Facade.Helpers
                     client.BaseAddress = new Uri(config.Url!);
                 });
 
+            services.AddHttpClient<IHttpProducerResubmissionFeesServiceV2, HttpProducerResubmissionFeesServiceV2>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerResubmissionFeesService;
+                    ValidateServiceConfiguration(config, ExceptionMessages.ProducerResubmissionFeesServiceBaseUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
+
             services.AddHttpClient<IHttpComplianceSchemeResubmissionFeesService, HttpComplianceSchemeResubmissionFeesService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
                 .ConfigureHttpClient((sp, client) =>
@@ -119,7 +128,16 @@ namespace EPR.Payment.Facade.Helpers
                     ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
-            
+
+            services.AddHttpClient<IHttpComplianceSchemeResubmissionFeesServiceV2, HttpComplianceSchemeResubmissionFeesServiceV2>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
+                    ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
+
             services.AddHttpClient<IHttpReprocessorExporterRegistrationFeesService, HttpReprocessorExporterRegistrationFeesService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
                 .ConfigureHttpClient((sp, client) =>

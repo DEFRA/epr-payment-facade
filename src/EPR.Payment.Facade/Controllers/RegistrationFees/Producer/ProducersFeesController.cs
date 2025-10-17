@@ -31,7 +31,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
             _producerFeesService = producerFeesService ?? throw new ArgumentNullException(nameof(producerFeesService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _registrationValidator = registrationValidator ?? throw new ArgumentNullException(nameof(registrationValidator));
-            _registrationV2Validator = registrationV2Validator ?? throw new ArgumentNullException(nameof(registrationValidator));
+            _registrationV2Validator = registrationV2Validator ?? throw new ArgumentNullException(nameof(registrationV2Validator));
         }
 
         [ApiExplorerSettings(GroupName = "v1")]

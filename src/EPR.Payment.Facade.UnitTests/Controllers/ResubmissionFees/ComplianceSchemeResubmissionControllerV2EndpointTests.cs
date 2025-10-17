@@ -16,18 +16,20 @@ using Moq;
 namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
 {
     [TestClass]
-    public class ComplianceSchemeResubmissionControllerTests
+    public class ComplianceSchemeResubmissionControllerV2EndpointTests
     {
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullResubmissionFeesService_ShouldThrowArgumentNullException(
                     [Frozen] Mock<ILogger<ComplianceSchemeResubmissionController>> loggerMock,
-                    [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock)
+                    [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
+                    [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock)
         {
             // Act
             Action act = () => new ComplianceSchemeResubmissionController(
                 null!,
                 loggerMock.Object,
-                resubmissionValidatorMock.Object
+                resubmissionValidatorMock.Object,
+                resubmissionValidatorV2Mock.Object
             );
 
             // Assert
@@ -38,13 +40,15 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
             [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesServiceMock,
-            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock)
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock)
         {
             // Act
             Action act = () => new ComplianceSchemeResubmissionController(
                 resubmissionFeesServiceMock.Object,
                 null!,
-                resubmissionValidatorMock.Object
+                resubmissionValidatorMock.Object,
+                resubmissionValidatorV2Mock.Object
             );
 
             // Assert
@@ -61,6 +65,7 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
             Action act = () => new ComplianceSchemeResubmissionController(
                 resubmissionFeesServiceMock.Object,
                 loggerMock.Object,
+                null!,
                 null!
             );
 
@@ -70,20 +75,20 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateResubmissionFeeAsync_ServiceReturnsAResult_ShouldReturnOkResponse(
+        public async Task CalculateResubmissionFeeAsyncV2_ServiceReturnsAResult_ShouldReturnOkResponse(
             [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesService,
-            [Frozen] ComplianceSchemeResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
+            [Frozen] ComplianceSchemeResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock,
             [Frozen] ComplianceSchemeResubmissionFeeResponse expectedResult,
             [Greedy] ComplianceSchemeResubmissionController controller)
         {
             // Arrange
             var validationResult = new ValidationResult();
-            resubmissionValidatorMock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
+            resubmissionValidatorV2Mock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
             resubmissionFeesService.Setup(i => i.CalculateResubmissionFeeAsync(request, CancellationToken.None)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await controller.CalculateResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.CalculateResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -94,40 +99,40 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateResubmissionFeeAsync_ServiceThrowsException_ShouldReturnInternalServerError(
+        public async Task CalculateResubmissionFeeAsyncV2_ServiceThrowsException_ShouldReturnInternalServerError(
             [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesService,
-            [Frozen] ComplianceSchemeResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
+            [Frozen] ComplianceSchemeResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock,
             [Greedy] ComplianceSchemeResubmissionController controller)
         {
             // Arrange
             var validationResult = new ValidationResult();
-            resubmissionValidatorMock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
+            resubmissionValidatorV2Mock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
             resubmissionFeesService.Setup(i => i.CalculateResubmissionFeeAsync(request, CancellationToken.None))
                                    .ThrowsAsync(new Exception("Test Exception"));
 
             // Act
-            var result = await controller.CalculateResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.CalculateResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateResubmissionFeeAsync_ServiceThrowsValidationException_ShouldReturnBadRequest(
+        public async Task CalculateResubmissionFeeAsyncV2_ServiceThrowsValidationException_ShouldReturnBadRequest(
             [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesService,
-            [Frozen] ComplianceSchemeResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
+            [Frozen] ComplianceSchemeResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock,
             [Greedy] ComplianceSchemeResubmissionController controller)
         {
             // Arrange
             var validationResult = new ValidationResult();
-            resubmissionValidatorMock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
-            resubmissionFeesService.Setup(s => s.CalculateResubmissionFeeAsync(It.IsAny<ComplianceSchemeResubmissionFeeRequestDto>(), CancellationToken.None))
+            resubmissionValidatorV2Mock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
+            resubmissionFeesService.Setup(s => s.CalculateResubmissionFeeAsync(It.IsAny<ComplianceSchemeResubmissionFeeRequestV2Dto>(), CancellationToken.None))
                                    .ThrowsAsync(new ValidationException("Validation error"));
 
             // Act
-            var result = await controller.CalculateResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.CalculateResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -143,9 +148,9 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CalculateResubmissionFeeAsync_InvalidRequest_ReturnsBadRequest(
-            [Frozen] ComplianceSchemeResubmissionFeeRequestDto request,
-            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
+        public async Task CalculateResubmissionFeeAsyncV2_InvalidRequest_ReturnsBadRequest(
+            [Frozen] ComplianceSchemeResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock,
             [Greedy] ComplianceSchemeResubmissionController controller)
         {
             // Arrange
@@ -154,10 +159,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
                 new ValidationFailure("Regulator", "Invalid regulator parameter.")
             };
             var validationResult = new ValidationResult(validationFailures);
-            resubmissionValidatorMock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
+            resubmissionValidatorV2Mock.Setup(v => v.ValidateAsync(request, CancellationToken.None)).ReturnsAsync(validationResult);
 
             // Act
-            var result = await controller.CalculateResubmissionFeeAsync(request, CancellationToken.None);
+            var result = await controller.CalculateResubmissionFeeAsyncV2(request, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
