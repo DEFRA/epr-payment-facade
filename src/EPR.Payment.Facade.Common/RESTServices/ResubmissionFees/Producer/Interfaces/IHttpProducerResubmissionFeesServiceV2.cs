@@ -1,12 +1,10 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
 
-namespace EPR.Payment.Facade.Services.ResubmissionFees.Producer.Interfaces
+namespace EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer.Interfaces
 {
-    public interface IProducerResubmissionFeesService
+    public interface IHttpProducerResubmissionFeesServiceV2
     {
-        Task<ProducerResubmissionFeeResponseDto> GetResubmissionFeeAsync(ProducerResubmissionFeeRequestDto request, CancellationToken cancellationToken = default);
-
         Task<ProducerResubmissionFeeResponseDto> GetResubmissionFeeAsync(ProducerResubmissionFeeRequestV2Dto request, CancellationToken cancellationToken = default);
     }
 }

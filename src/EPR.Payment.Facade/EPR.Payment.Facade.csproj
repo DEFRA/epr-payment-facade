@@ -67,6 +67,7 @@
 	<ItemGroup>
 		<SonarQubeSetting Include="sonar.cpd.exclusions">
 			<Value>Validations\RegistrationFees\ComplianceScheme\ComplianceSchemeFeesRequestV2DtoValidator.cs</Value>
+			<Value>Validations\RegistrationFees\ComplianceScheme\ComplianceSchemeResubmissionFeeRequestV2DtoValidator.cs</Value>
 		</SonarQubeSetting>
 	</ItemGroup>
 </Project>
