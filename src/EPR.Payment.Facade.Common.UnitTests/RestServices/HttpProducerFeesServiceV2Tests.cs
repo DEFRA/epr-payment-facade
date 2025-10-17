@@ -40,7 +40,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
 
             _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
-            _configMonitorMock.Setup(x => x.Get("ProducerFeesService")).Returns(config);
+            _configMonitorMock.Setup(x => x.Get("ProducerFeesV2Service")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             _producerFeesRequestDto = new ProducerFeesRequestV2Dto
