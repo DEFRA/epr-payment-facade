@@ -12,7 +12,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
 {
     [ApiController]
-    [Route("api/")]
+    [Route("api")]
     [FeatureGate("EnableComplianceSchemeFeature")]
     public class ComplianceSchemeFeesController : ControllerBase
     {
@@ -34,7 +34,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
         }
 
         [ApiExplorerSettings(GroupName = "v1")]
-        [HttpPost("v1/registration-fee")]
+        [HttpPost("v1/compliance-scheme/registration-fee")]
         [SwaggerOperation(
             Summary = "Calculate compliance scheme fees",
             Description = "Calculates the total fees including registration fee, subsidiaries fee, and any additional fees for an online marketplace for compliance scheme."
@@ -98,7 +98,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
         }
 
         [ApiExplorerSettings(GroupName = "v2")]
-        [HttpPost("v2/registration-fee")]
+        [HttpPost("v2/compliance-scheme/registration-fee")]
         [SwaggerOperation(
             Summary = "Calculate compliance scheme fees",
             Description = "Calculates the total fees including registration fee, subsidiaries fee, and any additional fees for an online marketplace for compliance scheme."

@@ -1,5 +1,4 @@
-﻿using Asp.Versioning;
-using EPR.Payment.Facade.Common.Constants;
+﻿using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
@@ -36,7 +35,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         }
 
         [ApiExplorerSettings(GroupName = "v1")]
-        [HttpPost("v1/registration-fee")]
+        [HttpPost("v1/producer/registration-fee")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerFeesResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
@@ -101,8 +100,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
 
 
         [ApiExplorerSettings(GroupName = "v2")]
-        [MapToApiVersion(2)]
-        [HttpPost("v2/registration-fee")]
+        [HttpPost("v2/producer/registration-fee")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerFeesResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
