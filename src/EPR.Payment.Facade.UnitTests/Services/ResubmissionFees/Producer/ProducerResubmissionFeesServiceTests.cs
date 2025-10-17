@@ -149,5 +149,61 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             }
         }
 
+        [TestMethod, AutoMoqData]
+        public async Task GetResubmissionFeeAsync_V2_ServiceThrowsException_ShouldLogAndThrow(
+            [Frozen] Mock<IHttpProducerResubmissionFeesService> httpProducerResubmissionFeesService,
+            [Frozen] Mock<IHttpProducerResubmissionFeesServiceV2> httpProducerResubmissionFeesServiceV2,
+            [Frozen] ProducerResubmissionFeeRequestV2Dto request,
+            [Frozen] Mock<ILogger<ProducerResubmissionFeesService>> loggerMock)
+        {
+            // Arrange
+            var exception = new Exception("Test Exception");
+            httpProducerResubmissionFeesServiceV2
+                .Setup(s => s.GetResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+
+            var service = new ProducerResubmissionFeesService(httpProducerResubmissionFeesService.Object, httpProducerResubmissionFeesServiceV2.Object, loggerMock.Object);
+
+            // Act
+            Func<Task> act = async () => await service.GetResubmissionFeeAsync(request, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                await act.Should().ThrowAsync<Exception>().WithMessage("Test Exception");
+
+                loggerMock.Verify(
+                    log => log.Log(
+                        LogLevel.Error,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((o, t) => string.Equals("An unexpected error occurred while calculating the fees.", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
+                        exception,
+                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                    Times.Once);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetResubmissionFeeAsync_V2_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
+            ProducerResubmissionFeeRequestV2Dto request)
+        {
+            // Arrange
+            var exceptionMessage = "Validation error";
+            var validationException = new ValidationException(exceptionMessage);
+
+            _httpProducerResubmissionFeesServiceV2.Setup(s => s.GetResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(validationException);
+
+            // Act
+            Func<Task> act = async () => await _service.GetResubmissionFeeAsync(request);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var thrownException = await act.Should().ThrowAsync<ValidationException>();
+
+                thrownException.Which.Message.Should().Be(exceptionMessage);
+            }
+        }
     }
 }
