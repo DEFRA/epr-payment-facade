@@ -19,12 +19,12 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
             IOptionsMonitor<Service> configMonitor)
             : base(httpClient,
                    httpContextAccessor,
-                   configMonitor.Get("ProducerFeesService").Url
+                   configMonitor.Get("ProducerFeesV2Service").Url
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceBaseUrlMissing),
-                   configMonitor.Get("ProducerFeesService").EndPointName
+                   configMonitor.Get("ProducerFeesV2Service").EndPointName
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.RegistrationFeesServiceEndPointNameMissing))
         {
-            _ = configMonitor.Get("ProducerFeesService");
+            _ = configMonitor.Get("ProducerFeesV2Service");
         }
    
         public async Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(
