@@ -9,7 +9,7 @@ using Moq.Protected;
 using Newtonsoft.Json.Linq;
 using System.Net;
 
-namespace EPR.Payment.Facade.Common.UnitTests.RestServices
+namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
     public class BaseHttpServiceTests

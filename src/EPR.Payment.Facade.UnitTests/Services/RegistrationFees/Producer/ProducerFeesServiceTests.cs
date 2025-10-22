@@ -5,6 +5,7 @@ using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Exceptions;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer;
@@ -21,8 +22,11 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
     {
         private IFixture _fixture = null!;
         private Mock<IHttpProducerFeesService> _httpProducerFeesService = null!;
+        private Mock<IHttpProducerFeesV2Service> _httpProducerFeesV2Service = null!;
         private Mock<ILogger<ProducerFeesService>> _loggerMock = null!;
+        private Mock<ILogger<HttpProducerFeesV2Service>> _loggerMockV2 = null!;
         private ProducerFeesService _service = null!;
+        
 
         [TestInitialize]
         public void TestInitialize()
@@ -32,8 +36,12 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             _httpProducerFeesService = _fixture.Freeze<Mock<IHttpProducerFeesService>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<ProducerFeesService>>>();
 
+            _httpProducerFeesV2Service = _fixture.Freeze<Mock<IHttpProducerFeesV2Service>>();
+            _loggerMockV2 = _fixture.Freeze<Mock<ILogger<HttpProducerFeesV2Service>>>();
+
             _service = new ProducerFeesService(
                 _httpProducerFeesService.Object,
+                _httpProducerFeesV2Service.Object,
                 _loggerMock.Object);
         }
 
@@ -42,7 +50,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             ILogger<ProducerFeesService> logger)
         {
             // Act
-            Action act = () => new ProducerFeesService(null!, logger);
+            Action act = () => new ProducerFeesService(null!, null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpProducerFeesService");
@@ -50,10 +58,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
 
         [TestMethod, AutoMoqData]
         public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
-            IHttpProducerFeesService httpProducerFeesService)
+            IHttpProducerFeesService httpProducerFeesService, IHttpProducerFeesV2Service httpProducerFeesV2Service)
         {
             // Act
-            Action act = () => new ProducerFeesService(httpProducerFeesService, null!);
+            Action act = () => new ProducerFeesService(httpProducerFeesService, httpProducerFeesV2Service, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
@@ -64,7 +72,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             ProducerFeesService service)
         {
             // Act
-            Func<Task> act = () => service.CalculateProducerFeesAsync(null!);
+            Func<Task> act = () => service.CalculateProducerFeesAsync((ProducerFeesRequestDto)null!);
 
             // Assert
             await act.Should().ThrowAsync<ArgumentNullException>()
@@ -88,6 +96,22 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
         }
 
         [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsyncV2_RequestIsValid_ShouldReturnResponse(
+         ProducerFeesResponseDto expectedResponse,
+         ProducerFeesRequestV2Dto request)
+        {
+            // Arrange
+            _httpProducerFeesV2Service.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await _service.CalculateProducerFeesAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedResponse);
+        }
+
+        [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
             ProducerFeesRequestDto request)
         {
@@ -96,6 +120,37 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             var exception = new Exception(exceptionMessage);
 
             _httpProducerFeesService.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+
+            // Act
+            Func<Task> act = async () => await _service.CalculateProducerFeesAsync(request);
+
+            // Assert
+            var thrownException = await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+
+            thrownException.Which.InnerException.Should().BeOfType<Exception>()
+                .Which.Message.Should().Be(exceptionMessage);
+
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.UnexpectedErrorCalculatingProducerFees)),
+                    exception,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_HttpServiceV2ThrowsException_ShouldLogAndThrowServiceException(
+        ProducerFeesRequestV2Dto request)
+        {
+            // Arrange
+            var exceptionMessage = "Unexpected error occurred";
+            var exception = new Exception(exceptionMessage);
+
+            _httpProducerFeesV2Service.Setup(s => s.CalculateProducerFeesAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
             // Act

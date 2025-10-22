@@ -20,11 +20,11 @@ using System.Text;
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
-    public class HttpComplianceSchemeResubmissionFeesServiceTests
+    public class HttpComplianceSchemeResubmissionFeesServiceV2Tests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
-        private ComplianceSchemeResubmissionFeeRequestDto _requestDto = null!;
+        private ComplianceSchemeResubmissionFeeRequestV2Dto _requestDto = null!;
         private ComplianceSchemeResubmissionFeeResponse _responseDto = null!;
 
         [TestInitialize]
@@ -39,17 +39,22 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
 
             _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
-            // Return the mock config when Get("ComplianceSchemeFeesService") is called
-            _configMonitorMock.Setup(x => x.Get("ComplianceSchemeFeesService")).Returns(config);
+            // Return the mock config when Get("ComplianceSchemeFeesServiceV2") is called
+            _configMonitorMock.Setup(x => x.Get("ComplianceSchemeFeesServiceV2")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-            _requestDto = new ComplianceSchemeResubmissionFeeRequestDto
+            _requestDto = new ComplianceSchemeResubmissionFeeRequestV2Dto
             {
                 Regulator = "GB-ENG",
                 ResubmissionDate = DateTime.UtcNow.AddDays(-1),
                 ReferenceNumber = "CS-REF-1234",
-                MemberCount = 5
+                MemberCount = 5,
+                FileId = Guid.NewGuid(),
+                ExternalId = Guid.NewGuid(),
+                InvoicePeriod = DateTimeOffset.Now,
+                PayerId = 1,
+                PayerTypeId = 1
             };
 
             _responseDto = new ComplianceSchemeResubmissionFeeResponse
@@ -61,9 +66,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
         }
 
-        private HttpComplianceSchemeResubmissionFeesService CreateHttpComplianceSchemeResubmissionFeesService(HttpClient httpClient)
+        private HttpComplianceSchemeResubmissionFeesServiceV2 CreateHttpComplianceSchemeResubmissionFeesService(HttpClient httpClient)
         {
-            return new HttpComplianceSchemeResubmissionFeesService(
+            return new HttpComplianceSchemeResubmissionFeesServiceV2(
                 httpClient,
                 _httpContextAccessorMock!.Object,
                 _configMonitorMock!.Object);  // Ensure correct mock is passed
@@ -73,7 +78,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateResubmissionFeeAsync_ValidRequest_ReturnsComplianceSchemeResubmissionFeeResult(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Frozen] Mock<IOptionsMonitor<Service>> configMock,
-            HttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
+            HttpComplianceSchemeResubmissionFeesServiceV2 httpComplianceSchemeResubmissionFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -115,7 +120,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateResubmissionFeeAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Frozen] Mock<IOptionsMonitor<Service>> configMock,
-            HttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
+            HttpComplianceSchemeResubmissionFeesServiceV2 httpComplianceSchemeResubmissionFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -158,7 +163,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateResubmissionFeeAsync_UnsuccessfulStatusCode_ThrowsValidationException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             [Frozen] Mock<IOptionsMonitor<Service>> configMock,
-            HttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
+            HttpComplianceSchemeResubmissionFeesServiceV2 httpComplianceSchemeResubmissionFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
