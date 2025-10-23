@@ -79,7 +79,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         MemberOnlineMarketPlaceFee = 257900,
                         MemberLateRegistrationFee = 33200,
                         SubsidiariesFee = 4815000,
-                        SubsidiariesLateRegistrationFee = 456700,
                         TotalMemberFee = 5238700,
                         SubsidiariesFeeBreakdown = new SubsidiariesFeeBreakdown
                         {
