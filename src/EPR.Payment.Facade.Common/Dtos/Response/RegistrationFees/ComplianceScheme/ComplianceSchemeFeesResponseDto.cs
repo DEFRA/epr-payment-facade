@@ -18,7 +18,8 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.ComplianceSch
         public decimal MemberOnlineMarketPlaceFee { get; set; }
         public decimal MemberLateRegistrationFee { get; set; }
         public decimal SubsidiariesFee { get; set; }
-        public decimal SubsidiariesLateRegistrationFee { get; set; }
+        public decimal MemberOnlyLateFee { get; set; }
+        public decimal SubsidiariesOnlyLateFee { get; set; }
         public decimal TotalMemberFee { get; set; }
         public required SubsidiariesFeeBreakdown SubsidiariesFeeBreakdown { get; set; }
     }
