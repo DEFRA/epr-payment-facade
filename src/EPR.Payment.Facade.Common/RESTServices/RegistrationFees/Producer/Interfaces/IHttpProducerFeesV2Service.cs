@@ -1,12 +1,10 @@
 ﻿using EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees.Producer;
 
-namespace EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces
+namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces
 {
-    public interface IProducerFeesService
+    public interface IHttpProducerFeesV2Service
     {
-        Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default);
-
         Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestV2Dto request, CancellationToken cancellationToken = default);
     }
 }

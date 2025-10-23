@@ -20,11 +20,11 @@ using System.Text;
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
-    public class HttpProducerResubmissionFeesServiceTests
+    public class HttpProducerResubmissionFeesServiceV2Tests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
-        private ProducerResubmissionFeeRequestDto _requestDto = null!;
+        private ProducerResubmissionFeeRequestV2Dto _requestDto = null!;
         private ProducerResubmissionFeeResponseDto _responseDto = null!;
 
         [TestInitialize]
@@ -39,14 +39,19 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
 
             _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
-            _configMonitorMock.Setup(x => x.Get("ProducerResubmissionFeesService")).Returns(config);
+            _configMonitorMock.Setup(x => x.Get("ProducerFeesV2Service")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            _requestDto = new ProducerResubmissionFeeRequestDto
+            _requestDto = new ProducerResubmissionFeeRequestV2Dto
             {
                 Regulator = "GB-ENG",
                 ResubmissionDate = DateTime.UtcNow,
-                ReferenceNumber = "PROD-REF-1234"
+                ReferenceNumber = "PROD-REF-1234",
+                FileId = Guid.NewGuid(),
+                ExternalId = Guid.NewGuid(),
+                InvoicePeriod = DateTimeOffset.Now,
+                PayerId = 1,
+                PayerTypeId = 1
             };
 
             _responseDto = new ProducerResubmissionFeeResponseDto
@@ -60,7 +65,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_ValidRequest_ReturnsResubmissionFee(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            [Greedy] HttpProducerResubmissionFeesService httpProducerResubmissionFeesService,
+            [Greedy] HttpProducerResubmissionFeesServiceV2 httpProducerResubmissionFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -93,7 +98,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            [Greedy] HttpProducerResubmissionFeesService httpProducerResubmissionFeesService,
+            [Greedy] HttpProducerResubmissionFeesServiceV2 httpProducerResubmissionFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -124,7 +129,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         [TestMethod, AutoMoqData]
         public async Task GetResubmissionFeeAsync_UnsuccessfulStatusCode_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
-            [Greedy] HttpProducerResubmissionFeesService httpProducerResubmissionFeesService,
+            [Greedy] HttpProducerResubmissionFeesServiceV2 httpProducerResubmissionFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -152,9 +157,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             }
         }
 
-        private HttpProducerResubmissionFeesService CreateHttpProducerResubmissionFeesService(HttpClient httpClient)
+        private HttpProducerResubmissionFeesServiceV2 CreateHttpProducerResubmissionFeesService(HttpClient httpClient)
         {
-            return new HttpProducerResubmissionFeesService(
+            return new HttpProducerResubmissionFeesServiceV2(
                 httpClient,
                 _httpContextAccessorMock!.Object,
                 _configMonitorMock!.Object);

@@ -21,11 +21,11 @@ using System.Text;
 namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 {
     [TestClass]
-    public class HttpComplianceSchemeFeesServiceTests
+    public class HttpComplianceSchemeFeesServiceV2Tests
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
-        private ComplianceSchemeFeesRequestDto _complianceSchemeFeesRequestDto = null!;
+        private ComplianceSchemeFeesRequestV2Dto _complianceSchemeFeesRequestDto = null!;
         private ComplianceSchemeFeesResponseDto _complianceSchemeFeesResponseDto = null!;
 
         [TestInitialize]
@@ -40,15 +40,20 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
 
             _configMonitorMock = new Mock<IOptionsMonitor<Service>>();
-            _configMonitorMock.Setup(x => x.Get("ComplianceSchemeFeesService")).Returns(config);
+            _configMonitorMock.Setup(x => x.Get("ComplianceSchemeFeesServiceV2")).Returns(config);
 
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-            _complianceSchemeFeesRequestDto = new ComplianceSchemeFeesRequestDto
+            _complianceSchemeFeesRequestDto = new ComplianceSchemeFeesRequestV2Dto
             {
                 Regulator = "GB-ENG",
                 ApplicationReferenceNumber = "A123",
                 SubmissionDate = DateTime.UtcNow,
+                FileId = Guid.NewGuid(),
+                ExternalId = Guid.NewGuid(),
+                InvoicePeriod = new DateTimeOffset(),
+                PayerId = 1,
+                PayerTypeId = 1,
                 ComplianceSchemeMembers = new List<ComplianceSchemeMemberDto>
                 {
                     new ComplianceSchemeMemberDto
@@ -79,7 +84,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         MemberOnlineMarketPlaceFee = 257900,
                         MemberLateRegistrationFee = 33200,
                         SubsidiariesFee = 4815000,
-                        SubsidiariesLateRegistrationFee = 456700,
                         TotalMemberFee = 5238700,
                         SubsidiariesFeeBreakdown = new SubsidiariesFeeBreakdown
                         {
@@ -116,9 +120,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             };
         }
 
-        private HttpComplianceSchemeFeesService CreateHttpComplianceSchemeFeesService(HttpClient httpClient)
+        private HttpComplianceSchemeFeesServiceV2 CreateHttpComplianceSchemeFeesService(HttpClient httpClient)
         {
-            return new HttpComplianceSchemeFeesService(
+            return new HttpComplianceSchemeFeesServiceV2(
                 httpClient,
                 _httpContextAccessorMock!.Object,
                 _configMonitorMock!.Object);
@@ -132,7 +136,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
             // Act
-            Action act = () => new HttpComplianceSchemeFeesService(
+            Action act = () => new HttpComplianceSchemeFeesServiceV2(
                 httpClient,
                 httpContextAccessorMock.Object,
                 null!); // Pass null for configMonitor
@@ -145,7 +149,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateFeesAsync_ValidRequest_ReturnsRegistrationFeesResponseDto(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            HttpComplianceSchemeFeesServiceV2 httpComplianceSchemeFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -177,7 +181,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateFeesAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            HttpComplianceSchemeFeesServiceV2 httpComplianceSchemeFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -211,7 +215,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateFeesAsync_UnsuccessfulStatusCode_ThrowsValidationException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            HttpComplianceSchemeFeesServiceV2 httpComplianceSchemeFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
@@ -244,7 +248,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         public async Task CalculateFeesAsync_Exception_ThrowsException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
-            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            HttpComplianceSchemeFeesServiceV2 httpComplianceSchemeFeesService,
             CancellationToken cancellationToken)
         {
             // Arrange
