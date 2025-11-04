@@ -13,6 +13,7 @@
         public const string InvoicePeriodRequired = "InvoicePeriod is required";
         public const string PayerTypeIdRequired = "PayerTypeId is required";
         public const string PayerIdRequired = "PayerId is required";
+        public const string ProducerMemberCountGreaterThanOrEqualToZero = "Member Count must be greater than or equal to zero.";
 
         // PaymentRequestDto Validation Messages
         public const string UserIdRequired = "User ID is required.";
