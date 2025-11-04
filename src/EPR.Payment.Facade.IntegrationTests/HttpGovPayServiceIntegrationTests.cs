@@ -22,7 +22,7 @@ namespace EPR.Payment.Facade.IntegrationTests
         {
             // Load configuration from appsettings.json or any other configuration source
             _configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true)
                 .Build();
         }
 

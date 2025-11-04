@@ -8,6 +8,11 @@
         public const string NumberOfOMPSubsidiariesLessThanOrEqualToNumberOfSubsidiaries = "Number of online marketplace subsidiaries must be less than or equal to number of subsidiaries.";
         public const string ApplicationReferenceNumberRequired = "Application Reference Number is required.";
         public const string NoOfSubsidiariesOnlineMarketplaceRange = "Number of Subsidiaries with Online Marketplace must be greater than or equal to 0.";
+        public const string FileIdRequired = "FileId is required";
+        public const string ExternalIdRequired = "ExternalId is required";
+        public const string InvoicePeriodRequired = "InvoicePeriod is required";
+        public const string PayerTypeIdRequired = "PayerTypeId is required";
+        public const string PayerIdRequired = "PayerId is required";
         public const string ProducerMemberCountGreaterThanOrEqualToZero = "Member Count must be greater than or equal to zero.";
 
         // PaymentRequestDto Validation Messages
@@ -59,7 +64,7 @@
         public const string InvalidTonnageBand = "Tonnage band must be one of the following: ";
         public const string EmptyMaterialType = "Material type is required";
         public const string InvalidMaterialType = "Material type must be one of the following: ";
-        public static string InvalidNumberOfOverseasSiteForExporter = $"Number of Overseas site must be greater than 0 and less than equal to {ReprocessorExporterConstants.MaxNumberOfOverseasSitesAllowed} for requestor type of exporter.";
+        public static readonly string InvalidNumberOfOverseasSiteForExporter = $"Number of Overseas site must be greater than 0 and less than equal to {ReprocessorExporterConstants.MaxNumberOfOverseasSitesAllowed} for requestor type of exporter.";
         public const string InvalidNumberOfOverseasSiteForReprocessor = "Number of Overseas site must be 0 for requestor type of reprocessor.";
     }
 }

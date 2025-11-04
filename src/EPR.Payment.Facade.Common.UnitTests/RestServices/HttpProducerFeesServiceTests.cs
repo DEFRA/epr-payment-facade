@@ -91,15 +91,15 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         {
             return new HttpProducerFeesService(
                 httpClient,
-                _httpContextAccessorMock!.Object,
-                _configMonitorMock!.Object);
+                _httpContextAccessorMock.Object,
+                _configMonitorMock.Object);
         }
 
         [TestMethod, AutoMoqData]
         public void Constructor_HttpContextAccessorIsNull_ShouldThrowArgumentNullException()
         {
             // Act
-            Action act = () => new HttpProducerFeesService(
+            Action act = () => _ = new HttpProducerFeesService(
                 new HttpClient(),
                 null!,
                 _configMonitorMock.Object);
@@ -116,7 +116,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             HttpClient httpClient = new Mock<HttpClient>().Object;
 
             // Act & Assert
-            Action act = () => new HttpProducerFeesService(httpClient, httpContextAccessor, null);
+            Action act = () => _ = new HttpProducerFeesService(httpClient, httpContextAccessor, null!);
 
             // Assert that the exception is of type NullReferenceException
             act.Should().Throw<NullReferenceException>();

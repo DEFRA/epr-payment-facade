@@ -185,7 +185,7 @@ namespace EPR.Payment.Facade.Common.RESTServices
 
             if (!response.IsSuccessStatusCode)
             {
-                _httpContextAccessor.HttpContext.Response.StatusCode = (int)response.StatusCode;
+                _httpContextAccessor.HttpContext!.Response.StatusCode = (int)response.StatusCode;
                 // for now we don't know how we're going to handle errors specifically,
                 // so we'll just throw an error with the error code
                 throw new ServiceException($"Error occurred calling API with error code: {response.StatusCode}. Message: {response.ReasonPhrase}");

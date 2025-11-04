@@ -2,7 +2,6 @@
 using EPR.Payment.Facade.Common.Dtos.Request.Payments;
 using EPR.Payment.Facade.Common.Dtos.Request.Payments.V2Payments;
 using EPR.Payment.Facade.Common.Dtos.Response.Payments;
-using EPR.Payment.Facade.Common.Dtos.Response.Payments.V2Payments;
 using EPR.Payment.Facade.Common.Enums;
 using System.Diagnostics.CodeAnalysis;
 

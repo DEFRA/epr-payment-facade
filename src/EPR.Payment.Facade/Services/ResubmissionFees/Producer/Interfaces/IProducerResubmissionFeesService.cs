@@ -6,5 +6,7 @@ namespace EPR.Payment.Facade.Services.ResubmissionFees.Producer.Interfaces
     public interface IProducerResubmissionFeesService
     {
         Task<ProducerResubmissionFeeResponseDto> GetResubmissionFeeAsync(ProducerResubmissionFeeRequestDto request, CancellationToken cancellationToken = default);
+
+        Task<ProducerResubmissionFeeResponseDto> GetResubmissionFeeAsync(ProducerResubmissionFeeRequestV2Dto request, CancellationToken cancellationToken = default);
     }
 }

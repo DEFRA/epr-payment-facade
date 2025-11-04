@@ -65,7 +65,7 @@ namespace EPR.Payment.Facade.UnitTests.Helpers
     };
 
             var configurationBuilder = new ConfigurationBuilder()
-                .AddInMemoryCollection(configurationData)
+                .AddInMemoryCollection(configurationData!)
                 .Build();
 
             _services?.AddFacadeDependencies(configurationBuilder);

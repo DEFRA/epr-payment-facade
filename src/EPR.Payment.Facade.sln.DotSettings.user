@@ -1,0 +1,8 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7ff871f9_002D930e_002D4f6f_002D8929_002D26c56382fd5a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Session" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;Or&gt;&#xD;
+    &lt;Project Location="C:\Repos\epr-payment-facade\src\EPR.Payment.Facade.UnitTests" Presentation="&amp;lt;Tests&amp;gt;\&amp;lt;EPR.Payment.Facade.UnitTests&amp;gt;" /&gt;&#xD;
+    &lt;Project Location="C:\Repos\epr-payment-facade\src\EPR.Payment.Facade.Common.UnitTests" Presentation="&amp;lt;Tests&amp;gt;\&amp;lt;EPR.Payment.Facade.Common.UnitTests&amp;gt;" /&gt;&#xD;
+    &lt;Project Location="C:\Repos\epr-payment-facade\src\EPR.Payment.Facade.IntegrationTests" Presentation="&amp;lt;Tests&amp;gt;\&amp;lt;EPR.Payment.Facade.Common.IntegrationTests&amp;gt;" /&gt;&#xD;
+  &lt;/Or&gt;&#xD;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

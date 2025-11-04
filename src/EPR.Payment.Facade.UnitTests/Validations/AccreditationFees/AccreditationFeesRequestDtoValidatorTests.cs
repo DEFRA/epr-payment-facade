@@ -8,20 +8,20 @@ namespace EPR.Payment.Facade.UnitTests.Validations.AccreditationFees
     [TestClass]
     public class AccreditationFeesRequestDtoValidatorTests
     {
-        private ReprocessorOrExporterAccreditationFeesRequestDtoValidator _validator;
+        private ReprocessorOrExporterAccreditationFeesRequestDtoValidator _validator = null!;
 
         [TestInitialize]
         public void Setup() => _validator = new ReprocessorOrExporterAccreditationFeesRequestDtoValidator();
 
-        private ReprocessorOrExporterAccreditationFeesRequestDto CreateValidDto()
+        private static ReprocessorOrExporterAccreditationFeesRequestDto CreateValidDto()
         {
             return new ReprocessorOrExporterAccreditationFeesRequestDto
             {
                 Regulator = "GB-ENG",
                 SubmissionDate = DateTime.UtcNow.AddSeconds(-1),
-                TonnageBand = (TonnageBands)Enum.GetValues(typeof(TonnageBands)).GetValue(0),
+                TonnageBand = (TonnageBands?)Enum.GetValues(typeof(TonnageBands)).GetValue(0),
                 RequestorType = RequestorTypes.Exporters,
-                MaterialType = (MaterialTypes)Enum.GetValues(typeof(MaterialTypes)).GetValue(0),
+                MaterialType = (MaterialTypes?)Enum.GetValues(typeof(MaterialTypes)).GetValue(0),
                 NumberOfOverseasSites = 1
             };
         }

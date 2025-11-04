@@ -24,7 +24,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
                    configMonitor.Get("ComplianceSchemeFeesService").EndPointName
                        ?? throw new ArgumentNullException(nameof(configMonitor), ExceptionMessages.ComplianceSchemeServiceEndPointNameMissing))
         {
-            var config = configMonitor.Get("ComplianceSchemeFeesService");
+            _ = configMonitor.Get("ComplianceSchemeFeesService");
         }
 
         public async Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(

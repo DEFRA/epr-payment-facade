@@ -362,8 +362,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             using (new AssertionScope())
             {
                 result.Should().NotBeNull();
-                result.PaymentId.Should().Be(paymentId);
-                result.State.Status.Should().Be("success");
+                result!.PaymentId.Should().Be(paymentId);
+                result.State!.Status.Should().Be("success");
                 retryCount.Should().Be(3); // Verify retries happened
             }
         }
@@ -436,7 +436,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             using (new AssertionScope())
             {
                 result.Should().NotBeNull();
-                result.State.Status.Should().Be("Success");
+                result!.State!.Status.Should().Be("Success");
                 postMethodCallCount.Should().Be(3); // Retries twice, succeeds on the third attempt
             }
         }
@@ -508,7 +508,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             // Assert
             using (new AssertionScope())
             {
-                result.State.Status.Should().Be("Success");
+                result!.State!.Status.Should().Be("Success");
                 postMethodCallCount.Should().Be(3); // Retries twice, succeeds on the third attempt
             }
         }
@@ -534,12 +534,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
             // Use a new HttpResponseMessage with explicitly buffered content
             var responseContent = "{}"; // Simulated empty JSON response
-            var responseMessage = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(responseContent, Encoding.UTF8, "application/json")
-            };
-
+            
             // Mock the SendAsync method to return the same buffered response
             handlerMock
                 .Protected()
@@ -767,7 +762,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                        {
                            StatusCode = HttpStatusCode.OK,
                            Content = new StringContent(JsonConvert.SerializeObject(new PaymentStatusResponseDto()
-                           { State = new Dtos.Response.Payments.Common.State() { Status = "InProgress" } })),
+                           { State = new State() { Status = "InProgress" } })),
                        }).Verifiable();
 
             var httpClient = new HttpClient(handlerMock.Object);
@@ -788,7 +783,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         msg.Method == HttpMethod.Get),
                     ItExpr.IsAny<CancellationToken>());
 
-            };
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -852,7 +847,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var configOptions = Options.Create(serviceConfig);
 
             // Act
-            Action act = () => new HttpGovPayService(
+            Action act = () => _ = new HttpGovPayService(
                 new HttpClient(),
                 httpContextAccessorMock.Object,
                 configOptions);
@@ -961,7 +956,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                     {
                         Content = new StringContent(JsonConvert.SerializeObject(_expectedResponse))
                     };
-                }).Callback<HttpRequestMessage, CancellationToken>((msg, token) =>
+                }).Callback<HttpRequestMessage, CancellationToken>((_, token) =>
                 {
                     // Verify cancellation token is not triggered during the test
                     Assert.IsFalse(token.IsCancellationRequested, "Cancellation token was triggered unexpectedly.");
@@ -971,7 +966,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpGovPayService = CreateHttpGovPayService(httpClient);
 
             // Act
-            GovPayResponseDto result = await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
+            await httpGovPayService.InitiatePaymentAsync(paymentRequestDto, cancellationToken);
 
             // Assert
             using (new AssertionScope())
