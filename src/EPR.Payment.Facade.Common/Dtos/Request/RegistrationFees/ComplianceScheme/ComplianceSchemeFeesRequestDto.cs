@@ -5,7 +5,8 @@
         public required string Regulator { get; set; } // "GB-ENG", "GB-SCT", etc.
         public required string ApplicationReferenceNumber { get; set; }
         public DateTime SubmissionDate { get; set; }
-        public List<ComplianceSchemeMemberDto> ComplianceSchemeMembers { get; set; } = new();
+        public List<ComplianceSchemeMemberDto> ComplianceSchemeMembers { get; set; } = new(); 
+        public bool IncludeRegistrationFee { get; set; } = true;
     }
 
     public class ComplianceSchemeMemberDto
