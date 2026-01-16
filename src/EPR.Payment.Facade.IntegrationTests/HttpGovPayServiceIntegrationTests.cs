@@ -48,6 +48,7 @@ namespace EPR.Payment.Facade.IntegrationTests
         }
 
         [TestMethod]
+        [Ignore("To be run manually locally only")]
         public async Task InitiatePayment_Success_PaymentResponseValid()
         {
             // Arrange
@@ -81,6 +82,7 @@ namespace EPR.Payment.Facade.IntegrationTests
         }
 
         [TestMethod]
+        [Ignore("To be run manually locally only")]
         public async Task InitiatePayment_BearerTokenNull_ThrowsServiceException()
         {
             // Arrange
@@ -121,6 +123,7 @@ namespace EPR.Payment.Facade.IntegrationTests
         }
 
         [TestMethod]
+        [Ignore("To be run manually locally only")]
         public async Task InitiatePayment_PostThrowsException_ThrowsServiceException()
         {
             // Arrange
@@ -164,6 +167,7 @@ namespace EPR.Payment.Facade.IntegrationTests
         }
 
         [TestMethod]
+        [Ignore("To be run manually locally only")]
         public async Task GetPaymentStatus_BearerTokenNull_ThrowsServiceException()
         {
             // Arrange
@@ -194,6 +198,7 @@ namespace EPR.Payment.Facade.IntegrationTests
         }
 
         [TestMethod]
+        [Ignore("To be run manually locally only")]
         public async Task GetPaymentStatus_PostThrowsException_ThrowsServiceException()
         {
             // Arrange

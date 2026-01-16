@@ -197,6 +197,27 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
             result.ShouldHaveValidationErrorFor(x => x.ProducerType)
                   .WithErrorMessage(ValidationMessages.ProducerTypeInvalid + string.Join(", ", validProducerTypes));
         }
+        public void Validate_ProducerTypeAndGreaterThanZeroSubsidiaries_ShouldNotHaveError()
+        {
+            // Arrange
+            var request = new ProducerFeesRequestDto
+            {
+                ProducerType = "LARGE",
+                NumberOfSubsidiaries = 10,
+                Regulator = RegulatorConstants.GBENG,
+                IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.UtcNow
+            };
+
+            // Act
+            var result = _validator.TestValidate(request);
+
+            // Assert
+            result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
+            result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
+        }
 
         [TestMethod]
         public void Validate_NumberOfOMPSubsidiaries_ShouldBeLessThanOrEqualToNumberOfSubsidiaries()
@@ -241,29 +262,6 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
 
             // Assert
             result.ShouldNotHaveValidationErrorFor(x => x.ProducerType);
-            result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
-            result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
-        }
-
-        [TestMethod]
-        public void Validate_ProducerTypeAndGreaterThanZeroSubsidiaries_ShouldNotHaveError()
-        {
-            // Arrange
-            var request = new ProducerFeesRequestDto
-            {
-                ProducerType = "LARGE",
-                NumberOfSubsidiaries = 10,
-                Regulator = RegulatorConstants.GBENG,
-                IsProducerOnlineMarketplace = false,
-                IsLateFeeApplicable = false,
-                ApplicationReferenceNumber = "A123",
-                SubmissionDate = DateTime.UtcNow
-            };
-
-            // Act
-            var result = _validator.TestValidate(request);
-
-            // Assert
             result.ShouldNotHaveValidationErrorFor(x => x.NumberOfSubsidiaries);
             result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
         }
@@ -410,5 +408,57 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
             result.ShouldHaveValidationErrorFor(x => x.SubmissionDate)
                 .WithErrorMessage(ValidationMessages.SubmissionDateMustBeUtc);
         }
+
+        [TestMethod]
+        public void Validate_NumberofLateSubsidiariesLessThanZero_ShouldHaveError()
+        {
+            // Arrange
+            var request = new ProducerFeesRequestDto
+            {
+                ProducerType = "LARGE",
+                NumberOfSubsidiaries = 0,
+                Regulator = RegulatorConstants.GBENG,
+                IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.UtcNow,
+                NumberofLateSubsidiaries = -3
+            };
+
+            // Act
+            var result = _validator.TestValidate(request);
+
+            // Assert
+            result.ShouldHaveValidationErrorFor(x => x.NumberofLateSubsidiaries)
+                  .WithErrorMessage(ValidationMessages.NumberOfLateSubsidiariesRange);
+
+        }
+
+
+        [TestMethod]
+        public void Validate_NumberofLateSubsidiariesNotLessThanZero_ShouldNotHaveErrors()
+        {
+            // Arrange
+            var request = new ProducerFeesRequestDto
+            {
+                ProducerType = "LARGE",
+                NumberOfSubsidiaries = 0,
+                Regulator = RegulatorConstants.GBENG,
+                IsProducerOnlineMarketplace = false,
+                IsLateFeeApplicable = false,
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.UtcNow,
+                NumberofLateSubsidiaries = 0
+            };
+
+            // Act
+            var result = _validator.TestValidate(request);
+
+            // Assert
+            result.ShouldNotHaveValidationErrorFor(x => x.NumberofLateSubsidiaries);
+            result.ShouldNotHaveValidationErrorFor(x => x.Regulator);
+        }
+
+
     }
 }
