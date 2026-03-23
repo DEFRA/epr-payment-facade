@@ -28,5 +28,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.Payments
         [Required(ErrorMessage = "Status is required")]
         [JsonConverter(typeof(StringEnumConverter))]
         public PaymentStatus Status { get; set; }
+
+        public Guid? FileId { get; set; }
     }
 }
