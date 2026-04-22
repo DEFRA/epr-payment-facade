@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EPR.Payment.Facade.Common\EPR.Payment.Facade.Common.csproj" />
+    <ProjectReference Include="..\EPR.Payment.Facade.Messaging\EPR.Payment.Facade.Messaging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

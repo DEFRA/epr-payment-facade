@@ -30,3 +30,17 @@ appsettings.Test.json
 /src/EPR.Payment.Facade.IntegrationTests/appsettings.json
 /src/TestResults
 *.csproj.user
+
+# Docker
+.env
+docker-compose.override.yml
+
+# JetBrains Rider
+*.sln.iml
+**/.idea/
+
+# ReSharper is a .NET coding add-in
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
