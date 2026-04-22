@@ -17,13 +17,13 @@ public class WorkerServiceBus : IHostedService, IDisposable
         _logger = logger;
     }
  
-    public async Task StartAsync(CancellationToken stoppingToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogDebug("Starting the service bus queue consumer and the subscription");
         await _serviceBusTopicSubscription.PrepareServiceBusSubscription().ConfigureAwait(false);
     }
  
-    public async Task StopAsync(CancellationToken stoppingToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogDebug("Stopping the service bus queue consumer and the subscription");
         await _serviceBusTopicSubscription.CloseSubscriptionAsync().ConfigureAwait(false);
