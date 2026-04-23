@@ -12,8 +12,8 @@ public class ServiceBusTopicSubscription : IServiceBusTopicSubscription
     private const string TopicPath = "topic.new";
     private const string SubscriptionName = "subscription.new";
     private readonly ILogger<ServiceBusTopicSubscription> _logger;
-    private readonly ServiceBusClient _client;
-    private readonly ServiceBusAdministrationClient _adminClient;
+    private readonly ServiceBusClient? _client;
+    private readonly ServiceBusAdministrationClient? _adminClient;
     private ServiceBusProcessor? _processor;
  
     public ServiceBusTopicSubscription(ILogger<ServiceBusTopicSubscription> logger, IConfiguration configuration)
@@ -40,6 +40,12 @@ public class ServiceBusTopicSubscription : IServiceBusTopicSubscription
 
         try
         {
+            if (_adminClient is null || _client is null)
+            {
+                throw new InvalidOperationException(
+                    "Service bus client is null. Please check your connection strings.");
+            }
+            
             var topicExistsResult = await _adminClient.TopicExistsAsync(TopicPath);
 
             if (!topicExistsResult.HasValue)
