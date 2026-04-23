@@ -9,12 +9,12 @@ namespace EPR.Payment.Facade.Messaging;
 [ExcludeFromCodeCoverage]
 public class ServiceBusTopicSubscription : IServiceBusTopicSubscription
 {
-    private const string TOPIC_PATH = "topic.new";
-    private const string SUBSCRIPTION_NAME = "subscription.new";
+    private const string TopicPath = "topic.new";
+    private const string SubscriptionName = "subscription.new";
     private readonly ILogger<ServiceBusTopicSubscription> _logger;
     private readonly ServiceBusClient _client;
     private readonly ServiceBusAdministrationClient _adminClient;
-    private ServiceBusProcessor? _processor = null;
+    private ServiceBusProcessor? _processor;
  
     public ServiceBusTopicSubscription(ILogger<ServiceBusTopicSubscription> logger, IConfiguration configuration)
     {
@@ -28,43 +28,52 @@ public class ServiceBusTopicSubscription : IServiceBusTopicSubscription
  
     public async Task PrepareServiceBusSubscription()
     {
-        var _serviceBusProcessorOptions = new ServiceBusProcessorOptions
+        var serviceBusProcessorOptions = new ServiceBusProcessorOptions
         {
             MaxConcurrentCalls = 1,
             AutoCompleteMessages = false,
         };
 
-        var topicExistsResult = await _adminClient.TopicExistsAsync(TOPIC_PATH);
-        
-        if (!topicExistsResult.HasValue)
+        try
         {
-            throw new InvalidOperationException(
-                "Unable to get a result when trying to query for the existence of a topic");
-        }
-        
-        if (!topicExistsResult.Value)
-        {
-            await _adminClient.CreateTopicAsync(TOPIC_PATH);
-        }
-        
-        var subscriptionExistsResult = await _adminClient.SubscriptionExistsAsync(TOPIC_PATH, SUBSCRIPTION_NAME);
+            var topicExistsResult = await _adminClient.TopicExistsAsync(TopicPath);
 
-        if (!subscriptionExistsResult.HasValue)
-        {
-            throw new InvalidOperationException(
-                "Unable to get a result when trying to query for the existence of a subscription");
+            if (!topicExistsResult.HasValue)
+            {
+                throw new InvalidOperationException(
+                    "Unable to get a result when trying to query for the existence of a topic");
+            }
+
+            if (!topicExistsResult.Value)
+            {
+                await _adminClient.CreateTopicAsync(TopicPath);
+            }
+
+            var subscriptionExistsResult = await _adminClient.SubscriptionExistsAsync(TopicPath, SubscriptionName);
+
+            if (!subscriptionExistsResult.HasValue)
+            {
+                throw new InvalidOperationException(
+                    "Unable to get a result when trying to query for the existence of a subscription");
+            }
+
+            if (!subscriptionExistsResult.Value)
+            {
+                await _adminClient.CreateSubscriptionAsync(TopicPath, SubscriptionName);
+            }
+
+            _processor = _client.CreateProcessor(TopicPath, SubscriptionName, serviceBusProcessorOptions);
+            _processor.ProcessMessageAsync += ProcessMessagesAsync;
+            _processor.ProcessErrorAsync += ProcessErrorAsync;
+
+            await _processor.StartProcessingAsync();
         }
-        if (!subscriptionExistsResult.Value)
+        catch (Exception ex)
         {
-            await _adminClient.CreateSubscriptionAsync(TOPIC_PATH, SUBSCRIPTION_NAME);
+            // we wouldn't have this exception catch for the live service. If the service cannot subscribe to the message bus, it shouldn't start
+            _logger.LogError(ex, "An exception occurred while starting up the service bus subscription");
         }
-        
-        _processor = _client.CreateProcessor(TOPIC_PATH, SUBSCRIPTION_NAME, _serviceBusProcessorOptions);
-        _processor.ProcessMessageAsync += ProcessMessagesAsync;
-        _processor.ProcessErrorAsync += ProcessErrorAsync;
-        
  
-        await _processor.StartProcessingAsync();
     }
  
     private async Task ProcessMessagesAsync(ProcessMessageEventArgs args)

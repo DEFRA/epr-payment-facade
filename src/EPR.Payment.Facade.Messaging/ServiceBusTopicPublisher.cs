@@ -10,10 +10,10 @@ namespace EPR.Payment.Facade.Messaging;
 [ExcludeFromCodeCoverage]
 public class ServiceBusTopicSender : IServiceBusTopicPublisher
 {
-    private const string TOPIC_PATH = "topic.new";
+    private const string TopicPath = "topic.new";
     private readonly ILogger<ServiceBusTopicSender> _logger;
     private readonly ServiceBusClient _client;
-    private Azure.Messaging.ServiceBus.ServiceBusSender? _clientSender;
+    private Azure.Messaging.ServiceBus.ServiceBusSender _clientSender = null!;
     private readonly string? _adminConnectionString;
 
     public ServiceBusTopicSender(ILogger<ServiceBusTopicSender> logger, IConfiguration configuration)
@@ -38,18 +38,17 @@ public class ServiceBusTopicSender : IServiceBusTopicPublisher
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            _logger.LogError(e, "Failed to send message: {messagePayload}", messagePayload);
         }
     }
 
-    [MemberNotNull(nameof(_clientSender))]
     private async Task SetupClient()
     {
         if (_clientSender == null)
         {
             var adminClient = new ServiceBusAdministrationClient(_adminConnectionString);
             
-            var topicExistsResult = await adminClient.TopicExistsAsync(TOPIC_PATH);
+            var topicExistsResult = await adminClient.TopicExistsAsync(TopicPath);
 
             if (!topicExistsResult.HasValue)
             {
@@ -59,10 +58,10 @@ public class ServiceBusTopicSender : IServiceBusTopicPublisher
             
             if (!topicExistsResult.Value)
             {
-                await adminClient.CreateTopicAsync(TOPIC_PATH);
+                await adminClient.CreateTopicAsync(TopicPath);
             }
 
-            _clientSender = _client.CreateSender(TOPIC_PATH);
+            _clientSender = _client.CreateSender(TopicPath);
         }
     }
 }
