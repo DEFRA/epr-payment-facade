@@ -22,8 +22,12 @@ public class ServiceBusTopicSubscription : IServiceBusTopicSubscription
 
         var connectionString = configuration.GetValue<string>("ServiceBus:ConnectionString");
         var adminConnectionString = configuration.GetValue<string>("ServiceBus:AdminConnectionString");
-        _client = new ServiceBusClient(connectionString);
-        _adminClient = new ServiceBusAdministrationClient(adminConnectionString);
+
+        if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(adminConnectionString))
+        {
+            _client = new ServiceBusClient(connectionString);
+            _adminClient = new ServiceBusAdministrationClient(adminConnectionString);
+        }
     }
  
     public async Task PrepareServiceBusSubscription()
