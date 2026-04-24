@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using EPR.Payment.Facade.Messaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EPR.Payment.Facade.Controllers.Messaging;
@@ -7,6 +8,7 @@ namespace EPR.Payment.Facade.Controllers.Messaging;
 [ExcludeFromCodeCoverage]
 [ApiController]
 [Route("api/")]
+[AllowAnonymous]
 public class MessagingController(IServiceBusTopicPublisher publisher) : ControllerBase
 {
     [HttpPost("test")]
