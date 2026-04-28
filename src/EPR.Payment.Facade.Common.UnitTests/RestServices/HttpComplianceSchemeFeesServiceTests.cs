@@ -56,10 +56,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         MemberId = "123",
                         MemberType = "LARGE",
                         IsOnlineMarketplace = true,
+                        IsClosedLoopRecycling = true,
                         IsLateFeeApplicable = true,
                         NumberOfSubsidiaries = 150,
-                        NoOfSubsidiariesOnlineMarketplace = 10
-
+                        NoOfSubsidiariesOnlineMarketplace = 10,
+                        NoOfSubsidiariesClosedLoopRecycling = 5
                     }
                 }
             };
@@ -170,6 +171,41 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 ItExpr.Is<HttpRequestMessage>(msg =>
                     msg.Method == HttpMethod.Post),
                 ItExpr.IsAny<CancellationToken>());
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ValidRequest_ForwardsClosedLoopRecyclingFieldsInBody(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            string? capturedBody = null;
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Callback<HttpRequestMessage, CancellationToken>(async (msg, _) =>
+                       {
+                           if (msg.Content != null)
+                           {
+                               capturedBody = await msg.Content.ReadAsStringAsync();
+                           }
+                       })
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
+
+            using (new AssertionScope())
+            {
+                capturedBody.Should().NotBeNull();
+                capturedBody.Should().Contain("\"isClosedLoopRecycling\":true");
+                capturedBody.Should().Contain("\"noOfSubsidiariesClosedLoopRecycling\":5");
+            }
         }
 
         [TestMethod, AutoMoqData]

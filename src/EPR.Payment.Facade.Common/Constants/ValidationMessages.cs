@@ -8,6 +8,8 @@
         public const string NumberOfOMPSubsidiariesLessThanOrEqualToNumberOfSubsidiaries = "Number of online marketplace subsidiaries must be less than or equal to number of subsidiaries.";
         public const string ApplicationReferenceNumberRequired = "Application Reference Number is required.";
         public const string NoOfSubsidiariesOnlineMarketplaceRange = "Number of Subsidiaries with Online Marketplace must be greater than or equal to 0.";
+        public const string NumberOfClosedLoopRecyclingSubsidiariesLessThanOrEqualToNumberOfSubsidiaries = "Number of closed loop recycling subsidiaries must be less than or equal to number of subsidiaries.";
+        public const string NoOfSubsidiariesClosedLoopRecyclingRange = "Number of Subsidiaries with Closed Loop Recycling must be greater than or equal to 0.";
         public const string FileIdRequired = "FileId is required";
         public const string ExternalIdRequired = "ExternalId is required";
         public const string InvoicePeriodRequired = "InvoicePeriod is required";

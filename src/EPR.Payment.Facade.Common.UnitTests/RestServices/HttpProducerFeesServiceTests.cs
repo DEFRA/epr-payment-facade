@@ -49,6 +49,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
                 IsProducerOnlineMarketplace = false,
+                IsClosedLoopRecycling = true,
+                NoOfSubsidiariesClosedLoopRecycling = 2,
                 IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123",
                 SubmissionDate = DateTime.UtcNow
@@ -152,6 +154,44 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 ItExpr.Is<HttpRequestMessage>(msg =>
                     msg.Method == HttpMethod.Post),
                 ItExpr.IsAny<CancellationToken>());
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_ValidRequest_ForwardsClosedLoopRecyclingFieldsInBody(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            string? capturedBody = null;
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Callback<HttpRequestMessage, CancellationToken>(async (msg, _) =>
+                       {
+                           if (msg.Content != null)
+                           {
+                               capturedBody = await msg.Content.ReadAsStringAsync();
+                           }
+                       })
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_producerFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            // Act
+            await httpProducerFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                capturedBody.Should().NotBeNull();
+                capturedBody.Should().Contain("\"isClosedLoopRecycling\":true");
+                capturedBody.Should().Contain("\"noOfSubsidiariesClosedLoopRecycling\":2");
+            }
         }
 
         [TestMethod, AutoMoqData]
