@@ -6,6 +6,8 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer
     {
         public bool IsProducerOnlineMarketplace { get; set; } // True or False
 
+        public bool IsClosedLoopRecycling { get; set; } // True or False
+
         public bool IsLateFeeApplicable { get; set; } // True or False
     }
 }

@@ -30,6 +30,14 @@ namespace EPR.Payment.Facade.Validations.RegistrationFees.ComplianceScheme
             RuleFor(x => x.NoOfSubsidiariesOnlineMarketplace)
                 .GreaterThanOrEqualTo(0)
                 .WithMessage(ValidationMessages.NoOfSubsidiariesOnlineMarketplaceRange);
+
+            RuleFor(x => x.NoOfSubsidiariesClosedLoopRecycling)
+                .LessThanOrEqualTo(x => x.NumberOfSubsidiaries)
+                .WithMessage(ValidationMessages.NumberOfClosedLoopRecyclingSubsidiariesLessThanOrEqualToNumberOfSubsidiaries);
+
+            RuleFor(x => x.NoOfSubsidiariesClosedLoopRecycling)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage(ValidationMessages.NoOfSubsidiariesClosedLoopRecyclingRange);
         }
     }
 }

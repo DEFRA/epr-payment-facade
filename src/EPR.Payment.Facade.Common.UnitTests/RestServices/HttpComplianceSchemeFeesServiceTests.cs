@@ -56,10 +56,11 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         MemberId = "123",
                         MemberType = "LARGE",
                         IsOnlineMarketplace = true,
+                        IsClosedLoopRecycling = true,
                         IsLateFeeApplicable = true,
                         NumberOfSubsidiaries = 150,
-                        NoOfSubsidiariesOnlineMarketplace = 10
-
+                        NoOfSubsidiariesOnlineMarketplace = 10,
+                        NoOfSubsidiariesClosedLoopRecycling = 5
                     }
                 }
             };
@@ -77,6 +78,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         MemberId = "123",
                         MemberRegistrationFee = 165800,
                         MemberOnlineMarketPlaceFee = 257900,
+                        MemberClosedLoopRecyclingFee = 33200,
                         MemberLateRegistrationFee = 33200,
                         SubsidiariesFee = 4815000,
                         TotalMemberFee = 5238700,
@@ -85,6 +87,9 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                                 TotalSubsidiariesOMPFees = 2579000,
                                 CountOfOMPSubsidiaries = 10,
                                 UnitOMPFees = 257900,
+                                TotalSubsidiariesClosedLoopRecyclingFees = 1289500,
+                                CountOfClosedLoopRecyclingSubsidiaries = 5,
+                                UnitClosedLoopRecyclingFees = 257900,
                                 FeeBreakdowns = new List<FeeBreakdown>
                                 {
                                     new FeeBreakdown
@@ -170,6 +175,100 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 ItExpr.Is<HttpRequestMessage>(msg =>
                     msg.Method == HttpMethod.Post),
                 ItExpr.IsAny<CancellationToken>());
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ValidRequest_ForwardsClosedLoopRecyclingFieldsInBody(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            string? capturedBody = null;
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Callback<HttpRequestMessage, CancellationToken>(async (msg, _) =>
+                       {
+                           if (msg.Content != null)
+                           {
+                               capturedBody = await msg.Content.ReadAsStringAsync();
+                           }
+                       })
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
+
+            using (new AssertionScope())
+            {
+                capturedBody.Should().NotBeNull();
+                capturedBody.Should().Contain("\"isClosedLoopRecycling\":true");
+                capturedBody.Should().Contain("\"noOfSubsidiariesClosedLoopRecycling\":5");
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateFeesAsync_ValidRequest_Returns_ClosedLoopRecyclingFields_FromResponseBody(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            const string responseJson = """
+                {
+                  "totalFee": 6619100,
+                  "complianceSchemeRegistrationFee": 1380400,
+                  "previousPayment": 0,
+                  "outstandingPayment": 6619100,
+                  "complianceSchemeMembersWithFees": [{
+                    "memberId": "123",
+                    "memberRegistrationFee": 165800,
+                    "memberOnlineMarketPlaceFee": 257900,
+                    "memberClosedLoopRecyclingFee": 33200,
+                    "memberLateRegistrationFee": 33200,
+                    "subsidiariesFee": 4815000,
+                    "totalMemberFee": 5238700,
+                    "subsidiariesFeeBreakdown": {
+                      "totalSubsidiariesOMPFees": 2579000,
+                      "countOfOMPSubsidiaries": 10,
+                      "unitOMPFees": 257900,
+                      "totalSubsidiariesClosedLoopRecyclingFees": 1289500,
+                      "countOfClosedLoopRecyclingSubsidiaries": 5,
+                      "unitClosedLoopRecyclingFees": 257900,
+                      "feeBreakdowns": []
+                    }
+                  }]
+                }
+                """;
+
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            var result = await httpComplianceSchemeFeesService.CalculateFeesAsync(_complianceSchemeFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var member = result.ComplianceSchemeMembersWithFees.Single();
+                member.MemberClosedLoopRecyclingFee.Should().Be(33200);
+                member.SubsidiariesFeeBreakdown.TotalSubsidiariesClosedLoopRecyclingFees.Should().Be(1289500);
+                member.SubsidiariesFeeBreakdown.CountOfClosedLoopRecyclingSubsidiaries.Should().Be(5);
+                member.SubsidiariesFeeBreakdown.UnitClosedLoopRecyclingFees.Should().Be(257900);
+            }
         }
 
         [TestMethod, AutoMoqData]
