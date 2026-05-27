@@ -41,19 +41,16 @@
         public const string MemberTypeRequired = "MemberType is required.";
         public const string InvalidMemberType = "Member Type must be one of the following: "; 
         public const string InvalidSubmissionDate = "Submission date is mandatory and must be a valid date.";
-        public const string FutureSubmissionDate = "Submission date cannot be a date in the future.";
         public const string SubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
 
         // Compliance Scheme Resubmission Fee Validation Messages
         public const string ResubmissionDateRequired = "Resubmission date is mandatory and must be a valid date.";
-        public const string FutureResubmissionDate = "Resubmission date cannot be a date in the future.";
         public const string ResubmissionDateMustBeUtc = "Resubmission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string ReferenceNumberRequired = "Reference Number is required.";
         public const string MemberCountGreaterThanZero = "Member Count must be greater than zero.";
 
         // Reprocessor-Exporter Registration Fees Validation Messages
         public const string ReprocessorExporterDateRequired = "Submission date is mandatory and must be a valid date.";
-        public const string RexExFutureResubmissionDate = "Submission date cannot be a date in the future.";
         public const string RexExsubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string MaterialTypeInvalid = "Invalid MaterialType.";
         public const string RequestorTypeInvalid = "Invalid RequestorType.";

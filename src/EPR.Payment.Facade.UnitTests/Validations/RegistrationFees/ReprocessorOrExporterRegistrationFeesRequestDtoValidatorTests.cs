@@ -33,7 +33,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         }
 
         [TestMethod]
-        public void Should_Have_Error_When_SubmissionDate_Is_In_The_Future()
+        public void Should_Not_Have_Error_When_SubmissionDate_Is_In_The_Future()
         {
             var model = new ReprocessorOrExporterRegistrationFeesRequestDto
             {
@@ -44,8 +44,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
             };
 
             var result = _validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.SubmissionDate)
-            .WithErrorMessage(ValidationMessages.RexExFutureResubmissionDate);
+            result.ShouldNotHaveValidationErrorFor(x => x.SubmissionDate);
         }
 
         [TestMethod]

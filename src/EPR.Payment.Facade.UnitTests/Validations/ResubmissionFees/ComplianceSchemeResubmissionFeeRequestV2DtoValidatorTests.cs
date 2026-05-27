@@ -92,7 +92,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.ResubmissionFees
         }
 
         [TestMethod]
-        public void Validate_ResubmissionDateInFuture_ShouldHaveError()
+        public void Validate_ResubmissionDateInFuture_ShouldNotHaveError()
         {
             // Arrange
             var request = new ComplianceSchemeResubmissionFeeRequestV2Dto
@@ -112,8 +112,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.ResubmissionFees
             var result = _validator.TestValidate(request);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.ResubmissionDate)
-                .WithErrorMessage(ValidationMessages.FutureResubmissionDate);
+            result.ShouldNotHaveValidationErrorFor(x => x.ResubmissionDate);
         }
 
         [TestMethod]
