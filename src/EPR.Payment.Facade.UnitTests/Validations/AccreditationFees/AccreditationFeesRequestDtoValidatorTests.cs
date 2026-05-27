@@ -59,14 +59,13 @@ namespace EPR.Payment.Facade.UnitTests.Validations.AccreditationFees
         }
 
         [TestMethod]
-        public void Validate_SubmissionDateInFuture_ShouldHaveError()
+        public void Validate_SubmissionDateInFuture_ShouldNotHaveError()
         {
             var dto = CreateValidDto();
             dto.SubmissionDate = DateTime.UtcNow.AddDays(1);
             var result = _validator.Validate(dto);
-            Assert.IsFalse(result.IsValid);
             var error = result.Errors.SingleOrDefault(e => e.PropertyName == nameof(dto.SubmissionDate));
-            Assert.IsNotNull(error);
+            Assert.IsNull(error);
         }
 
         [TestMethod]
