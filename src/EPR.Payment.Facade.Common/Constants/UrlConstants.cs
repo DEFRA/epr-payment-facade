@@ -29,5 +29,8 @@
 
         // Accreditation fees service endpoints
         public const string CalculateReprocessorOrExporterAccreditationFees = "reprocessorexporter/accreditation-fee";
+
+        // Registration submission snapshot endpoints
+        public const string RegistrationSubmissionData = "registration-submission-data";
     }
 }

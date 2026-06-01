@@ -12,6 +12,10 @@ using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.I
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationSubmission;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationSubmission.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationSubmission;
+using EPR.Payment.Facade.Services.RegistrationSubmission.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.ComplianceScheme.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.ResubmissionFees.Producer;
@@ -44,6 +48,7 @@ namespace EPR.Payment.Facade.Helpers
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
             services.Configure<Service>("RexExpoAccreditationFeesService", configuration.GetSection("Services:RexExpoAccreditationFeesService"));
+            services.Configure<Service>("RegistrationSubmissionDataService", configuration.GetSection("Services:RegistrationSubmissionDataService"));
 
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
@@ -191,6 +196,17 @@ namespace EPR.Payment.Facade.Helpers
                     ValidateServiceConfiguration(config, ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
+
+            services.AddHttpClient<IHttpRegistrationSubmissionDataService, HttpRegistrationSubmissionDataService>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.RegistrationSubmissionDataService;
+                    ValidateServiceConfiguration(config, ExceptionMessages.RegistrationSubmissionDataServiceBaseUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
+
+            services.AddScoped<IRegistrationSubmissionDataService, RegistrationSubmissionDataService>();
 
             // Register additional services without TokenAuthorizationHandler
             services.AddTransient<IHttpGovPayService>(sp =>
