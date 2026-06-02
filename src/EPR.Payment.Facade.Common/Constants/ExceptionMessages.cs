@@ -84,6 +84,7 @@
         public const string RegistrationSubmissionDataServiceBaseUrlMissing = "RegistrationSubmissionDataService BaseUrl configuration is missing. Please ensure the RegistrationSubmissionDataService URL is configured properly.";
         public const string ErrorCreatingRegistrationSubmissionData = "Error occurred while creating registration submission data.";
         public const string UnexpectedErrorCreatingRegistrationSubmissionData = "An unexpected error occurred while creating registration submission data.";
+        public const string ErrorRetrievingRegistrationFeeCalculationDetails = "Error occurred while retrieving registration fee calculation details.";
 
         // Reprocess Exporter Registration Fees Service exceptions
         public const string ReproExpoRegServiceUrlMissing = "ReprocessorOrExporterRegistrationService url configuration is missing.";

@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Request.RegistrationSubmission;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationSubmission;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationSubmission.Interfaces;
 using FluentValidation;
@@ -40,6 +41,24 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationSubmission
             catch (Exception ex)
             {
                 throw new ServiceException(ExceptionMessages.ErrorCreatingRegistrationSubmissionData, ex);
+            }
+        }
+
+        public async Task<IReadOnlyList<RegistrationFeeCalculationDetailsDto>?> GetFeeCalculationDetailsAsync(Guid submissionId, CancellationToken cancellationToken = default)
+        {
+            var url = $"{UrlConstants.RegistrationSubmissionData}/{submissionId}/fee-calculation-details";
+
+            try
+            {
+                return await Get<List<RegistrationFeeCalculationDetailsDto>>(url, cancellationToken, includeTrailingSlash: false);
+            }
+            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new ServiceException(ExceptionMessages.ErrorRetrievingRegistrationFeeCalculationDetails, ex);
             }
         }
     }

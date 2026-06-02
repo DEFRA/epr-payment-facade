@@ -9,7 +9,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationSubmission
 
         public Guid FileId { get; set; }
 
-        public string BlobName { get; set; } = string.Empty;
+        public string RegistrationBlobName { get; set; } = string.Empty;
 
         public Guid? ComplianceSchemeId { get; set; }
 

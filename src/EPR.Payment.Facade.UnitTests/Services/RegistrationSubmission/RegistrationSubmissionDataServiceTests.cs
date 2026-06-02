@@ -79,5 +79,52 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationSubmission
 
             await act.Should().ThrowAsync<ServiceException>();
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeeCalculationDetailsAsync_ReturnsListFromHttp(
+            Mock<IHttpRegistrationSubmissionDataService> httpMock,
+            ILogger<RegistrationSubmissionDataService> logger,
+            Guid submissionId)
+        {
+            IReadOnlyList<EPR.Payment.Facade.Common.Dtos.Response.RegistrationSubmission.RegistrationFeeCalculationDetailsDto> expected = new[]
+            {
+                new EPR.Payment.Facade.Common.Dtos.Response.RegistrationSubmission.RegistrationFeeCalculationDetailsDto { OrganisationId = "ORG-1" },
+            };
+            httpMock.Setup(h => h.GetFeeCalculationDetailsAsync(submissionId, It.IsAny<CancellationToken>())).ReturnsAsync(expected);
+            var sut = new RegistrationSubmissionDataService(httpMock.Object, logger);
+
+            var result = await sut.GetFeeCalculationDetailsAsync(submissionId);
+
+            result.Should().BeEquivalentTo(expected);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeeCalculationDetailsAsync_HttpReturnsNull_ReturnsNull(
+            Mock<IHttpRegistrationSubmissionDataService> httpMock,
+            ILogger<RegistrationSubmissionDataService> logger,
+            Guid submissionId)
+        {
+            httpMock.Setup(h => h.GetFeeCalculationDetailsAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IReadOnlyList<EPR.Payment.Facade.Common.Dtos.Response.RegistrationSubmission.RegistrationFeeCalculationDetailsDto>?)null);
+            var sut = new RegistrationSubmissionDataService(httpMock.Object, logger);
+
+            var result = await sut.GetFeeCalculationDetailsAsync(submissionId);
+
+            result.Should().BeNull();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeeCalculationDetailsAsync_HttpThrows_WrapsInServiceException(
+            Mock<IHttpRegistrationSubmissionDataService> httpMock,
+            ILogger<RegistrationSubmissionDataService> logger,
+            Guid submissionId)
+        {
+            httpMock.Setup(h => h.GetFeeCalculationDetailsAsync(submissionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("boom"));
+            var sut = new RegistrationSubmissionDataService(httpMock.Object, logger);
+
+            Func<Task> act = () => sut.GetFeeCalculationDetailsAsync(submissionId);
+
+            await act.Should().ThrowAsync<ServiceException>();
+        }
     }
 }
