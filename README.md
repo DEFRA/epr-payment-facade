@@ -158,17 +158,17 @@ appsettings.Development.json
 
 ### Running the Application
 1. Navigate to the project directory:
-    ```bash
-    cd \src\EPR.Payment.Facade
-    ```
- 
-2. To run the service locally:
+1. Start docker
+1. If you don't have one already, create a `.env` file in the root of the project. It should contain the sql password, in the form `SQL_PASSWORD=foobar`
+1. If you haven't pulled the docker images before, run
+   `docker compose -f docker-compose.yml pull`
+1. Run the docker containers
+   `docker compose --profile payments-stack -f docker-compose.yml up`
+1. To run the service locally:
     ```bash
     dotnet run
     ```
-
-3. Launch Browser:
-
+1. Launch Browser:
     Service Health Check:
     [https://localhost:7166/health](https://localhost:7166/health)
 
