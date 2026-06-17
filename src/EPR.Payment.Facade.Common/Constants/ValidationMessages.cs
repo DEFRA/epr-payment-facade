@@ -8,6 +8,8 @@
         public const string NumberOfOMPSubsidiariesLessThanOrEqualToNumberOfSubsidiaries = "Number of online marketplace subsidiaries must be less than or equal to number of subsidiaries.";
         public const string ApplicationReferenceNumberRequired = "Application Reference Number is required.";
         public const string NoOfSubsidiariesOnlineMarketplaceRange = "Number of Subsidiaries with Online Marketplace must be greater than or equal to 0.";
+        public const string NumberOfClosedLoopRecyclingSubsidiariesLessThanOrEqualToNumberOfSubsidiaries = "Number of closed loop recycling subsidiaries must be less than or equal to number of subsidiaries.";
+        public const string NoOfSubsidiariesClosedLoopRecyclingRange = "Number of Subsidiaries with Closed Loop Recycling must be greater than or equal to 0.";
         public const string FileIdRequired = "FileId is required";
         public const string ExternalIdRequired = "ExternalId is required";
         public const string InvoicePeriodRequired = "InvoicePeriod is required";
@@ -39,19 +41,16 @@
         public const string MemberTypeRequired = "MemberType is required.";
         public const string InvalidMemberType = "Member Type must be one of the following: "; 
         public const string InvalidSubmissionDate = "Submission date is mandatory and must be a valid date.";
-        public const string FutureSubmissionDate = "Submission date cannot be a date in the future.";
         public const string SubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
 
         // Compliance Scheme Resubmission Fee Validation Messages
         public const string ResubmissionDateRequired = "Resubmission date is mandatory and must be a valid date.";
-        public const string FutureResubmissionDate = "Resubmission date cannot be a date in the future.";
         public const string ResubmissionDateMustBeUtc = "Resubmission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string ReferenceNumberRequired = "Reference Number is required.";
         public const string MemberCountGreaterThanZero = "Member Count must be greater than zero.";
 
         // Reprocessor-Exporter Registration Fees Validation Messages
         public const string ReprocessorExporterDateRequired = "Submission date is mandatory and must be a valid date.";
-        public const string RexExFutureResubmissionDate = "Submission date cannot be a date in the future.";
         public const string RexExsubmissionDateMustBeUtc = "Submission date must be in the UTC format which is YYYY-MM-DDTHH:MM:SSZ.";
         public const string MaterialTypeInvalid = "Invalid MaterialType.";
         public const string RequestorTypeInvalid = "Invalid RequestorType.";

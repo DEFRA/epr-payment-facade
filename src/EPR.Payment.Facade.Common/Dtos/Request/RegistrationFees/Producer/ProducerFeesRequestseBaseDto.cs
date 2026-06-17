@@ -13,5 +13,7 @@
         public int NumberOfSubsidiaries { get; set; } // Any integer >= 0
 
         public int NoOfSubsidiariesOnlineMarketplace { get; set; } // Any integer >= 0
+
+        public int NoOfSubsidiariesClosedLoopRecycling { get; set; } // Any integer >= 0
     }
 }

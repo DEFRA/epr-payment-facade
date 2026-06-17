@@ -222,6 +222,65 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         }
 
         [TestMethod]
+        public void Validate_NumberOfClosedLoopRecyclingSubsidiariesGreaterThanNumberOfSubsidiaries_ShouldHaveError()
+        {
+            var request = new ProducerFeesRequestDto
+            {
+                ProducerType = "Large",
+                NumberOfSubsidiaries = 10,
+                NoOfSubsidiariesClosedLoopRecycling = 11,
+                Regulator = RegulatorConstants.GBENG,
+                IsClosedLoopRecycling = false,
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.UtcNow
+            };
+
+            var result = _validator.TestValidate(request);
+
+            result.ShouldHaveValidationErrorFor(x => x.NoOfSubsidiariesClosedLoopRecycling)
+                .WithErrorMessage(ValidationMessages.NumberOfClosedLoopRecyclingSubsidiariesLessThanOrEqualToNumberOfSubsidiaries);
+        }
+
+        [TestMethod]
+        public void Validate_NumberOfClosedLoopRecyclingSubsidiariesNegative_ShouldHaveError()
+        {
+            var request = new ProducerFeesRequestDto
+            {
+                ProducerType = "Large",
+                NumberOfSubsidiaries = 10,
+                NoOfSubsidiariesClosedLoopRecycling = -1,
+                Regulator = RegulatorConstants.GBENG,
+                IsClosedLoopRecycling = false,
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.UtcNow
+            };
+
+            var result = _validator.TestValidate(request);
+
+            result.ShouldHaveValidationErrorFor(x => x.NoOfSubsidiariesClosedLoopRecycling)
+                .WithErrorMessage(ValidationMessages.NoOfSubsidiariesClosedLoopRecyclingRange);
+        }
+
+        [TestMethod]
+        public void Validate_NumberOfClosedLoopRecyclingSubsidiariesValid_ShouldNotHaveError()
+        {
+            var request = new ProducerFeesRequestDto
+            {
+                ProducerType = "Large",
+                NumberOfSubsidiaries = 10,
+                NoOfSubsidiariesClosedLoopRecycling = 3,
+                Regulator = RegulatorConstants.GBENG,
+                IsClosedLoopRecycling = true,
+                ApplicationReferenceNumber = "A123",
+                SubmissionDate = DateTime.UtcNow
+            };
+
+            var result = _validator.TestValidate(request);
+
+            result.ShouldNotHaveValidationErrorFor(x => x.NoOfSubsidiariesClosedLoopRecycling);
+        }
+
+        [TestMethod]
         public void Validate_ValidRequestWithProducerType_ShouldNotHaveError()
         {
             // Arrange
@@ -366,7 +425,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
         }
 
         [TestMethod]
-        public void Validate_FutureSubmissionDate_ShouldHaveError()
+        public void Validate_FutureSubmissionDate_ShouldNotHaveError()
         {
             // Arrange
             var request = new ProducerFeesRequestDto
@@ -384,8 +443,7 @@ namespace EPR.Payment.Facade.UnitTests.Validations.RegistrationFees
             var result = _validator.TestValidate(request);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.SubmissionDate)
-                  .WithErrorMessage(ValidationMessages.FutureSubmissionDate);
+            result.ShouldNotHaveValidationErrorFor(x => x.SubmissionDate);
         }
 
         [TestMethod]

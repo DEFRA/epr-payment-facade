@@ -49,6 +49,8 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 NumberOfSubsidiaries = 10,
                 Regulator = "GB-ENG",
                 IsProducerOnlineMarketplace = false,
+                IsClosedLoopRecycling = true,
+                NoOfSubsidiariesClosedLoopRecycling = 2,
                 IsLateFeeApplicable = false,
                 ApplicationReferenceNumber = "A123",
                 SubmissionDate = DateTime.UtcNow
@@ -56,9 +58,19 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
             _producerFeesResponseDto = new ProducerFeesResponseDto
             {
+                ProducerRegistrationFee = 165800,
+                ProducerOnlineMarketPlaceFee = 257900,
+                ProducerClosedLoopRecyclingFee = 33200,
+                SubsidiariesFee = 800,
                 TotalFee = 1000,
                 SubsidiariesFeeBreakdown = new SubsidiariesFeeBreakdown
                 {
+                    TotalSubsidiariesOMPFees = 2579000,
+                    CountOfOMPSubsidiaries = 10,
+                    UnitOMPFees = 257900,
+                    TotalSubsidiariesClosedLoopRecyclingFees = 99600,
+                    CountOfClosedLoopRecyclingSubsidiaries = 2,
+                    UnitClosedLoopRecyclingFees = 49800,
                     FeeBreakdowns = new List<FeeBreakdown>
                     {
                         new FeeBreakdown
@@ -152,6 +164,97 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 ItExpr.Is<HttpRequestMessage>(msg =>
                     msg.Method == HttpMethod.Post),
                 ItExpr.IsAny<CancellationToken>());
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_ValidRequest_ForwardsClosedLoopRecyclingFieldsInBody(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            string? capturedBody = null;
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Callback<HttpRequestMessage, CancellationToken>(async (msg, _) =>
+                       {
+                           if (msg.Content != null)
+                           {
+                               capturedBody = await msg.Content.ReadAsStringAsync();
+                           }
+                       })
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_producerFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            // Act
+            await httpProducerFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                capturedBody.Should().NotBeNull();
+                capturedBody.Should().Contain("\"isClosedLoopRecycling\":true");
+                capturedBody.Should().Contain("\"noOfSubsidiariesClosedLoopRecycling\":2");
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_ValidRequest_Returns_ClosedLoopRecyclingFields_FromResponseBody(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            const string responseJson = """
+                {
+                  "producerRegistrationFee": 165800,
+                  "producerOnlineMarketPlaceFee": 257900,
+                  "producerClosedLoopRecyclingFee": 33200,
+                  "producerLateRegistrationFee": 0,
+                  "subsidiariesFee": 800,
+                  "totalFee": 1000,
+                  "previousPayment": 0,
+                  "outstandingPayment": 1000,
+                  "subsidiariesFeeBreakdown": {
+                    "totalSubsidiariesOMPFees": 2579000,
+                    "countOfOMPSubsidiaries": 10,
+                    "unitOMPFees": 257900,
+                    "totalSubsidiariesClosedLoopRecyclingFees": 99600,
+                    "countOfClosedLoopRecyclingSubsidiaries": 2,
+                    "unitClosedLoopRecyclingFees": 49800,
+                    "feeBreakdowns": []
+                  }
+                }
+                """;
+
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            // Act
+            var result = await httpProducerFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.ProducerClosedLoopRecyclingFee.Should().Be(33200);
+                result.SubsidiariesFeeBreakdown.TotalSubsidiariesClosedLoopRecyclingFees.Should().Be(99600);
+                result.SubsidiariesFeeBreakdown.CountOfClosedLoopRecyclingSubsidiaries.Should().Be(2);
+                result.SubsidiariesFeeBreakdown.UnitClosedLoopRecyclingFees.Should().Be(49800);
+            }
         }
 
         [TestMethod, AutoMoqData]
