@@ -10,6 +10,7 @@ Service Facade to calculate fees and manage payment records for EPR
 - EPR Payment Service - https://github.com/DEFRA/epr-payment-service
 - .NET 8 SDK
 - Visual Studio or Visual Studio Code
+- Azure ADB2C(Optional for Development - AppSettings: FeatureManagement__EnableAuthenticationFeature:false to disable)
 - GovPayService API Key
 
 ### Installation
