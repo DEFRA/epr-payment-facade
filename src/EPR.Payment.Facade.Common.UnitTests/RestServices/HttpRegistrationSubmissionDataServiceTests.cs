@@ -2,12 +2,11 @@
 using System.Text;
 using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
-using EPR.Payment.Facade.Common.Dtos.Request.RegistrationSubmission;
+using EPR.Payment.Facade.Common.Dtos.Response.RegistrationSubmission;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationSubmission;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
 using FluentAssertions;
-using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -21,7 +20,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
     {
         private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
         private Mock<IOptionsMonitor<Service>> _configMonitorMock = null!;
-        private CreateRegistrationSubmissionDataRequest _request = null!;
 
         [TestInitialize]
         public void Init()
@@ -33,14 +31,6 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                 EndPointName = "api/v1",
             });
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            _request = new CreateRegistrationSubmissionDataRequest
-            {
-                SubmissionId = Guid.NewGuid(),
-                FileId = Guid.NewGuid(),
-                ComplianceSchemeId = Guid.NewGuid(),
-                SubmissionPeriod = "Jan to Jun 2026",
-                SubmissionDate = new DateTime(2026, 5, 28, 0, 0, 0, DateTimeKind.Utc),
-            };
         }
 
         private HttpRegistrationSubmissionDataService Create(HttpClient client) =>
@@ -54,49 +44,49 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CreateAsync_Returns200_ReturnsParsedGuid([Frozen] Mock<HttpMessageHandler> handlerMock)
+        public async Task GetFeeCalculationDetailsAsync_Returns200_ReturnsParsedList([Frozen] Mock<HttpMessageHandler> handlerMock)
         {
-            var expectedId = Guid.NewGuid();
+            var submissionId = Guid.NewGuid();
+            var expected = new List<RegistrationFeeCalculationDetailsDto>
+            {
+                new() { OrganisationId = "ORG-1" },
+            };
             handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(JsonConvert.SerializeObject(expectedId), Encoding.UTF8, "application/json"),
+                    Content = new StringContent(JsonConvert.SerializeObject(expected), Encoding.UTF8, "application/json"),
                 });
 
             var sut = Create(new HttpClient(handlerMock.Object));
 
-            var id = await sut.CreateAsync(_request, CancellationToken.None);
+            var result = await sut.GetFeeCalculationDetailsAsync(submissionId, CancellationToken.None);
 
-            id.Should().Be(expectedId);
+            result.Should().BeEquivalentTo(expected);
             handlerMock.Protected().Verify(
                 "SendAsync",
                 Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(msg => msg.Method == HttpMethod.Post),
+                ItExpr.Is<HttpRequestMessage>(msg => msg.Method == HttpMethod.Get),
                 ItExpr.IsAny<CancellationToken>());
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CreateAsync_BadRequest_ThrowsValidationException([Frozen] Mock<HttpMessageHandler> handlerMock)
+        public async Task GetFeeCalculationDetailsAsync_NotFound_ReturnsNull([Frozen] Mock<HttpMessageHandler> handlerMock)
         {
             handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.BadRequest,
-                    Content = new StringContent("\"bad request body\"", Encoding.UTF8, "application/json"),
-                });
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound });
 
             var sut = Create(new HttpClient(handlerMock.Object));
 
-            Func<Task> act = () => sut.CreateAsync(_request, CancellationToken.None);
+            var result = await sut.GetFeeCalculationDetailsAsync(Guid.NewGuid(), CancellationToken.None);
 
-            await act.Should().ThrowAsync<ValidationException>();
+            result.Should().BeNull();
         }
 
         [TestMethod, AutoMoqData]
-        public async Task CreateAsync_500_ThrowsServiceException([Frozen] Mock<HttpMessageHandler> handlerMock)
+        public async Task GetFeeCalculationDetailsAsync_500_ThrowsServiceException([Frozen] Mock<HttpMessageHandler> handlerMock)
         {
             handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -108,7 +98,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
 
             var sut = Create(new HttpClient(handlerMock.Object));
 
-            Func<Task> act = () => sut.CreateAsync(_request, CancellationToken.None);
+            Func<Task> act = () => sut.GetFeeCalculationDetailsAsync(Guid.NewGuid(), CancellationToken.None);
 
             await act.Should().ThrowAsync<ServiceException>();
         }
