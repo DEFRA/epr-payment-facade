@@ -1,4 +1,5 @@
 ﻿using AutoFixture.MSTest;
+using EPR.Payment.Facade.Common.Constants;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationSubmission;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
@@ -73,6 +74,27 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationSubmission
 
             var status = result.Should().BeOfType<ObjectResult>().Which;
             status.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeeCalculationDetails_UnhandledException_Returns500(
+            [Frozen] Mock<IRegistrationSubmissionDataService> serviceMock,
+            [Greedy] RegistrationSubmissionDataController controller,
+            Guid submissionId)
+        {
+            serviceMock.Setup(s => s.GetFeeCalculationDetailsAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            var result = await controller.GetFeeCalculationDetails(submissionId, CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                var objectResult = result.Should().BeOfType<ObjectResult>().Which;
+                objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+                var problem = objectResult.Value.Should().BeOfType<ProblemDetails>().Which;
+                problem.Title.Should().Be("Unexpected Error");
+                problem.Detail.Should().Be(ExceptionMessages.ErrorRetrievingRegistrationFeeCalculationDetails);
+            }
         }
     }
 }
