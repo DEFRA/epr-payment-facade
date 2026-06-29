@@ -30,3 +30,4 @@ appsettings.Test.json
 /src/EPR.Payment.Facade.IntegrationTests/appsettings.json
 /src/TestResults
 *.csproj.user
+src/.idea/.idea.EPR.Payment.Facade/.idea/

@@ -6,5 +6,6 @@
         public DateTime ResubmissionDate { get; set; }
         public string ReferenceNumber { get; set; } = string.Empty;
         public int MemberCount { get; set; }
+        public Guid? FileId { get; set; }
     }
 }
