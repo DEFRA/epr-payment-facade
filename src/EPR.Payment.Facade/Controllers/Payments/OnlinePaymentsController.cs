@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using FluentValidation;
-using EPR.Payment.Facade.Common.Dtos.Request.Payments.V2Payments;
 
 namespace EPR.Payment.Facade.Controllers.Payments
 {
@@ -151,82 +150,6 @@ namespace EPR.Payment.Facade.Controllers.Payments
                     Content = CreateHtmlContent(_errorUrl),
                     ContentType = "text/html",
                     StatusCode = StatusCodes.Status200OK
-                };
-            }
-        }
-
-        [ApiExplorerSettings(GroupName = "v2")]
-        [HttpPost("v2/online-payments")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ContentResult))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ContentResult))]
-        [SwaggerOperation(
-           Summary = "Initiates a new payment",
-           Description = "Initiates a new payment with mandatory payment request data. Amount must be greater than 0. In case of an error, redirects to the error URL."
-       )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returns an HTML content result with a redirect script.", typeof(ContentResult))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "If the request is invalid or a validation error occurs.", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs, returns an HTML content result with a redirect script to the error URL.", typeof(ContentResult))]
-        [FeatureGate("EnablePaymentInitiationV2")]
-        public async Task<IActionResult> InitiateOnlinePaymentV2([FromBody] OnlinePaymentRequestV2Dto request, CancellationToken cancellationToken)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (request.Amount <= 0)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Validation Error",
-                    Detail = ExceptionMessages.AmountMustBeGreaterThanZero,
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            try
-            {
-                var result = await _onlinePaymentsService.InitiateOnlinePaymentV2Async(request, cancellationToken);
-
-                if (result.NextUrl == null)
-                {
-                    _logger.LogError(LogMessages.NextUrlNull);
-                    return new ContentResult
-                    {
-                        Content = CreateHtmlContent(_errorUrl),
-                        ContentType = "text/html",
-                        StatusCode = StatusCodes.Status200OK
-                    };
-                }
-
-                var htmlContent = CreateHtmlContent(result.NextUrl);
-
-                return new ContentResult
-                {
-                    Content = htmlContent,
-                    ContentType = "text/html",
-                    StatusCode = StatusCodes.Status200OK
-                };
-            }
-            catch (ValidationException ex)
-            {
-                _logger.LogError(ex, LogMessages.ValidationErrorOccured, nameof(InitiateOnlinePayment));
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Validation Error",
-                    Detail = ex.Message,
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, LogMessages.ErrorOccured, nameof(InitiateOnlinePayment));
-                return new ContentResult
-                {
-                    Content = CreateHtmlContent(_errorUrl),
-                    ContentType = "text/html",
-                    StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
         }

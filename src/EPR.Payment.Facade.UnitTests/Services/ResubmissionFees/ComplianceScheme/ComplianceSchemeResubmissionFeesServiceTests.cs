@@ -20,7 +20,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
     {
         private IFixture _fixture = null!;
         private Mock<IHttpComplianceSchemeResubmissionFeesService> _httpComplianceSchemeResubmissionFeesService = null!;
-        private Mock<IHttpComplianceSchemeResubmissionFeesServiceV2> _httpComplianceSchemeResubmissionFeesServiceV2 = null!;
         private Mock<ILogger<ComplianceSchemeResubmissionFeesService>> _loggerMock = null!;
         private ComplianceSchemeResubmissionFeesService _service = null!;
 
@@ -30,12 +29,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
             _fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
             _httpComplianceSchemeResubmissionFeesService = _fixture.Freeze<Mock<IHttpComplianceSchemeResubmissionFeesService>>();
-            _httpComplianceSchemeResubmissionFeesServiceV2 = _fixture.Freeze<Mock<IHttpComplianceSchemeResubmissionFeesServiceV2>>();
             _loggerMock = _fixture.Freeze<Mock<ILogger<ComplianceSchemeResubmissionFeesService>>>();
 
             _service = new ComplianceSchemeResubmissionFeesService(
                 _httpComplianceSchemeResubmissionFeesService.Object,
-                _httpComplianceSchemeResubmissionFeesServiceV2.Object,
                 _loggerMock.Object);
         }
 
@@ -44,7 +41,7 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
             ILogger<ComplianceSchemeResubmissionFeesService> logger)
         {
             // Act
-            Action act = () => new ComplianceSchemeResubmissionFeesService(null!, null!, logger);
+            Action act = () => new ComplianceSchemeResubmissionFeesService(null!, logger);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("httpComplianceSchemeResubmissionFeesService");
@@ -52,11 +49,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
 
         [TestMethod, AutoMoqData]
         public void Constructor_LoggerIsNull_ShouldThrowArgumentNullException(
-            IHttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService,
-            IHttpComplianceSchemeResubmissionFeesServiceV2 httpComplianceSchemeResubmissionFeesServiceV2)
+            IHttpComplianceSchemeResubmissionFeesService httpComplianceSchemeResubmissionFeesService)
         {
             // Act
-            Action act = () => new ComplianceSchemeResubmissionFeesService(httpComplianceSchemeResubmissionFeesService, httpComplianceSchemeResubmissionFeesServiceV2, null!);
+            Action act = () => new ComplianceSchemeResubmissionFeesService(httpComplianceSchemeResubmissionFeesService, null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
@@ -133,79 +129,6 @@ namespace EPR.Payment.Facade.UnitTests.Services.ResubmissionFees.ComplianceSchem
             var validationException = new ValidationException(exceptionMessage);
 
             _httpComplianceSchemeResubmissionFeesService.Setup(s => s.CalculateResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
-                .ThrowsAsync(validationException);
-
-            // Act
-            Func<Task> act = async () => await _service.CalculateResubmissionFeeAsync(request);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                var thrownException = await act.Should().ThrowAsync<ValidationException>();
-
-                thrownException.Which.Message.Should().Be(exceptionMessage);
-            }
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CalculateResubmissionFeeAsync_V2_RequestIsValid_ShouldReturnResponse(
-            ComplianceSchemeResubmissionFeeResponse expectedResponse,
-            ComplianceSchemeResubmissionFeeRequestV2Dto request)
-        {
-            // Arrange
-            _httpComplianceSchemeResubmissionFeesServiceV2.Setup(s => s.CalculateResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await _service.CalculateResubmissionFeeAsync(request);
-
-            // Assert
-            result.Should().BeEquivalentTo(expectedResponse);
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CalculateResubmissionFeeAsync_V2_HttpServiceThrowsException_ShouldLogAndThrowServiceException(
-            ComplianceSchemeResubmissionFeeRequestV2Dto request)
-        {
-            // Arrange
-            var exceptionMessage = "Unexpected error occurred";
-            var exception = new Exception(exceptionMessage);
-
-            _httpComplianceSchemeResubmissionFeesServiceV2.Setup(s => s.CalculateResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
-                .ThrowsAsync(exception);
-
-            // Act
-            Func<Task> act = async () => await _service.CalculateResubmissionFeeAsync(request);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                var thrownException = await act.Should().ThrowAsync<ServiceException>()
-                .WithMessage(ExceptionMessages.ErrorResubmissionFees);
-
-                thrownException.Which.InnerException.Should().BeOfType<Exception>()
-                    .Which.Message.Should().Be(exceptionMessage);
-
-                _loggerMock.Verify(
-                    x => x.Log(
-                        LogLevel.Error,
-                        It.IsAny<EventId>(),
-                        It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(ExceptionMessages.ErrorResubmissionFees)),
-                        exception,
-                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                    Times.Once);
-            }
-        }
-
-        [TestMethod, AutoMoqData]
-        public async Task CalculateResubmissionFeeAsync_V2_HttpServiceThrowsException_ShouldLogAndThrowValidationException(
-            ComplianceSchemeResubmissionFeeRequestV2Dto request)
-        {
-            // Arrange
-            var exceptionMessage = "Validation error";
-            var validationException = new ValidationException(exceptionMessage);
-
-            _httpComplianceSchemeResubmissionFeesServiceV2.Setup(s => s.CalculateResubmissionFeeAsync(request, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(validationException);
 
             // Act

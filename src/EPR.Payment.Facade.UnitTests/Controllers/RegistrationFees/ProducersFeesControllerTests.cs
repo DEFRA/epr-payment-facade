@@ -176,15 +176,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
             [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> registrationV2Validator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             var controller = new ProducersFeesController(
                 producerFeesServiceMock.Object,
                 loggerMock.Object,
-                registrationValidator.Object,
-                registrationV2Validator.Object
+                registrationValidator.Object
             );
 
             // Assert
@@ -196,15 +194,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public void Constructor_WithNullRegistrationFeesService_ShouldThrowArgumentNullException(
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
             [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> registrationV2Validator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
                 null!,
                 loggerMock.Object,
-                registrationValidator.Object,
-                registrationV2Validator.Object
+                registrationValidator.Object
             );
 
             // Assert
@@ -216,15 +212,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
              [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> registrationV2Validator,
             [Frozen] Mock<IValidator<RegulatorDto>> resubmissionValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
                 producerFeesServiceMock.Object,
                 null!,
-                registrationValidator.Object,
-                registrationV2Validator.Object
+                registrationValidator.Object
             );
 
             // Assert
@@ -236,14 +230,12 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         public void Constructor_WithNullRegistrationValidator_ShouldThrowArgumentNullException(
             [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
             [Frozen] Mock<ILogger<ProducersFeesController>> loggerMock,
-             [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator,
-            [Frozen] Mock<IValidator<ProducerFeesRequestV2Dto>> registrationV2Validator)
+             [Frozen] Mock<IValidator<ProducerFeesRequestDto>> registrationValidator)
         {
             // Act
             Action act = () => new ProducersFeesController(
                 producerFeesServiceMock.Object,
                 loggerMock.Object,
-                null!,
                 null!
             );
 
