@@ -2,8 +2,10 @@
 using EPR.Payment.Facade.Services.AccreditationFees.Interfaces;
 using EPR.Payment.Facade.Services.Payments;
 using EPR.Payment.Facade.Services.Payments.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme.Interfaces;
+using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer;
 using EPR.Payment.Facade.Services.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Services.RegistrationFees.ReprocessorOrExporter;
@@ -37,6 +39,7 @@ namespace EPR.Payment.Facade.Extension
             services.AddScoped<IComplianceSchemeResubmissionFeesService, ComplianceSchemeResubmissionFeesService>();
             services.AddScoped<IReprocessorExporterRegistrationFeesService, ReprocessorExporterRegistrationFeesService>();
             services.AddScoped<IAccreditationFeesCalculatorService, AccreditationFeesCalculatorService>();
+            services.AddScoped<ISubmissionPeriodsService, SubmissionPeriodsService>();
 
             return services;
         }
