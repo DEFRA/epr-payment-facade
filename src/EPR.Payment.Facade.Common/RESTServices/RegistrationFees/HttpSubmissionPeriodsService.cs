@@ -27,7 +27,7 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
         {
             try
             {
-                return await Get<List<SubmissionPeriodResponseDto>>(string.Empty, cancellationToken, includeTrailingSlash: false);
+                return await Get<List<SubmissionPeriodResponseDto>>(UrlConstants.SubmissionPeriods, cancellationToken, includeTrailingSlash: false);
             }
             catch (Exception ex)
             {

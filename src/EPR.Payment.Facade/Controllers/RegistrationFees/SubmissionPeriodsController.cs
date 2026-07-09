@@ -2,6 +2,7 @@
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;
 using EPR.Payment.Facade.Services.RegistrationFees.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -24,6 +25,7 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees
 
         [ApiExplorerSettings(GroupName = "v1")]
         [HttpGet("v1/submission-periods")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IReadOnlyList<SubmissionPeriodResponseDto>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
         [SwaggerOperation(
