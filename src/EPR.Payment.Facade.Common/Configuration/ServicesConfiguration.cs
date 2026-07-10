@@ -26,6 +26,8 @@ namespace EPR.Payment.Facade.Common.Configuration
         public Service RexExpoAccreditationFeesService { get; set; } = new Service();
 
         public Service RegistrationSubmissionDataService { get; set; } = new Service();
+
+        public Service SubmissionPeriodsService { get; set; } = new Service();
     }
 
     public class Service

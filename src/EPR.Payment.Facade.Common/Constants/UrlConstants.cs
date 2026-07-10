@@ -32,5 +32,8 @@
 
         // Registration submission snapshot endpoints
         public const string RegistrationSubmissionData = "registration-submission-data";
+
+        // Submission periods
+        public const string SubmissionPeriods = "submission-periods";
     }
 }
