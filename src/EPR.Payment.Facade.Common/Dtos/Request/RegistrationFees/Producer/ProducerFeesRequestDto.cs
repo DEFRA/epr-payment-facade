@@ -4,7 +4,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Request.RegistrationFees.Producer
 {
     public class ProducerFeesRequestDto  : ProducerFeesRequestseBaseDto
     {
-        public Guid? FileId { get; set; }
+        public string? RegistrationBlobName { get; set; }
 
         public bool IsProducerOnlineMarketplace { get; set; } // True or False
 
