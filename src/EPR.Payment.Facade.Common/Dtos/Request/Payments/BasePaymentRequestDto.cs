@@ -11,5 +11,7 @@
         public int? Amount { get; set; }
 
         public string? Description { get; set; }
+
+        public Guid? FileId { get; set; }
     }
 }
