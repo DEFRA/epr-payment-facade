@@ -130,9 +130,8 @@ builder.Services.AddApplicationInsightsTelemetry(options => { options.EnableAdap
 builder.Services.AddLogging();
 
 // Conditional Authentication based on Feature Flag
-using var serviceProvider = builder.Services.BuildServiceProvider();
-var featureManager = serviceProvider.GetRequiredService<IFeatureManager>();
-if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
+var enableAuthenticationFeature = builder.Configuration.GetValue<bool>("FeatureManagement:EnableAuthenticationFeature");
+if (enableAuthenticationFeature)
 {
     // Authentication
     builder.Services
@@ -147,7 +146,7 @@ if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
                 builder.Configuration.Bind(Constants.AzureAdB2C, options);
             });
 
-    
+
     builder.Services.AddAuthorizationBuilder().AddFallbackPolicy("EprPaymentFallBackPolicy", new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build());
@@ -156,6 +155,7 @@ if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
 var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var featureManager = app.Services.GetRequiredService<IFeatureManager>();
 
 bool enableOnlinePaymentsFeature = await featureManager.IsEnabledAsync("EnableOnlinePaymentsFeature");
 bool enablePaymentInitiation = await featureManager.IsEnabledAsync("EnablePaymentInitiation");
@@ -196,7 +196,7 @@ app.UseRouting();
 app.UseCors("AllowAll");
 
 // Conditionally apply Authentication and Authorization
-if (await featureManager.IsEnabledAsync("EnableAuthenticationFeature"))
+if (enableAuthenticationFeature)
 {
     app.UseAuthentication();
     app.UseAuthorization();
