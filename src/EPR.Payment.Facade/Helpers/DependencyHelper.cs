@@ -9,6 +9,7 @@ using EPR.Payment.Facade.Common.RESTServices.Payments.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceScheme.Interfaces;
+using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Interfaces;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter;
 using EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ReprocessorOrExporter.Interfaces;
@@ -36,19 +37,16 @@ namespace EPR.Payment.Facade.Helpers
 
             // Register individual service configurations
             services.Configure<Service>("ProducerFeesService", configuration.GetSection("Services:ProducerFeesService"));
-            services.Configure<Service>("ProducerFeesV2Service", configuration.GetSection("Services:ProducerFeesV2Service"));
             services.Configure<Service>("ComplianceSchemeFeesService", configuration.GetSection("Services:ComplianceSchemeFeesService"));
-            services.Configure<Service>("ComplianceSchemeFeesServiceV2", configuration.GetSection("Services:ComplianceSchemeFeesServiceV2"));
             services.Configure<Service>("ProducerResubmissionFeesService", configuration.GetSection("Services:ProducerResubmissionFeesService"));
             services.Configure<Service>("RexExpoRegistrationFeesService", configuration.GetSection("Services:RexExpoRegistrationFeesService"));
             services.Configure<Service>("PaymentService", configuration.GetSection("Services:PaymentService"));
-            services.Configure<Service>("OnlineV2PaymentService", configuration.GetSection("Services:OnlineV2PaymentService"));
             services.Configure<Service>("OfflinePaymentService", configuration.GetSection("Services:OfflinePaymentService"));
-            services.Configure<Service>("OfflinePaymentServiceV2", configuration.GetSection("Services:OfflinePaymentServiceV2"));
             services.Configure<Service>("GovPayService", configuration.GetSection("Services:GovPayService"));
             services.Configure<Service>("PaymentServiceHealthCheck", configuration.GetSection("Services:PaymentServiceHealthCheck"));
             services.Configure<Service>("RexExpoAccreditationFeesService", configuration.GetSection("Services:RexExpoAccreditationFeesService"));
             services.Configure<Service>("RegistrationSubmissionDataService", configuration.GetSection("Services:RegistrationSubmissionDataService"));
+            services.Configure<Service>("SubmissionPeriodsService", configuration.GetSection("Services:SubmissionPeriodsService"));
 
             // Register IHttpContextAccessor
             services.AddHttpContextAccessor();
@@ -80,29 +78,11 @@ namespace EPR.Payment.Facade.Helpers
                     client.BaseAddress = new Uri(config.Url!);
                 });
 
-            services.AddHttpClient<IHttpProducerFeesV2Service, HttpProducerFeesV2Service>()
-            .AddHttpMessageHandler<TokenAuthorizationHandler>()
-            .ConfigureHttpClient((sp, client) =>
-            {
-                var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerFeesV2Service;
-                ValidateServiceConfiguration(config, ExceptionMessages.ProducerFeesServiceBaseUrlMissing);
-                client.BaseAddress = new Uri(config.Url!);
-            });
-
             services.AddHttpClient<IHttpComplianceSchemeFeesService, HttpComplianceSchemeFeesService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
                 .ConfigureHttpClient((sp, client) =>
                 {
                     var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
-                    ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
-                    client.BaseAddress = new Uri(config.Url!);
-                });
-
-            services.AddHttpClient<IHttpComplianceSchemeFeesServiceV2, HttpComplianceSchemeFeesServiceV2>()
-                .AddHttpMessageHandler<TokenAuthorizationHandler>()
-                .ConfigureHttpClient((sp, client) =>
-                {
-                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesServiceV2;
                     ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
@@ -116,25 +96,7 @@ namespace EPR.Payment.Facade.Helpers
                     client.BaseAddress = new Uri(config.Url!);
                 });
 
-            services.AddHttpClient<IHttpProducerResubmissionFeesServiceV2, HttpProducerResubmissionFeesServiceV2>()
-                .AddHttpMessageHandler<TokenAuthorizationHandler>()
-                .ConfigureHttpClient((sp, client) =>
-                {
-                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ProducerResubmissionFeesService;
-                    ValidateServiceConfiguration(config, ExceptionMessages.ProducerResubmissionFeesServiceBaseUrlMissing);
-                    client.BaseAddress = new Uri(config.Url!);
-                });
-
             services.AddHttpClient<IHttpComplianceSchemeResubmissionFeesService, HttpComplianceSchemeResubmissionFeesService>()
-                .AddHttpMessageHandler<TokenAuthorizationHandler>()
-                .ConfigureHttpClient((sp, client) =>
-                {
-                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.ComplianceSchemeFeesService;
-                    ValidateServiceConfiguration(config, ExceptionMessages.ComplianceSchemeServiceUrlMissing);
-                    client.BaseAddress = new Uri(config.Url!);
-                });
-
-            services.AddHttpClient<IHttpComplianceSchemeResubmissionFeesServiceV2, HttpComplianceSchemeResubmissionFeesServiceV2>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
                 .ConfigureHttpClient((sp, client) =>
                 {
@@ -161,15 +123,6 @@ namespace EPR.Payment.Facade.Helpers
                     client.BaseAddress = new Uri(config.Url!);
                 });
 
-            services.AddHttpClient<IHttpOnlinePaymentsV2Service, HttpOnlinePaymentsV2Service>()
-               .AddHttpMessageHandler<TokenAuthorizationHandler>()
-               .ConfigureHttpClient((sp, client) =>
-               {
-                   var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OnlineV2PaymentService;
-                   ValidateServiceConfiguration(config, ExceptionMessages.OnlinePaymentServiceBaseUrlMissing);
-                   client.BaseAddress = new Uri(config.Url!);
-               });            
-
             services.AddHttpClient<IHttpOfflinePaymentsService, HttpOfflinePaymentsService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
                 .ConfigureHttpClient((sp, client) =>
@@ -188,21 +141,21 @@ namespace EPR.Payment.Facade.Helpers
                    client.BaseAddress = new Uri(config.Url!);
                });
 
-            services.AddHttpClient<IHttpOfflinePaymentsServiceV2, HttpOfflinePaymentsServiceV2>()
-                .AddHttpMessageHandler<TokenAuthorizationHandler>()
-                .ConfigureHttpClient((sp, client) =>
-                {
-                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.OfflinePaymentServiceV2;
-                    ValidateServiceConfiguration(config, ExceptionMessages.OfflinePaymentServiceBaseUrlMissing);
-                    client.BaseAddress = new Uri(config.Url!);
-                });
-
             services.AddHttpClient<IHttpRegistrationSubmissionDataService, HttpRegistrationSubmissionDataService>()
                 .AddHttpMessageHandler<TokenAuthorizationHandler>()
                 .ConfigureHttpClient((sp, client) =>
                 {
                     var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.RegistrationSubmissionDataService;
                     ValidateServiceConfiguration(config, ExceptionMessages.RegistrationSubmissionDataServiceBaseUrlMissing);
+                    client.BaseAddress = new Uri(config.Url!);
+                });
+
+            services.AddHttpClient<IHttpSubmissionPeriodsService, HttpSubmissionPeriodsService>()
+                .AddHttpMessageHandler<TokenAuthorizationHandler>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var config = sp.GetRequiredService<IOptions<ServicesConfiguration>>().Value.SubmissionPeriodsService;
+                    ValidateServiceConfiguration(config, ExceptionMessages.SubmissionPeriodsServiceBaseUrlMissing);
                     client.BaseAddress = new Uri(config.Url!);
                 });
 

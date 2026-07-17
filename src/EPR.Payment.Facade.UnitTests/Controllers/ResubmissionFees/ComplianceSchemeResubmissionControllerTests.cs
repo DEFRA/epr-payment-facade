@@ -21,15 +21,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullResubmissionFeesService_ShouldThrowArgumentNullException(
                     [Frozen] Mock<ILogger<ComplianceSchemeResubmissionController>> loggerMock,
-                    [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
-                    [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock)
+                    [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock)
         {
             // Act
             Action act = () => new ComplianceSchemeResubmissionController(
                 null!,
                 loggerMock.Object,
-                resubmissionValidatorMock.Object,
-                resubmissionValidatorV2Mock.Object
+                resubmissionValidatorMock.Object
             );
 
             // Assert
@@ -40,15 +38,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
             [Frozen] Mock<IComplianceSchemeResubmissionFeesService> resubmissionFeesServiceMock,
-            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock,
-            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestV2Dto>> resubmissionValidatorV2Mock)
+            [Frozen] Mock<IValidator<ComplianceSchemeResubmissionFeeRequestDto>> resubmissionValidatorMock)
         {
             // Act
             Action act = () => new ComplianceSchemeResubmissionController(
                 resubmissionFeesServiceMock.Object,
                 null!,
-                resubmissionValidatorMock.Object,
-                resubmissionValidatorV2Mock.Object
+                resubmissionValidatorMock.Object
             );
 
             // Assert
@@ -65,7 +61,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
             Action act = () => new ComplianceSchemeResubmissionController(
                 resubmissionFeesServiceMock.Object,
                 loggerMock.Object,
-                null!,
                 null!
             );
 

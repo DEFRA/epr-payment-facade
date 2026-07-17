@@ -27,7 +27,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.ResubmissionFees
             Action act = () => new ProducerResubmissionController(
                 producerResubmissionFeesServiceMock.Object,
                 loggerMock.Object,
-                null!,
                 null!
             );
 

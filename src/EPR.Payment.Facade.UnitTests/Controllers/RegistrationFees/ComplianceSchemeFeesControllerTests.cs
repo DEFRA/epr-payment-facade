@@ -24,15 +24,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
         public void Constructor_WithValidArguments_ShouldInitializeCorrectly(
             [Frozen] Mock<IComplianceSchemeCalculatorService> complianceSchemeFeesServiceMock,
             [Frozen] Mock<ILogger<ComplianceSchemeFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestDto>> validator,
-            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestV2Dto>> validatorV2)
+            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestDto>> validator)
         {
             // Act
             var controller = new ComplianceSchemeFeesController(
                 complianceSchemeFeesServiceMock.Object,
                 loggerMock.Object,
-                validator.Object,
-                validatorV2.Object
+                validator.Object
             );
 
             // Assert
@@ -43,15 +41,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullComplianceSchemeFeesService_ShouldThrowArgumentNullException(
             [Frozen] Mock<ILogger<ComplianceSchemeFeesController>> loggerMock,
-            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestDto>> validator,
-            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestV2Dto>> validatorV2)
+            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestDto>> validator)
         {
             // Act
             Action act = () => new ComplianceSchemeFeesController(
                 null!,
                 loggerMock.Object,
-                validator.Object,
-                validatorV2.Object
+                validator.Object
             );
 
             // Assert
@@ -62,15 +58,13 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
         [TestMethod, AutoMoqData]
         public void Constructor_WithNullLogger_ShouldThrowArgumentNullException(
             [Frozen] Mock<IComplianceSchemeCalculatorService> complianceSchemeFeesServiceMock,
-            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestDto>> validator,
-            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestV2Dto>> validatorV2)
+            [Frozen] Mock<IValidator<ComplianceSchemeFeesRequestDto>> validator)
         {
             // Act
             Action act = () => new ComplianceSchemeFeesController(
                 complianceSchemeFeesServiceMock.Object,
                 null!,
-                validator.Object,
-                validatorV2.Object
+                validator.Object
             );
 
             // Assert
@@ -87,7 +81,6 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             Action act = () => new ComplianceSchemeFeesController(
                 complianceSchemeFeesServiceMock.Object,
                 loggerMock.Object,
-                null!,
                 null!
             );
 

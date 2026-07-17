@@ -9,22 +9,13 @@ namespace EPR.Payment.Facade.Common.Configuration
 
         public Service PaymentService { get; set; } = new Service();
 
-        public Service OnlineV2PaymentService { get; set; } = new Service();
-
-
         public Service OfflinePaymentService { get; set; } = new Service();
 
-        public Service OfflinePaymentServiceV2 { get; set; } = new Service();
-
         public Service GovPayService { get; set; } = new Service();
-        
+
         public Service ProducerFeesService { get; set; } = new Service();
 
-        public Service ProducerFeesV2Service { get; set; } = new Service();
-
         public Service ComplianceSchemeFeesService { get; set; } = new Service();
-
-        public Service ComplianceSchemeFeesServiceV2 { get; set; } = new Service();
 
         public Service PaymentServiceHealthCheck { get; set; } = new Service();
         
@@ -35,6 +26,8 @@ namespace EPR.Payment.Facade.Common.Configuration
         public Service RexExpoAccreditationFeesService { get; set; } = new Service();
 
         public Service RegistrationSubmissionDataService { get; set; } = new Service();
+
+        public Service SubmissionPeriodsService { get; set; } = new Service();
     }
 
     public class Service

@@ -84,6 +84,11 @@
         public const string RegistrationSubmissionDataServiceBaseUrlMissing = "RegistrationSubmissionDataService BaseUrl configuration is missing. Please ensure the RegistrationSubmissionDataService URL is configured properly.";
         public const string ErrorRetrievingRegistrationFeeCalculationDetails = "Error occurred while retrieving registration fee calculation details.";
 
+        // SubmissionPeriodsService exceptions
+        public const string SubmissionPeriodsServiceBaseUrlMissing = "SubmissionPeriodsService BaseUrl configuration is missing. Please ensure the SubmissionPeriodsService URL is configured properly.";
+        public const string SubmissionPeriodsServiceEndPointNameMissing = "SubmissionPeriodsService EndPointName configuration is missing. Please ensure the SubmissionPeriodsService EndPointName is configured properly.";
+        public const string ErrorRetrievingSubmissionPeriods = "Error occurred while retrieving submission periods.";
+
         // Reprocess Exporter Registration Fees Service exceptions
         public const string ReproExpoRegServiceUrlMissing = "ReprocessorOrExporterRegistrationService url configuration is missing.";
         public const string ExpoRegServiceEndPointNameMissing = "ReprocessorOrExporterRegistrationService EndPointName configuration is missing.";
