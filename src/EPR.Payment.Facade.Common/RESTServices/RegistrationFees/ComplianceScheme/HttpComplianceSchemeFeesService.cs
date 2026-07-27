@@ -50,5 +50,27 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
                 throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees, ex);
             }
         }
+
+        public async Task<ComplianceSchemeFeesResponseDto?> GetFeesBySubmissionAsync(
+            Guid submissionId, CancellationToken cancellationToken = default)
+        {
+            var url = $"{UrlConstants.CalculateComplianceSchemeFee}/{submissionId}";
+            try
+            {
+                return await Get<ComplianceSchemeFeesResponseDto>(url, cancellationToken, includeTrailingSlash: false);
+            }
+            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees, ex);
+            }
+        }
     }
 }

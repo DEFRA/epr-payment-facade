@@ -370,5 +370,103 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                     ItExpr.IsAny<CancellationToken>());
             }
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ValidRequest_ReturnsResponseDto(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            var submissionId = Guid.NewGuid();
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            var result = await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeEquivalentTo(_complianceSchemeFeesResponseDto);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get
+                        && msg.RequestUri!.ToString().EndsWith($"compliance-scheme/registration-fee/{submissionId}")),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceReturns404_ReturnsNull(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.NotFound,
+                           Content = new StringContent(string.Empty),
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            // Act
+            var result = await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_HttpRequestException_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new HttpRequestException("boom"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+
+            await act.Should().ThrowAsync<ServiceException>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_UnexpectedException_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new Exception("oops"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+
+            await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage("An unexpected error occurred while calculating Compliance Scheme fees.");
+        }
     }
 }

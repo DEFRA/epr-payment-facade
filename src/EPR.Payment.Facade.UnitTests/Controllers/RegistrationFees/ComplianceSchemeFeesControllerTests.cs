@@ -239,5 +239,82 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
                 problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
             }
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceReturnsDto_ReturnsOk(
+            [Frozen] Mock<IComplianceSchemeCalculatorService> serviceMock,
+            [Greedy] ComplianceSchemeFeesController controller,
+            [Frozen] ComplianceSchemeFeesResponseDto expected)
+        {
+            var submissionId = Guid.NewGuid();
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
+
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<OkObjectResult>();
+                (result as OkObjectResult)!.Value.Should().Be(expected);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceReturnsNull_ReturnsNotFound(
+            [Frozen] Mock<IComplianceSchemeCalculatorService> serviceMock,
+            [Greedy] ComplianceSchemeFeesController controller)
+        {
+            var submissionId = Guid.NewGuid();
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ComplianceSchemeFeesResponseDto?)null);
+
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+
+            result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceThrowsServiceException_Returns500WithServiceErrorTitle(
+            [Frozen] Mock<IComplianceSchemeCalculatorService> serviceMock,
+            [Greedy] ComplianceSchemeFeesController controller)
+        {
+            var submissionId = Guid.NewGuid();
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new ServiceException("service is down"));
+
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<ObjectResult>();
+                var objectResult = result as ObjectResult;
+                var problemDetails = objectResult?.Value as ProblemDetails;
+                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+                problemDetails?.Title.Should().Be("Service Error");
+                problemDetails?.Detail.Should().Be("service is down");
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceThrowsUnexpected_Returns500WithUnexpectedErrorTitle(
+            [Frozen] Mock<IComplianceSchemeCalculatorService> serviceMock,
+            [Greedy] ComplianceSchemeFeesController controller)
+        {
+            var submissionId = Guid.NewGuid();
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("boom"));
+
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<ObjectResult>();
+                var objectResult = result as ObjectResult;
+                var problemDetails = objectResult?.Value as ProblemDetails;
+                objectResult?.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+                problemDetails?.Title.Should().Be("Unexpected Error");
+                problemDetails?.Detail.Should().Be(ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
+            }
+        }
     }
 }

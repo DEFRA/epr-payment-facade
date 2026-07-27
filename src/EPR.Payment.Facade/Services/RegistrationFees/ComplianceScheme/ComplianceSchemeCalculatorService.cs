@@ -40,5 +40,21 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
             }
         }
 
+        public async Task<ComplianceSchemeFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await _httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+            }
+            catch (ServiceException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees);
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingComplianceSchemeFees, ex);
+            }
+        }
     }
 }

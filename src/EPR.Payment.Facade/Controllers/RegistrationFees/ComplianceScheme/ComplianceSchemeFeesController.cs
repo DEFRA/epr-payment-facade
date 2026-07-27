@@ -94,5 +94,45 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
             }
         }
 
+        [ApiExplorerSettings(GroupName = "v1")]
+        [HttpGet("v1/compliance-scheme/registration-fee/{submissionId:guid}")]
+        [SwaggerOperation(
+            Summary = "Get compliance scheme fees for a stored submission",
+            Description = "Forwards to the payment service, which derives every input from the stored registration submission (latest non-rejected record and its event lifecycle) and returns the calculated fees."
+        )]
+        [SwaggerResponse(200, "Returns the calculated fees", typeof(ComplianceSchemeFeesResponseDto))]
+        [SwaggerResponse(404, "No non-rejected registration submission found for this submissionId")]
+        [SwaggerResponse(500, "Internal server error occurred while calculating fees")]
+        [ProducesResponseType(typeof(ComplianceSchemeFeesResponseDto), 200)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _complianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+                return result is null ? NotFound() : Ok(result);
+            }
+            catch (ServiceException ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(GetFeesBySubmissionAsync));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Service Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingComplianceSchemeFees, nameof(GetFeesBySubmissionAsync));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Unexpected Error",
+                    Detail = ExceptionMessages.UnexpectedErrorCalculatingComplianceSchemeFees,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+        }
     }
 }
