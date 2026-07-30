@@ -48,5 +48,21 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             }
         }
 
+        public async Task<ProducerFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await _httpProducerFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+            }
+            catch (ServiceException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ExceptionMessages.UnexpectedErrorCalculatingProducerFees);
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees, ex);
+            }
+        }
     }
 }

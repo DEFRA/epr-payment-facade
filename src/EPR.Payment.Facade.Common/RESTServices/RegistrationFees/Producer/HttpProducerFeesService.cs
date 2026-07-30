@@ -46,5 +46,27 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
                 throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees, ex);
             }
         }
+
+        public async Task<ProducerFeesResponseDto?> GetFeesBySubmissionAsync(
+            Guid submissionId, CancellationToken cancellationToken = default)
+        {
+            var url = $"{UrlConstants.CalculateProducerRegistrationFees}/{submissionId}";
+            try
+            {
+                return await Get<ProducerFeesResponseDto>(url, cancellationToken, includeTrailingSlash: false);
+            }
+            catch (ResponseCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new ServiceException(ExceptionMessages.ErrorCalculatingProducerFees, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new ServiceException(ExceptionMessages.UnexpectedErrorCalculatingProducerFees, ex);
+            }
+        }
     }
 }

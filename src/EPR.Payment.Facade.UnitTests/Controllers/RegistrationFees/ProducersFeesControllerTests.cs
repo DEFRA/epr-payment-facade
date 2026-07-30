@@ -243,5 +243,81 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             act.Should().Throw<ArgumentNullException>()
                 .WithParameterName("registrationValidator");
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceReturnsResponse_ReturnsOk(
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerFeesResponseDto expectedResponse)
+        {
+            // Arrange
+            var submissionId = Guid.NewGuid();
+            producerFeesServiceMock
+                .Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+                ok.Value.Should().BeEquivalentTo(expectedResponse);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceReturnsNull_ReturnsNotFound(
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Greedy] ProducersFeesController controller)
+        {
+            var submissionId = Guid.NewGuid();
+            producerFeesServiceMock
+                .Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ProducerFeesResponseDto?)null);
+
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+
+            result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceThrowsServiceException_Returns500(
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Greedy] ProducersFeesController controller)
+        {
+            producerFeesServiceMock
+                .Setup(s => s.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new ServiceException("boom"));
+
+            var result = await controller.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                var status = result.Should().BeOfType<ObjectResult>().Subject;
+                status.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceThrowsUnexpectedException_Returns500(
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Greedy] ProducersFeesController controller)
+        {
+            producerFeesServiceMock
+                .Setup(s => s.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("oops"));
+
+            var result = await controller.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                var status = result.Should().BeOfType<ObjectResult>().Subject;
+                status.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+                var problem = status.Value.Should().BeOfType<ProblemDetails>().Subject;
+                problem.Detail.Should().Be(ExceptionMessages.UnexpectedErrorCalculatingProducerFees);
+            }
+        }
     }
 }

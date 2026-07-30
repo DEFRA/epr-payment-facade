@@ -368,5 +368,103 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                     ItExpr.IsAny<CancellationToken>());
             }
         }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ValidRequest_ReturnsResponseDto(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            var submissionId = Guid.NewGuid();
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_producerFeesResponseDto), Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            // Act
+            var result = await httpProducerFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeEquivalentTo(_producerFeesResponseDto);
+                handlerMock.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(msg =>
+                        msg.Method == HttpMethod.Get
+                        && msg.RequestUri!.ToString().EndsWith($"producer/registration-fee/{submissionId}")),
+                    ItExpr.IsAny<CancellationToken>());
+            }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_ServiceReturns404_ReturnsNull(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.NotFound,
+                           Content = new StringContent(string.Empty),
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            // Act
+            var result = await httpProducerFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_HttpRequestException_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new HttpRequestException("boom"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            Func<Task> act = async () => await httpProducerFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+
+            await act.Should().ThrowAsync<ServiceException>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_UnexpectedException_ThrowsServiceException(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ThrowsAsync(new Exception("oops"));
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            Func<Task> act = async () => await httpProducerFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+
+            await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.UnexpectedErrorCalculatingProducerFees);
+        }
     }
 }
