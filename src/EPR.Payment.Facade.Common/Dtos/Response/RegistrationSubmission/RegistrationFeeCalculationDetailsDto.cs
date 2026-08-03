@@ -22,5 +22,7 @@ namespace EPR.Payment.Facade.Common.Dtos.Response.RegistrationSubmission
         public bool IsNewJoiner { get; set; }
 
         public int NationId { get; set; }
+
+        public string? RegistrationBlobName { get; set; }
     }
 }
