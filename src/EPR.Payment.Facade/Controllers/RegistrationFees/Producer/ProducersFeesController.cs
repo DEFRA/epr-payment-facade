@@ -94,6 +94,45 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
             }
         }
 
-
+        [ApiExplorerSettings(GroupName = "v1")]
+        [HttpGet("v1/producer/registration-fee/{submissionId:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProducerFeesResponseDto))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
+        [SwaggerOperation(
+            Summary = "Get producer registration fees for a stored submission",
+            Description = "Forwards to the payment service, which derives every input from the stored registration submission (latest non-rejected record and its event lifecycle) and returns the calculated fees."
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returns the calculated fees for the producer.", typeof(ProducerFeesResponseDto))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "No non-rejected registration submission found for this submissionId.")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _producerFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+                return result is null ? NotFound() : Ok(result);
+            }
+            catch (ServiceException ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(GetFeesBySubmissionAsync));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Service Error",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessages.ErrorOccuredWhileCalculatingProducerFees, nameof(GetFeesBySubmissionAsync));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Unexpected Error",
+                    Detail = ExceptionMessages.UnexpectedErrorCalculatingProducerFees,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+        }
     }
 }

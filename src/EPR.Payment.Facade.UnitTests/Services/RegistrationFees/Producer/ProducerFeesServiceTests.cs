@@ -140,5 +140,58 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
                 thrownException.Which.Message.Should().Be(exceptionMessage);
             }
         }
+
+        [TestMethod]
+        public async Task GetFeesBySubmissionAsync_HttpServiceReturnsResponse_PassesThrough()
+        {
+            var submissionId = Guid.NewGuid();
+            var expected = _fixture.Create<ProducerFeesResponseDto>();
+            _httpProducerFeesService
+                .Setup(h => h.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
+
+            var result = await _service.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+
+            result.Should().BeSameAs(expected);
+        }
+
+        [TestMethod]
+        public async Task GetFeesBySubmissionAsync_HttpServiceReturnsNull_ReturnsNull()
+        {
+            _httpProducerFeesService
+                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ProducerFeesResponseDto?)null);
+
+            var result = await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        public async Task GetFeesBySubmissionAsync_HttpServiceThrowsServiceException_Rethrows()
+        {
+            var inner = new ServiceException("inner");
+            _httpProducerFeesService
+                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(inner);
+
+            Func<Task> act = async () => await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+
+            var thrown = await act.Should().ThrowAsync<ServiceException>();
+            thrown.Which.Should().BeSameAs(inner);
+        }
+
+        [TestMethod]
+        public async Task GetFeesBySubmissionAsync_HttpServiceThrowsUnexpected_WrapsInServiceException()
+        {
+            _httpProducerFeesService
+                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("oops"));
+
+            Func<Task> act = async () => await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+
+            await act.Should().ThrowAsync<ServiceException>()
+                .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);
+        }
     }
 }

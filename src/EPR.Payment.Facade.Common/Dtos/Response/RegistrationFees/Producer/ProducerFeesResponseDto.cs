@@ -11,5 +11,6 @@
         public decimal PreviousPayment { get; set; }
         public decimal OutstandingPayment { get; set; }
         public required SubsidiariesFeeBreakdown SubsidiariesFeeBreakdown { get; set; }
+        public string? RegistrationBlobName { get; set; }
     }
 }
