@@ -7,6 +7,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.Producer.Inter
     {
         Task<ProducerFeesResponseDto> CalculateProducerFeesAsync(ProducerFeesRequestDto request, CancellationToken cancellationToken = default);
 
-        Task<ProducerFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default);
+        Task<ProducerFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, bool requireSubmittedForApproval, CancellationToken cancellationToken = default);
     }
 }

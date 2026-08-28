@@ -147,10 +147,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
             var submissionId = Guid.NewGuid();
             var expected = _fixture.Create<ProducerFeesResponseDto>();
             _httpProducerFeesService
-                .Setup(h => h.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .Setup(h => h.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
-            var result = await _service.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+            var result = await _service.GetFeesBySubmissionAsync(submissionId, false, CancellationToken.None);
 
             result.Should().BeSameAs(expected);
         }
@@ -159,10 +159,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
         public async Task GetFeesBySubmissionAsync_HttpServiceReturnsNull_ReturnsNull()
         {
             _httpProducerFeesService
-                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ProducerFeesResponseDto?)null);
 
-            var result = await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+            var result = await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), false, CancellationToken.None);
 
             result.Should().BeNull();
         }
@@ -172,23 +172,38 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.Producer
         {
             var inner = new ServiceException("inner");
             _httpProducerFeesService
-                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(inner);
 
-            Func<Task> act = async () => await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+            Func<Task> act = async () => await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), false, CancellationToken.None);
 
             var thrown = await act.Should().ThrowAsync<ServiceException>();
             thrown.Which.Should().BeSameAs(inner);
         }
 
         [TestMethod]
+        public async Task GetFeesBySubmissionAsync_RequireSubmittedForApprovalTrue_ForwardsFlagToHttpService()
+        {
+            var submissionId = Guid.NewGuid();
+            var expected = _fixture.Create<ProducerFeesResponseDto>();
+            _httpProducerFeesService
+                .Setup(h => h.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
+
+            var result = await _service.GetFeesBySubmissionAsync(submissionId, true, CancellationToken.None);
+
+            result.Should().BeSameAs(expected);
+            _httpProducerFeesService.Verify(h => h.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [TestMethod]
         public async Task GetFeesBySubmissionAsync_HttpServiceThrowsUnexpected_WrapsInServiceException()
         {
             _httpProducerFeesService
-                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Setup(h => h.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("oops"));
 
-            Func<Task> act = async () => await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+            Func<Task> act = async () => await _service.GetFeesBySubmissionAsync(Guid.NewGuid(), false, CancellationToken.None);
 
             await act.Should().ThrowAsync<ServiceException>()
                 .WithMessage(ExceptionMessages.ErrorCalculatingProducerFees);

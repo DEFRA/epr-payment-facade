@@ -52,9 +52,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
         }
 
         public async Task<ComplianceSchemeFeesResponseDto?> GetFeesBySubmissionAsync(
-            Guid submissionId, CancellationToken cancellationToken = default)
+            Guid submissionId, bool requireSubmittedForApproval, CancellationToken cancellationToken = default)
         {
             var url = $"{UrlConstants.CalculateComplianceSchemeFee}/{submissionId}";
+            if (requireSubmittedForApproval)
+            {
+                url += "?requireSubmittedForApproval=true";
+            }
+
             try
             {
                 return await Get<ComplianceSchemeFeesResponseDto>(url, cancellationToken, includeTrailingSlash: false);

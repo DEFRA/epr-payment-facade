@@ -40,11 +40,11 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.ComplianceScheme
             }
         }
 
-        public async Task<ComplianceSchemeFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
+        public async Task<ComplianceSchemeFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, bool requireSubmittedForApproval, CancellationToken cancellationToken = default)
         {
             try
             {
-                return await _httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+                return await _httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, requireSubmittedForApproval, cancellationToken);
             }
             catch (ServiceException)
             {

@@ -136,10 +136,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
             ComplianceSchemeFeesResponseDto expectedResponse)
         {
             var submissionId = Guid.NewGuid();
-            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
-            var result = await _service.GetFeesBySubmissionAsync(submissionId);
+            var result = await _service.GetFeesBySubmissionAsync(submissionId, false);
 
             result.Should().BeEquivalentTo(expectedResponse);
         }
@@ -148,10 +148,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
         public async Task GetFeesBySubmissionAsync_HttpServiceReturnsNull_ReturnsNull()
         {
             var submissionId = Guid.NewGuid();
-            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ComplianceSchemeFeesResponseDto?)null);
 
-            var result = await _service.GetFeesBySubmissionAsync(submissionId);
+            var result = await _service.GetFeesBySubmissionAsync(submissionId, false);
 
             result.Should().BeNull();
         }
@@ -161,13 +161,27 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
         {
             var submissionId = Guid.NewGuid();
             var serviceException = new ServiceException("http-layer service error");
-            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(serviceException);
 
-            Func<Task> act = () => _service.GetFeesBySubmissionAsync(submissionId);
+            Func<Task> act = () => _service.GetFeesBySubmissionAsync(submissionId, false);
 
             (await act.Should().ThrowAsync<ServiceException>())
                 .Which.Should().BeSameAs(serviceException);
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_RequireSubmittedForApprovalTrue_ForwardsFlagToHttpService(
+            ComplianceSchemeFeesResponseDto expectedResponse)
+        {
+            var submissionId = Guid.NewGuid();
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            var result = await _service.GetFeesBySubmissionAsync(submissionId, true);
+
+            result.Should().BeEquivalentTo(expectedResponse);
+            _httpComplianceSchemeFeesServiceMock.Verify(s => s.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
@@ -175,10 +189,10 @@ namespace EPR.Payment.Facade.UnitTests.Services.RegistrationFees.ComplianceSchem
         {
             var submissionId = Guid.NewGuid();
             var exception = new InvalidOperationException("boom");
-            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            _httpComplianceSchemeFeesServiceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
 
-            Func<Task> act = () => _service.GetFeesBySubmissionAsync(submissionId);
+            Func<Task> act = () => _service.GetFeesBySubmissionAsync(submissionId, false);
 
             using (new AssertionScope())
             {

@@ -391,7 +391,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
 
             // Act
-            var result = await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+            var result = await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, false, cancellationToken);
 
             // Assert
             using (new AssertionScope())
@@ -405,6 +405,35 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
                         && msg.RequestUri!.ToString().EndsWith($"compliance-scheme/registration-fee/{submissionId}")),
                     ItExpr.IsAny<CancellationToken>());
             }
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_RequireSubmittedForApprovalTrue_AppendsQueryFlag(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpComplianceSchemeFeesService httpComplianceSchemeFeesService,
+            CancellationToken cancellationToken)
+        {
+            var submissionId = Guid.NewGuid();
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(JsonConvert.SerializeObject(_complianceSchemeFeesResponseDto), Encoding.UTF8, "application/json"),
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
+
+            await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, true, cancellationToken);
+
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(msg =>
+                    msg.Method == HttpMethod.Get
+                    && msg.RequestUri!.ToString().EndsWith($"compliance-scheme/registration-fee/{submissionId}?requireSubmittedForApproval=true")),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [TestMethod, AutoMoqData]
@@ -426,7 +455,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
 
             // Act
-            var result = await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+            var result = await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), false, cancellationToken);
 
             // Assert
             result.Should().BeNull();
@@ -445,7 +474,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpClient = new HttpClient(handlerMock.Object);
             httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
 
-            Func<Task> act = async () => await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), false, cancellationToken);
 
             await act.Should().ThrowAsync<ServiceException>();
         }
@@ -463,7 +492,7 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
             var httpClient = new HttpClient(handlerMock.Object);
             httpComplianceSchemeFeesService = CreateHttpComplianceSchemeFeesService(httpClient);
 
-            Func<Task> act = async () => await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), cancellationToken);
+            Func<Task> act = async () => await httpComplianceSchemeFeesService.GetFeesBySubmissionAsync(Guid.NewGuid(), false, cancellationToken);
 
             await act.Should().ThrowAsync<ServiceException>()
                 .WithMessage("An unexpected error occurred while calculating Compliance Scheme fees.");

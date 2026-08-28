@@ -48,11 +48,11 @@ namespace EPR.Payment.Facade.Services.RegistrationFees.Producer
             }
         }
 
-        public async Task<ProducerFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
+        public async Task<ProducerFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, bool requireSubmittedForApproval, CancellationToken cancellationToken = default)
         {
             try
             {
-                return await _httpProducerFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+                return await _httpProducerFeesService.GetFeesBySubmissionAsync(submissionId, requireSubmittedForApproval, cancellationToken);
             }
             catch (ServiceException)
             {

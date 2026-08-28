@@ -106,11 +106,14 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.Producer
         [SwaggerResponse(StatusCodes.Status200OK, "Returns the calculated fees for the producer.", typeof(ProducerFeesResponseDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "No non-rejected registration submission found for this submissionId.")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "If an unexpected error occurs.", typeof(ProblemDetails))]
-        public async Task<IActionResult> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetFeesBySubmissionAsync(
+            Guid submissionId,
+            [FromQuery] bool requireSubmittedForApproval,
+            CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _producerFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+                var result = await _producerFeesService.GetFeesBySubmissionAsync(submissionId, requireSubmittedForApproval, cancellationToken);
                 return result is null ? NotFound() : Ok(result);
             }
             catch (ServiceException ex)
