@@ -253,11 +253,11 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             // Arrange
             var submissionId = Guid.NewGuid();
             producerFeesServiceMock
-                .Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, false, CancellationToken.None);
 
             // Assert
             using (new AssertionScope())
@@ -274,12 +274,33 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
         {
             var submissionId = Guid.NewGuid();
             producerFeesServiceMock
-                .Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+                .Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ProducerFeesResponseDto?)null);
 
-            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, false, CancellationToken.None);
 
             result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_RequireSubmittedForApprovalTrue_ForwardsFlagToService(
+            [Frozen] Mock<IProducerFeesService> producerFeesServiceMock,
+            [Greedy] ProducersFeesController controller,
+            [Frozen] ProducerFeesResponseDto expectedResponse)
+        {
+            var submissionId = Guid.NewGuid();
+            producerFeesServiceMock
+                .Setup(s => s.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, true, CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+                ok.Value.Should().BeEquivalentTo(expectedResponse);
+                producerFeesServiceMock.Verify(s => s.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()), Times.Once);
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -288,10 +309,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             [Greedy] ProducersFeesController controller)
         {
             producerFeesServiceMock
-                .Setup(s => s.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Setup(s => s.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new ServiceException("boom"));
 
-            var result = await controller.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(Guid.NewGuid(), false, CancellationToken.None);
 
             using (new AssertionScope())
             {
@@ -306,10 +327,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers
             [Greedy] ProducersFeesController controller)
         {
             producerFeesServiceMock
-                .Setup(s => s.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Setup(s => s.GetFeesBySubmissionAsync(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("oops"));
 
-            var result = await controller.GetFeesBySubmissionAsync(Guid.NewGuid(), CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(Guid.NewGuid(), false, CancellationToken.None);
 
             using (new AssertionScope())
             {

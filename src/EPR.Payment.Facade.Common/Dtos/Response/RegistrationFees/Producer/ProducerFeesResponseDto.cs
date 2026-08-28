@@ -11,6 +11,8 @@
         public decimal PreviousPayment { get; set; }
         public decimal OutstandingPayment { get; set; }
         public required SubsidiariesFeeBreakdown SubsidiariesFeeBreakdown { get; set; }
+        public string? ProducerSize { get; set; }
+        public int NumberOfSubsidiaries { get; set; }
         public string? RegistrationBlobName { get; set; }
     }
 }
