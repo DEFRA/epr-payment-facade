@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.runsettings = .runsettings
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPR.Payment.Facade.Messaging", "EPR.Payment.Facade.Messaging\EPR.Payment.Facade.Messaging.csproj", "{287A2972-8048-479A-B826-356835D47A4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{4820924E-D48A-4F6F-BFB3-02122B43296F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4820924E-D48A-4F6F-BFB3-02122B43296F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4820924E-D48A-4F6F-BFB3-02122B43296F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{287A2972-8048-479A-B826-356835D47A4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{287A2972-8048-479A-B826-356835D47A4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{287A2972-8048-479A-B826-356835D47A4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{287A2972-8048-479A-B826-356835D47A4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
