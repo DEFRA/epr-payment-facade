@@ -106,11 +106,14 @@ namespace EPR.Payment.Facade.Controllers.RegistrationFees.ComplianceScheme
         [ProducesResponseType(typeof(ComplianceSchemeFeesResponseDto), 200)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetFeesBySubmissionAsync(
+            Guid submissionId,
+            [FromQuery] bool requireSubmittedForApproval,
+            CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _complianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, cancellationToken);
+                var result = await _complianceSchemeFeesService.GetFeesBySubmissionAsync(submissionId, requireSubmittedForApproval, cancellationToken);
                 return result is null ? NotFound() : Ok(result);
             }
             catch (ServiceException ex)

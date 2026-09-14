@@ -7,6 +7,6 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees.ComplianceSche
     {
         Task<ComplianceSchemeFeesResponseDto> CalculateFeesAsync(ComplianceSchemeFeesRequestDto request, CancellationToken cancellationToken = default);
 
-        Task<ComplianceSchemeFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default);
+        Task<ComplianceSchemeFeesResponseDto?> GetFeesBySubmissionAsync(Guid submissionId, bool requireSubmittedForApproval, CancellationToken cancellationToken = default);
     }
 }

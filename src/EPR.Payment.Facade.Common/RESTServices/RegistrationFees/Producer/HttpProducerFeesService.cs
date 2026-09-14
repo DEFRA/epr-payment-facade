@@ -48,9 +48,14 @@ namespace EPR.Payment.Facade.Common.RESTServices.RegistrationFees
         }
 
         public async Task<ProducerFeesResponseDto?> GetFeesBySubmissionAsync(
-            Guid submissionId, CancellationToken cancellationToken = default)
+            Guid submissionId, bool requireSubmittedForApproval, CancellationToken cancellationToken = default)
         {
             var url = $"{UrlConstants.CalculateProducerRegistrationFees}/{submissionId}";
+            if (requireSubmittedForApproval)
+            {
+                url += "?requireSubmittedForApproval=true";
+            }
+
             try
             {
                 return await Get<ProducerFeesResponseDto>(url, cancellationToken, includeTrailingSlash: false);

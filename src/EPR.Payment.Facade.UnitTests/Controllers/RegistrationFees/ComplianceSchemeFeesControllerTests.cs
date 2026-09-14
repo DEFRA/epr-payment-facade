@@ -247,10 +247,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             [Frozen] ComplianceSchemeFeesResponseDto expected)
         {
             var submissionId = Guid.NewGuid();
-            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
-            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, false, CancellationToken.None);
 
             using (new AssertionScope())
             {
@@ -265,12 +265,32 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             [Greedy] ComplianceSchemeFeesController controller)
         {
             var submissionId = Guid.NewGuid();
-            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ComplianceSchemeFeesResponseDto?)null);
 
-            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, false, CancellationToken.None);
 
             result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [TestMethod, AutoMoqData]
+        public async Task GetFeesBySubmissionAsync_RequireSubmittedForApprovalTrue_ForwardsFlagToService(
+            [Frozen] Mock<IComplianceSchemeCalculatorService> serviceMock,
+            [Greedy] ComplianceSchemeFeesController controller,
+            [Frozen] ComplianceSchemeFeesResponseDto expected)
+        {
+            var submissionId = Guid.NewGuid();
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
+
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, true, CancellationToken.None);
+
+            using (new AssertionScope())
+            {
+                result.Should().BeOfType<OkObjectResult>();
+                (result as OkObjectResult)!.Value.Should().Be(expected);
+                serviceMock.Verify(s => s.GetFeesBySubmissionAsync(submissionId, true, It.IsAny<CancellationToken>()), Times.Once);
+            }
         }
 
         [TestMethod, AutoMoqData]
@@ -279,10 +299,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             [Greedy] ComplianceSchemeFeesController controller)
         {
             var submissionId = Guid.NewGuid();
-            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new ServiceException("service is down"));
 
-            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, false, CancellationToken.None);
 
             using (new AssertionScope())
             {
@@ -301,10 +321,10 @@ namespace EPR.Payment.Facade.UnitTests.Controllers.RegistrationFees
             [Greedy] ComplianceSchemeFeesController controller)
         {
             var submissionId = Guid.NewGuid();
-            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<CancellationToken>()))
+            serviceMock.Setup(s => s.GetFeesBySubmissionAsync(submissionId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("boom"));
 
-            var result = await controller.GetFeesBySubmissionAsync(submissionId, CancellationToken.None);
+            var result = await controller.GetFeesBySubmissionAsync(submissionId, false, CancellationToken.None);
 
             using (new AssertionScope())
             {
