@@ -258,6 +258,61 @@ namespace EPR.Payment.Facade.Common.UnitTests.RESTServices
         }
 
         [TestMethod, AutoMoqData]
+        public async Task CalculateProducerFeesAsync_ValidRequest_Returns_SubsidiaryLateFeeFields_FromResponseBody(
+            [Frozen] Mock<HttpMessageHandler> handlerMock,
+            HttpProducerFeesService httpProducerFeesService,
+            CancellationToken cancellationToken)
+        {
+            // Arrange
+            const string responseJson = """
+                {
+                  "producerRegistrationFee": 165800,
+                  "producerOnlineMarketPlaceFee": 257900,
+                  "producerClosedLoopRecyclingFee": 33200,
+                  "producerLateRegistrationFee": 0,
+                  "subsidiariesFee": 38600,
+                  "totalFee": 495500,
+                  "previousPayment": 0,
+                  "outstandingPayment": 495500,
+                  "subsidiariesFeeBreakdown": {
+                    "totalSubsidiariesOMPFees": 0,
+                    "countOfOMPSubsidiaries": 0,
+                    "unitOMPFees": 0,
+                    "totalSubsidiariesClosedLoopRecyclingFees": 0,
+                    "countOfClosedLoopRecyclingSubsidiaries": 0,
+                    "unitClosedLoopRecyclingFees": 0,
+                    "totalSubsidiariesLateFees": 38600,
+                    "countOfLateSubsidiaries": 1,
+                    "unitSubsidiaryLateFee": 38600,
+                    "feeBreakdowns": []
+                  }
+                }
+                """;
+
+            handlerMock.Protected()
+                       .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .ReturnsAsync(new HttpResponseMessage
+                       {
+                           StatusCode = HttpStatusCode.OK,
+                           Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+                       });
+
+            var httpClient = new HttpClient(handlerMock.Object);
+            httpProducerFeesService = CreateHttpProducerFeesService(httpClient);
+
+            // Act
+            var result = await httpProducerFeesService.CalculateProducerFeesAsync(_producerFeesRequestDto, cancellationToken);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.SubsidiariesFeeBreakdown.TotalSubsidiariesLateFees.Should().Be(38600);
+                result.SubsidiariesFeeBreakdown.CountOfLateSubsidiaries.Should().Be(1);
+                result.SubsidiariesFeeBreakdown.UnitSubsidiaryLateFee.Should().Be(38600);
+            }
+        }
+
+        [TestMethod, AutoMoqData]
         public async Task CalculateProducerFeesAsync_HttpRequestException_ThrowsServiceException(
             [Frozen] Mock<HttpMessageHandler> handlerMock,
             Mock<IOptions<Service>> configMock,
