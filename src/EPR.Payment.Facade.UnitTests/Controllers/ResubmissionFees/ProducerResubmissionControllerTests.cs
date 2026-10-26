@@ -1,4 +1,4 @@
-﻿using AutoFixture.MSTest;
+﻿using AutoFixture.Xunit2;
 using EPR.Payment.Facade.Common.Dtos.Request.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.Dtos.Response.ResubmissionFees.Producer;
 using EPR.Payment.Facade.Common.UnitTests.TestHelpers;
