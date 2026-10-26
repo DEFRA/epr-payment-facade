@@ -20,10 +20,12 @@ ENV PATH="${PATH}:/root/.dotnet/tools"
 WORKDIR /src
 COPY ["EPR.Payment.Facade/EPR.Payment.Facade.csproj", "EPR.Payment.Facade/"]
 COPY ["EPR.Payment.Facade.Common/EPR.Payment.Facade.Common.csproj", "EPR.Payment.Facade.Common/"]
+COPY ["EPR.Payment.Facade.Messaging/EPR.Payment.Facade.Messaging.csproj", "EPR.Payment.Facade.Messaging/"]
 RUN dotnet restore "EPR.Payment.Facade/EPR.Payment.Facade.csproj"
 
 COPY EPR.Payment.Facade/. ./EPR.Payment.Facade/.
 COPY EPR.Payment.Facade.Common/. ./EPR.Payment.Facade.Common/.
+COPY EPR.Payment.Facade.Messaging/. ./EPR.Payment.Facade.Messaging/.
 
 WORKDIR "/src/EPR.Payment.Facade"
 RUN dotnet build "EPR.Payment.Facade.csproj" -c Release /p:AzureBuild=true -o /app/build
