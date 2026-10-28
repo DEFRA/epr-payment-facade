@@ -1,6 +1,12 @@
 variables:
-  azureSubscription: 'AZD-RWD-TST1'
-  docker.imageName: 'eprpaymentfacade'
-  acr.azureContainerRegistryName: 'tstrwdinfac1401'
-  acr.repositoryName: 'eprpaymentfacaderepository'
-  serviceName: 'tstrwdwebwa1424'
+- group: ServiceConnections
+- name: azureSubscription
+  value: $(ServiceConnectionTST1)
+- name: docker.imageName
+  value: 'eprpaymentfacade'
+- name: acr.azureContainerRegistryName
+  value: 'tstrwdinfac1401'
+- name: acr.repositoryName
+  value: 'eprpaymentfacaderepository'
+- name: serviceName
+  value: 'tstrwdwebwa1424'

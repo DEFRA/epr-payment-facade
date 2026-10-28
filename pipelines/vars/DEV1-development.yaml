@@ -1,6 +1,12 @@
-variables:  
-  azureSubscription: 'AZD-RWD-DEV1'
-  docker.imageName: 'eprpaymentfacade'
-  acr.azureContainerRegistryName: 'devrwdinfac1401'
-  acr.repositoryName: 'eprpaymentfacaderepository'
-  serviceName: 'devrwdwebwa1424'
+variables:
+- group: ServiceConnections
+- name: azureSubscription
+  value: $(ServiceConnectionDEV1)
+- name: docker.imageName
+  value: 'eprpaymentfacade'
+- name: acr.azureContainerRegistryName
+  value: 'devrwdinfac1401'
+- name: acr.repositoryName
+  value: 'eprpaymentfacaderepository'
+- name: serviceName
+  value: 'devrwdwebwa1424'
