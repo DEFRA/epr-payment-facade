@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Text;
-using AutoFixture.MSTest;
+using AutoFixture.Xunit2;
 using EPR.Payment.Facade.Common.Configuration;
 using EPR.Payment.Facade.Common.Dtos.Response.RegistrationFees;
 using EPR.Payment.Facade.Common.Exceptions;

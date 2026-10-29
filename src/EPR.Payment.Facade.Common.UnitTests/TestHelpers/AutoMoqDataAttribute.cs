@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
-using AutoFixture.MSTest;
 using EPR.Payment.Facade.Common.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -9,7 +8,7 @@ using Moq;
 namespace EPR.Payment.Facade.Common.UnitTests.TestHelpers
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class AutoMoqDataAttribute : AutoDataAttribute
+    public class AutoMoqDataAttribute : MSTestAutoDataAttribute
     {
         public AutoMoqDataAttribute() : base(() =>
         {

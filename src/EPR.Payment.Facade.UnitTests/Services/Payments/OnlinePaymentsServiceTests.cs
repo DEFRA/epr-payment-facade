@@ -1,6 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
-using AutoFixture.MSTest;
+using AutoFixture.Xunit2;
 using AutoMapper;
 using EPR.Payment.Common.Mapping;
 using EPR.Payment.Facade.Common.Configuration;
